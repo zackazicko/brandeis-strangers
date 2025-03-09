@@ -715,74 +715,11 @@ export default function Home() {
   // RENDER
   // ---------------------------
   return (
-    <div style={{ position: 'relative' }}>
-      {/* Cloud background */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: -1,
-          background: 'linear-gradient(#a2cfff, #ffffff)',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Example clouds */}
-        <div
-          style={{
-            position: 'absolute',
-            background: '#fff',
-            borderRadius: '50%',
-            filter: 'blur(8px)',
-            opacity: 0.7,
-            animation: 'floatClouds 60s linear infinite',
-            width: 200,
-            height: 100,
-            top: '20%',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            background: '#fff',
-            borderRadius: '50%',
-            filter: 'blur(8px)',
-            opacity: 0.7,
-            animation: 'floatClouds 60s linear infinite',
-            width: 150,
-            height: 75,
-            top: '50%',
-            animationDelay: '15s',
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            background: '#fff',
-            borderRadius: '50%',
-            filter: 'blur(8px)',
-            opacity: 0.7,
-            animation: 'floatClouds 60s linear infinite',
-            width: 250,
-            height: 125,
-            top: '70%',
-            animationDelay: '30s',
-          }}
-        />
-      </div>
-
-      {/* Keyframes for cloud animation (inline style fallback) */}
-      <style>
-        {`
-          @keyframes floatClouds {
-            0% { transform: translateX(-100vw); }
-            100% { transform: translateX(100vw); }
-          }
-        `}
-      </style>
-
+    <div style={{ 
+      fontFamily: '"Courier New", Courier, monospace',
+      maxWidth: '100vw',
+      overflow: 'hidden'
+    }}>
       {/* Sticky Header */}
       <header style={headerStyle}>
         <div style={logoStyle}>strangers.</div>
@@ -884,78 +821,33 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features section */}
-      <section
-        id="features"
-        style={{
-          // opacity: 0,
-          transform: 'translateY(20px)',
-          transition: 'opacity 0.8s, transform 0.8s',
-          padding: '2rem',
-          maxWidth: 1200,
-          margin: '0 auto',
-        }}
-        className="fade-in"
-      >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gap: '2rem',
-            marginTop: '3rem',
-          }}
-        >
-          <div style={featureCardStyle}>
-            <h3 style={{ marginBottom: '1rem', textTransform: 'lowercase' }}>
-              random matching
-            </h3>
-            <p style={{ textTransform: 'lowercase' }}>
-              you'll be paired with someone new every time, broadening your
-              network.
-            </p>
-          </div>
-          <div style={featureCardStyle}>
-            <h3 style={{ marginBottom: '1rem', textTransform: 'lowercase' }}>
-              customize preferences
-            </h3>
-            <p style={{ textTransform: 'lowercase' }}>
-              pick your dining halls, meal times, class level, major, and
-              interests.
-            </p>
-          </div>
-          <div style={featureCardStyle}>
-            <h3 style={{ marginBottom: '1rem', textTransform: 'lowercase' }}>
-              simple process
-            </h3>
-            <p style={{ textTransform: 'lowercase' }}>
-              sign up with your brandeis email, get your match details via
-              email, and show your color.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Modal Overlay */}
+      {/* Modal */}
       {modalOpen && (
-        <div
-          className="modalOverlay active"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            background: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-          }}
-        >
-          <div
-            className="modal"
-            style={modalContainerStyle}
-          >
+        <div onClick={closeModal} style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            backgroundColor: '#fff',
+            borderRadius: '1rem',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+            width: isMobile ? '90%' : '500px',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '2rem',
+            position: 'relative',
+            textTransform: 'lowercase',
+            animation: 'fadeIn 0.5s'
+          }}>
             <button
               className="close-button"
               onClick={closeModal}
@@ -1526,10 +1418,9 @@ export default function Home() {
           </div>
         </div>
       )}
-
-      {/* Add this at the end of your component */}
+      
+      {/* Resubmission logic */}
       {useEffect(() => {
-        // Check if we have any failed submissions to retry
         const attemptToResubmitFailedEntries = async () => {
           const failedSubmissions = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
           
@@ -1558,7 +1449,6 @@ export default function Home() {
           }
         };
         
-        // Try to resubmit when the component mounts
         attemptToResubmitFailedEntries();
       }, [])}
     </div>
