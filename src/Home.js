@@ -168,6 +168,76 @@ const createHeroTextStyle = (isMobile = false) => ({
   width: '100%' // Ensure text spans full width of container
 });
 
+// Add new styles for the "How It Works" section
+const howItWorksContainerStyle = {
+  maxWidth: '600px', // Match the paragraph width in hero section
+  margin: '0 auto 4rem auto',
+  padding: '0 1.5rem',
+  position: 'relative',
+  zIndex: 1
+};
+
+const howItWorksTitleStyle = {
+  fontSize: '1.8rem',
+  color: '#003865',
+  textAlign: 'center',
+  marginBottom: '1.5rem',
+  fontWeight: 'bold'
+};
+
+const problemStatementStyle = {
+  textAlign: 'center',
+  fontSize: '0.95rem',
+  lineHeight: 1.6,
+  marginBottom: '2.5rem',
+  color: '#444'
+};
+
+const stepsContainerStyle = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem'
+};
+
+const stepStyle = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '1rem',
+  background: 'white',
+  padding: '1rem',
+  borderRadius: '0.8rem',
+  boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
+};
+
+const stepNumberStyle = {
+  width: '2rem',
+  height: '2rem',
+  borderRadius: '50%',
+  backgroundColor: '#003865',
+  color: 'white',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontWeight: 'bold',
+  flexShrink: 0
+};
+
+const stepContentStyle = {
+  flex: 1
+};
+
+const stepTitleStyle = {
+  fontWeight: 'bold',
+  marginBottom: '0.25rem',
+  color: '#003865'
+};
+
+const stepDescriptionStyle = {
+  fontSize: '0.9rem',
+  lineHeight: 1.5,
+  color: '#555'
+};
+
 export default function Home() {
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
@@ -761,9 +831,9 @@ export default function Home() {
               padding: '0.8rem 2.5rem',
               fontSize: isMobile ? '1rem' : '1.1rem',
               marginLeft: 0,
-              position: 'relative', // Ensure button is above clouds
+              position: 'relative',
               zIndex: 2,
-              boxShadow: '0 4px 15px rgba(0,56,101,0.2)' // Add a subtle shadow
+              boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
             }}
           >
             sign up
@@ -771,45 +841,44 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Problem statement */}
-      <section
-        id="problem"
-        style={{
-          // opacity: 0,
-          transform: 'translateY(20px)',
-          transition: 'opacity 0.8s, transform 0.8s',
-          padding: '2rem',
-          margin: '2rem auto',
-          borderRadius: 8,
-          maxWidth: 900,
-        }}
-        className="fade-in"
-      >
-        <div
-          style={{
-            textAlign: 'center',
-            textTransform: 'lowercase',
-            maxWidth: 800,
-            margin: '0 auto',
-          }}
-        >
-          <h2
-            style={{
-              fontSize: '2rem',
-              marginBottom: '1rem',
-              textTransform: 'lowercase',
-            }}
-          >
-            the problem
-          </h2>
-          <p>
-            being on campus can be lonely. schedules rarely align, and it's
-            tough finding new friends beyond your classes or clubs.
-          </p>
-          <p style={{ marginTop: '1rem' }}>
-            strangers. solves this by matching you with another student,
-            randomly, for a guaranteed meal-time meetup.
-          </p>
+      {/* How It Works section - new compact design */}
+      <section style={howItWorksContainerStyle}>
+        <h2 style={howItWorksTitleStyle}>how it works</h2>
+        
+        <p style={problemStatementStyle}>
+          being on campus can be lonely. schedules rarely align, and it's tough finding new friends beyond your classes or clubs.
+        </p>
+        
+        <div style={stepsContainerStyle}>
+          <div style={stepStyle}>
+            <div style={stepNumberStyle}>1</div>
+            <div style={stepContentStyle}>
+              <div style={stepTitleStyle}>quick sign up</div>
+              <div style={stepDescriptionStyle}>
+                sign up with your brandeis email, tell us your availability and meal preferences
+              </div>
+            </div>
+          </div>
+          
+          <div style={stepStyle}>
+            <div style={stepNumberStyle}>2</div>
+            <div style={stepContentStyle}>
+              <div style={stepTitleStyle}>get matched</div>
+              <div style={stepDescriptionStyle}>
+                we match you with someone new based on your compatible meal times and preferences
+              </div>
+            </div>
+          </div>
+          
+          <div style={stepStyle}>
+            <div style={stepNumberStyle}>3</div>
+            <div style={stepContentStyle}>
+              <div style={stepTitleStyle}>meet for a meal</div>
+              <div style={stepDescriptionStyle}>
+                show the matching color on your phone to find each other and enjoy your meal together
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
