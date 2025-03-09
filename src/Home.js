@@ -130,6 +130,14 @@ export default function Home() {
     major.toLowerCase().includes(majorSearch.toLowerCase())
   );
 
+  // Add name as a state variable if it doesn't exist
+  const [name, setName] = useState('');
+
+  // Add this useEffect to update the name when firstName or lastName changes
+  useEffect(() => {
+    setName(`${firstName} ${lastName}`.trim());
+  }, [firstName, lastName]);
+
   // ---------------------------
   // HELPER: Toggle bubble selection
   // ---------------------------
@@ -186,7 +194,7 @@ export default function Home() {
     const { error: insertError } = await supabase.from('Main').insert([
       {
         temp_id: userId,
-        name: name.trim(),
+        name: name,
         email: email.trim(),
         majors: selectedMajors,
         class_level: classLevel,
@@ -990,7 +998,7 @@ export default function Home() {
                                 style={{
                                   ...bubbleStyle,
                                   backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-                                  color: isSelected ? 'white' : 'black',
+                                  color: isSelected ? 'black' : 'black',
                                   fontSize: '0.85rem',
                                   padding: '0.4rem 0.8rem',
                                 }}
