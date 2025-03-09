@@ -49,16 +49,18 @@ const createHeaderStyle = (isMobile = false) => ({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: isMobile ? '1rem 1.5rem' : '1.5rem 4rem',
+  padding: isMobile ? '1rem 1.2rem' : '1.2rem 4rem',
   backgroundColor: 'white',
   zIndex: 100,
-  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+  boxShadow: '0 1px 8px rgba(0, 0, 0, 0.08)',
+  height: isMobile ? '60px' : '70px',
 });
 
 const createLogoStyle = (isMobile = false) => ({
-  fontWeight: 'bold', 
-  fontSize: isMobile ? '1.3rem' : '1.5rem',
+  fontWeight: 'bold',
+  fontSize: isMobile ? '1.4rem' : '1.6rem',
   letterSpacing: '-0.5px',
+  color: '#003865',
 });
 
 // These non-responsive styles don't need to be functions
@@ -90,12 +92,50 @@ const bubbleSelectedStyle = {
   color: '#fff',
 };
 
+// Create a better style for the hero section to add spacing below header
+const createHeroSectionStyle = (isMobile = false) => ({
+  height: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  textAlign: 'center',
+  backgroundImage: 'linear-gradient(to bottom, #f0f8ff, #ffffff)',
+  paddingTop: isMobile ? '70px' : '0',
+  marginTop: isMobile ? '0px' : '0'
+});
+
+// Create better title styles for hero section
+const createHeroTitleStyle = (isMobile = false) => ({
+  fontSize: isMobile ? '3rem' : '5rem',
+  marginTop: isMobile ? '3rem' : '0',
+  color: '#003865',
+  marginBottom: '0.5rem'
+});
+
+// Create subtitle style for hero section
+const createHeroSubtitleStyle = (isMobile = false) => ({
+  fontWeight: 'normal',
+  fontSize: isMobile ? '1.4rem' : '2.5rem',
+  marginBottom: '1.5rem',
+  color: '#003865'
+});
+
+// Create paragraph style for hero section
+const createHeroTextStyle = (isMobile = false) => ({
+  maxWidth: isMobile ? '300px' : '600px',
+  marginBottom: '2rem',
+  lineHeight: 1.6,
+  fontSize: isMobile ? '0.95rem' : '1.1rem',
+  padding: isMobile ? '0 1rem' : '0'
+});
+
 export default function Home() {
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
   // ---------------------------
   const [typedText, setTypedText] = useState('');
-  const fullText = 'strangers';
+  const fullText = 'strangers.';
   
   useEffect(() => {
     // Reset the text first
@@ -143,6 +183,10 @@ export default function Home() {
   const buttonsRowStyle = createButtonsRowStyle(isMobile);
   const headerStyle = createHeaderStyle(isMobile);
   const logoStyle = createLogoStyle(isMobile);
+  const heroSectionStyle = createHeroSectionStyle(isMobile);
+  const heroTitleStyle = createHeroTitleStyle(isMobile);
+  const heroSubtitleStyle = createHeroSubtitleStyle(isMobile);
+  const heroTextStyle = createHeroTextStyle(isMobile);
   
   // Add touch-friendly animations
   useEffect(() => {
@@ -173,6 +217,35 @@ export default function Home() {
         /* Improve button press effect */
         button:active {
           transform: scale(0.98);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Add this effect to improve mobile touch feedback
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @media (max-width: 768px) {
+        /* Improve touch feedback */
+        button:active {
+          transform: scale(0.98);
+          transition: transform 0.1s;
+        }
+        
+        /* Fix spacing for mobile view */
+        #root {
+          padding-top: 60px; /* Match header height */
+        }
+        
+        /* Improve spacing of modal on mobile */
+        .modal-content {
+          padding-top: 20px;
         }
       }
     `;
@@ -577,95 +650,48 @@ export default function Home() {
 
       {/* Sticky Header */}
       <header style={headerStyle}>
-        <div style={logoStyle}>
-          strangers.
-        </div>
-        <nav
-          style={{ display: 'flex', gap: '1rem', textTransform: 'lowercase' }}
-        >
-          <a href="#problem" style={navLinkStyle}>
-            problem
-          </a>
-          <a href="#features" style={navLinkStyle}>
-            features
-          </a>
-          <a
-            href="#!"
-            style={navLinkStyle}
-            onClick={(e) => {
-              e.preventDefault();
-              openModal();
+        <div style={logoStyle}>strangers.</div>
+        
+        {/* Only show full navigation on desktop */}
+        {!isMobile ? (
+          <nav style={{ display: 'flex', gap: '2rem' }}>
+            <a href="#problem" style={navLinkStyle}>problem</a>
+            <a href="#features" style={navLinkStyle}>features</a>
+            <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>
+          </nav>
+        ) : (
+          <button 
+            onClick={openModal}
+            style={{
+              ...btnStyle,
+              padding: '0.5rem 1.2rem',
+              fontSize: '0.85rem',
+              marginLeft: 0
             }}
           >
             sign up
-          </a>
-        </nav>
+          </button>
+        )}
       </header>
 
       {/* Hero section */}
-      <section
-        className="hero"
-        style={{
-          width: '100%',
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: '4rem 1rem',
-          textAlign: 'center',
-        }}
-      >
-        <h1
-          className="typed-hero"
-          style={{
-            fontSize: '2rem',
-            fontWeight: 'bold',
-            color: '#003865',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            marginBottom: '1rem',
-          }}
-        >
+      <section id="signup" style={heroSectionStyle}>
+        <h1 style={heroTitleStyle}>
           {typedText}
         </h1>
-        <h2
-          style={{
-            fontSize: '2rem',
-            marginBottom: '1rem',
-            textTransform: 'lowercase',
-          }}
-        >
+        <h2 style={heroSubtitleStyle}>
           brandeis meal match
         </h2>
-        <p
-          style={{
-            maxWidth: 600,
-            margin: '0 auto 2rem auto',
-            textTransform: 'lowercase',
-          }}
-        >
-          connecting random brandeis students for meals, because sometimes
-          meeting strangers is exactly what you need.
+        <p style={heroTextStyle}>
+          connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need.
         </p>
-        <button
-          onClick={openModal}
+        <button 
+          onClick={openModal} 
           style={{
-            padding: '0.7rem 2rem',
-            background: '#003865',
-            border: 'none',
-            color: '#fff',
-            borderRadius: 30,
-            fontSize: '1.1rem',
-            fontFamily: '"Courier New", Courier, monospace',
-            textTransform: 'lowercase',
-            cursor: 'pointer',
-            transition: 'transform 0.3s, box-shadow 0.3s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.05)';
-            e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,56,101,0.2)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.boxShadow = 'none';
+            ...btnStyle,
+            padding: '0.8rem 2.5rem',
+            fontSize: isMobile ? '1rem' : '1.1rem',
+            marginLeft: 0
           }}
         >
           sign up
