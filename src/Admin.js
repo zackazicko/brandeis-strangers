@@ -21,7 +21,7 @@ const Admin = () => {
     if (authorized) {
       setLoading(true);
       const fetchData = async () => {
-        const { data, error } = await supabase.from('Main').select('*');
+        const { data, error } = await supabase.from('main').select('*');
         if (error) {
           alert('Error fetching data: ' + error.message);
         } else {
