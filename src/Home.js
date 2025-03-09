@@ -94,18 +94,19 @@ const bubbleSelectedStyle = {
 
 // Create a better style for the hero section to add spacing below header
 const createHeroSectionStyle = (isMobile = false) => ({
-  height: '100vh',
+  minHeight: '100vh',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
   alignItems: 'center',
   textAlign: 'center',
-  backgroundColor: '#e6f2ff', // Light blue background
+  backgroundColor: '#e6f2ff',
   background: 'linear-gradient(180deg, #e6f2ff 0%, #f5f9ff 100%)', 
-  paddingTop: isMobile ? '20px' : '0',
+  paddingTop: isMobile ? '70px' : '0',
+  paddingBottom: '4rem',
   marginTop: isMobile ? '0' : '0',
   position: 'relative',
-  overflow: 'hidden' // For cloud overlay
+  overflow: 'hidden'
 });
 
 // Add cloud decorative elements
@@ -127,23 +128,23 @@ const cloudOverlayStyle = {
 // Make content appear above the clouds
 const heroContentStyle = {
   position: 'relative',
-  zIndex: 1, // Ensure content appears above the cloud background
+  zIndex: 1,
   width: '100%',
   maxWidth: '800px',
   padding: '0 1rem',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center', // Center align all content
+  alignItems: 'center',
   textAlign: 'center'
 };
 
 // Create better title styles for hero section
 const createHeroTitleStyle = (isMobile = false) => ({
   fontSize: isMobile ? '3rem' : '5rem',
-  marginTop: isMobile ? '1.5rem' : '0', // Reduced from 3rem to 1.5rem
+  marginTop: isMobile ? '1.5rem' : '0',
   color: '#003865',
   marginBottom: '0.5rem',
-  width: '100%', // Ensure full width for better centering
+  width: '100%',
   textAlign: 'center'
 });
 
@@ -153,7 +154,7 @@ const createHeroSubtitleStyle = (isMobile = false) => ({
   fontSize: isMobile ? '1.4rem' : '2.5rem',
   marginBottom: '1.5rem',
   color: '#003865',
-  width: '100%', // Ensure full width for consistent centering
+  width: '100%',
   textAlign: 'center'
 });
 
@@ -165,14 +166,14 @@ const createHeroTextStyle = (isMobile = false) => ({
   fontSize: isMobile ? '0.95rem' : '1.1rem',
   padding: isMobile ? '0' : '0',
   textAlign: 'center',
-  width: '100%' // Ensure text spans full width of container
+  width: '100%'
 });
 
 // Add new styles for the "How It Works" section
 const howItWorksContainerStyle = {
-  maxWidth: '600px', // Match the paragraph width in hero section
-  margin: '0 auto 4rem auto',
-  padding: '0 1.5rem',
+  maxWidth: '600px',
+  marginTop: '6rem',
+  padding: '0 1rem',
   position: 'relative',
   zIndex: 1
 };
@@ -808,13 +809,14 @@ export default function Home() {
         )}
       </header>
 
-      {/* Hero section with restored blue clouds */}
+      {/* Hero section with integrated "How It Works" */}
       <section id="signup" style={heroSectionStyle} className="cloud-bg">
         {/* Cloud background overlay */}
         <div style={cloudOverlayStyle}></div>
         
         {/* Content layer above clouds */}
         <div style={heroContentStyle}>
+          {/* Hero content */}
           <h1 style={heroTitleStyle}>
             {typedText}
           </h1>
@@ -838,44 +840,44 @@ export default function Home() {
           >
             sign up
           </button>
-        </div>
-      </section>
-
-      {/* How It Works section - new compact design */}
-      <section style={howItWorksContainerStyle}>
-        <h2 style={howItWorksTitleStyle}>how it works</h2>
-        
-        <p style={problemStatementStyle}>
-          being on campus can be lonely. schedules rarely align, and it's tough finding new friends beyond your classes or clubs.
-        </p>
-        
-        <div style={stepsContainerStyle}>
-          <div style={stepStyle}>
-            <div style={stepNumberStyle}>1</div>
-            <div style={stepContentStyle}>
-              <div style={stepTitleStyle}>quick sign up</div>
-              <div style={stepDescriptionStyle}>
-                sign up with your brandeis email, tell us your availability and meal preferences
-              </div>
-            </div>
-          </div>
           
-          <div style={stepStyle}>
-            <div style={stepNumberStyle}>2</div>
-            <div style={stepContentStyle}>
-              <div style={stepTitleStyle}>get matched</div>
-              <div style={stepDescriptionStyle}>
-                we match you with someone new based on your compatible meal times and preferences
+          {/* How It Works section integrated into hero */}
+          <div style={howItWorksContainerStyle}>
+            <h2 style={howItWorksTitleStyle}>how it works</h2>
+            
+            <p style={problemStatementStyle}>
+              being on campus can be lonely. schedules rarely align, and it's tough finding new friends beyond your classes or clubs.
+            </p>
+            
+            <div style={stepsContainerStyle}>
+              <div style={stepStyle}>
+                <div style={stepNumberStyle}>1</div>
+                <div style={stepContentStyle}>
+                  <div style={stepTitleStyle}>quick sign up</div>
+                  <div style={stepDescriptionStyle}>
+                    sign up with your brandeis email, tell us your availability and meal preferences
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          
-          <div style={stepStyle}>
-            <div style={stepNumberStyle}>3</div>
-            <div style={stepContentStyle}>
-              <div style={stepTitleStyle}>meet for a meal</div>
-              <div style={stepDescriptionStyle}>
-                show the matching color on your phone to find each other and enjoy your meal together
+              
+              <div style={stepStyle}>
+                <div style={stepNumberStyle}>2</div>
+                <div style={stepContentStyle}>
+                  <div style={stepTitleStyle}>get matched</div>
+                  <div style={stepDescriptionStyle}>
+                    we match you with someone new based on your compatible meal times and preferences
+                  </div>
+                </div>
+              </div>
+              
+              <div style={stepStyle}>
+                <div style={stepNumberStyle}>3</div>
+                <div style={stepContentStyle}>
+                  <div style={stepTitleStyle}>meet for a meal</div>
+                  <div style={stepDescriptionStyle}>
+                    show the matching color on your phone to find each other and enjoy your meal together
+                  </div>
+                </div>
               </div>
             </div>
           </div>
