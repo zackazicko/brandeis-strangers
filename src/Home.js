@@ -236,8 +236,10 @@ export default function Home() {
         email: email.trim(),
         majors: selectedMajors,
         class_level: classLevel,
+        interests: selectedInterests,
         meal_plan: mealPlan,
-        dining_locations: selectedLocations.join(','),
+        guest_swipe: guestSwipe,
+        dining_locations: selectedLocations,
         meal_times_json: JSON.stringify(mealTimes),
         meal_times_flattened: JSON.stringify({
           tuesday_dinner_600_630: mealTimes.tuesday?.dinner?.includes('6:00-6:30 PM') || false,
@@ -245,14 +247,12 @@ export default function Home() {
           wednesday_dinner_600_630: mealTimes.wednesday?.dinner?.includes('6:00-6:30 PM') || false,
           wednesday_dinner_630_700: mealTimes.wednesday?.dinner?.includes('6:30-7:00 PM') || false
         }),
-        personality_info: JSON.stringify({
-          personality_type: personalityType,
-          humor_type: humorType,
-          conversation_type: conversationType,
-          planner_type: plannerType,
-          hp_house: hpHouse,
-          match_preference: matchPreference
-        })
+        personality_type: personalityType,
+        humor_type: humorType,
+        conversation_type: conversationType,
+        planner_type: plannerType,
+        hp_house: hpHouse,
+        match_preference: matchPreference
       };
       
       console.log('Submitting to main table:', userData);
@@ -286,6 +286,25 @@ export default function Home() {
 
   // Add this to your component
   const isMobile = window.innerWidth <= 768;
+  const isSmallMobile = window.innerWidth <= 375;
+
+  // Style updates for mobile responsiveness
+  useEffect(() => {
+    const handleResize = () => {
+      // Force re-render on window resize to update mobile-specific components
+      setIsMobile(window.innerWidth <= 768);
+      setIsSmallMobile(window.innerWidth <= 375);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Add mobile state variables
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth <= 375);
 
   // Modal container style
   const modalContainerStyle = {
