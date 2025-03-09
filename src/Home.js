@@ -284,10 +284,6 @@ export default function Home() {
     color: 'white'
   };
 
-  // Add this to your component
-  const isMobile = window.innerWidth <= 768;
-  const isSmallMobile = window.innerWidth <= 375;
-
   // Style updates for mobile responsiveness
   useEffect(() => {
     const handleResize = () => {
@@ -338,6 +334,45 @@ export default function Home() {
     gap: '0.5rem',
     justifyContent: isMobile ? 'center' : 'flex-start',
   };
+
+  // Add touch-friendly animations
+  useEffect(() => {
+    // Inject these styles for smooth mobile animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @media (max-width: 768px) {
+        /* Overscroll behavior to prevent page bouncing on iOS */
+        body {
+          overscroll-behavior-y: none;
+        }
+        
+        /* Make form elements larger on mobile */
+        input, select, button {
+          font-size: 16px !important; /* Prevents iOS zoom on focus */
+        }
+        
+        /* Add momentum scrolling for modal on mobile */
+        .modal-content {
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Improve button press effect */
+        button:active {
+          transform: scale(0.98);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   // ---------------------------
   // RENDER
@@ -413,27 +448,10 @@ export default function Home() {
 
       {/* Sticky Header */}
       <header
-        style={{
-          position: 'sticky',
-          top: 0,
-          left: 0,
-          width: '100%',
-          background: '#ffffffcc',
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1rem 3rem',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-        }}
+        style={headerStyle}
       >
         <div
-          style={{
-            fontSize: '1.6rem',
-            fontWeight: 'bold',
-            color: '#003865',
-            textTransform: 'lowercase',
-          }}
+          style={logoStyle}
         >
           strangers.
         </div>
@@ -1308,4 +1326,25 @@ const buttonsRowStyle = {
   display: 'flex',
   justifyContent: 'space-between',
   marginTop: '1.5rem',
+};
+
+// Improved mobile header
+const headerStyle = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: isMobile ? '1rem 1.5rem' : '1.5rem 4rem',
+  backgroundColor: 'white',
+  zIndex: 100,
+  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+};
+
+const logoStyle = {
+  fontWeight: 'bold', 
+  fontSize: isMobile ? '1.3rem' : '1.5rem',
+  letterSpacing: '-0.5px',
 };
