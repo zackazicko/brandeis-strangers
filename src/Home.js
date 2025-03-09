@@ -223,45 +223,28 @@ export default function Home() {
     setLoading(true);
     
     try {
-      // Form validation
-      if (!selectedLocations.length) {
-        alert('Please select at least one dining location.');
+      // Basic validation
+      if (!name || !email || !selectedLocations.length) {
+        alert('Please fill in all required fields.');
         setLoading(false);
         return;
       }
       
-      // Check if any meal times are selected
-      const hasMealTimes = 
-        (mealTimes.tuesday?.dinner?.length > 0) || 
-        (mealTimes.wednesday?.dinner?.length > 0);
-      
-      if (!hasMealTimes) {
-        alert('Please select at least one meal time.');
-        setLoading(false);
-        return;
-      }
-      
-      // Generate a unique ID
-      const userId = `brandeis_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      
-      // Prepare simplified meal times data
-      const flattenedMealTimes = {
-        tuesday_dinner_600_630: mealTimes.tuesday?.dinner?.includes('6:00-6:30 PM') || false,
-        tuesday_dinner_630_700: mealTimes.tuesday?.dinner?.includes('6:30-7:00 PM') || false,
-        wednesday_dinner_600_630: mealTimes.wednesday?.dinner?.includes('6:00-6:30 PM') || false,
-        wednesday_dinner_630_700: mealTimes.wednesday?.dinner?.includes('6:30-7:00 PM') || false
-      };
-      
-      // Basic data structure that should work with most database schemas
-      const basicUserData = {
+      // Simpler data structure aligned with our new table
+      const userData = {
         name: name,
         email: email.trim(),
         majors: selectedMajors,
-        class_level: classLevel, 
+        class_level: classLevel,
         meal_plan: mealPlan,
         dining_locations: selectedLocations.join(','),
         meal_times_json: JSON.stringify(mealTimes),
-        meal_times_flattened: flattenedMealTimes,
+        meal_times_flattened: JSON.stringify({
+          tuesday_dinner_600_630: mealTimes.tuesday?.dinner?.includes('6:00-6:30 PM') || false,
+          tuesday_dinner_630_700: mealTimes.tuesday?.dinner?.includes('6:30-7:00 PM') || false,
+          wednesday_dinner_600_630: mealTimes.wednesday?.dinner?.includes('6:00-6:30 PM') || false,
+          wednesday_dinner_630_700: mealTimes.wednesday?.dinner?.includes('6:30-7:00 PM') || false
+        }),
         personality_info: JSON.stringify({
           personality_type: personalityType,
           humor_type: humorType,
@@ -269,67 +252,27 @@ export default function Home() {
           planner_type: plannerType,
           hp_house: hpHouse,
           match_preference: matchPreference
-        }),
-        created_at: new Date().toISOString()
+        })
       };
       
-      console.log('Attempting to submit with simplified data structure:', basicUserData);
+      console.log('Submitting to main table:', userData);
       
-      // Try different table names
-      const possibleTableNames = ['main', 'Main', 'profiles', 'users', 'students'];
-      let insertSuccessful = false;
+      // Insert data into the main table
+      const { data, error } = await supabase
+        .from('main')
+        .insert([userData]);
       
-      for (const tableName of possibleTableNames) {
-        console.log(`Trying to insert into table: ${tableName}`);
-        
-        const { data, error } = await supabase
-          .from(tableName)
-          .insert([basicUserData]);
-        
-        if (!error) {
-          console.log(`Successfully inserted into ${tableName}!`, data);
-          insertSuccessful = true;
-          break;
-        } else {
-          console.error(`Failed to insert into ${tableName}:`, error);
-        }
+      if (error) {
+        throw new Error(error.message);
       }
       
-      if (!insertSuccessful) {
-        // As a last resort, try using the REST API directly
-        const response = await fetch(`${supabase.supabaseUrl}/rest/v1/main`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabase.supabaseKey,
-            'Authorization': `Bearer ${supabase.supabaseKey}`
-          },
-          body: JSON.stringify([basicUserData])
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Direct API call failed: ${response.status} ${response.statusText}`);
-        } else {
-          console.log('Direct API call succeeded');
-          insertSuccessful = true;
-        }
-      }
+      // Show success message
+      setSignUpSuccess(true);
+      setCurrentStep(4);
       
-      if (insertSuccessful) {
-        // Show success step
-        setSignUpSuccess(true);
-        setCurrentStep(4);
-      } else {
-        // If all attempts failed, save data locally as a backup
-        const existingData = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
-        existingData.push({...basicUserData, failed_at: new Date().toISOString()});
-        localStorage.setItem('brandeis_strangers_submissions', JSON.stringify(existingData));
-        
-        throw new Error('All database insertion attempts failed');
-      }
     } catch (error) {
-      console.error('Exception during form submission:', error);
-      alert(`Error submitting form: ${error.message}. Your data has been saved locally and will be submitted when the connection issues are resolved.`);
+      console.error('Error submitting form:', error);
+      alert(`Error: ${error.message}. Please try again or contact support.`);
     } finally {
       setLoading(false);
     }

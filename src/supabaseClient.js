@@ -9,39 +9,25 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY ||
                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Log connection details (remove sensitive info in production)
-console.log('Supabase URL:', supabaseUrl);
-console.log('Supabase Key available:', !!supabaseKey);
-
-// Create with more detailed options
-const options = {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-  },
-  global: {
-    headers: { 'x-application-name': 'brandeis-strangers' },
-  },
-};
+console.log('Connecting to Supabase...');
 
 // Create and export a default supabase client
-const supabase = createClient(supabaseUrl, supabaseKey || 'public-anon-key', options);
+const supabase = createClient(supabaseUrl, supabaseKey || 'public-anon-key');
 
-// Test the connection
-async function testConnection() {
+// Simple test
+(async () => {
   try {
-    // Try to get table list to test connection
-    const { data, error } = await supabase.from('_tables').select('*').limit(1);
+    // Check if we can at least connect
+    const { data, error } = await supabase.auth.getSession();
     
     if (error) {
-      console.error('Supabase connection test failed:', error);
+      console.error('Supabase connection error:', error);
     } else {
-      console.log('Supabase connection successful!', data);
+      console.log('Supabase connection established successfully!');
     }
   } catch (err) {
-    console.error('Error testing Supabase connection:', err);
+    console.error('Error connecting to Supabase:', err);
   }
-}
-
-testConnection();
+})();
 
 export default supabase;
