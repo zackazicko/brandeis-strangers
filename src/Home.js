@@ -6,7 +6,7 @@ export default function Home() {
   // TYPED TEXT EFFECT (HERO)
   // ---------------------------
   const [typedText, setTypedText] = useState('');
-  const fullText = 'strangers.';
+  const fullText = 'strangers';
   useEffect(() => {
     let index = 0;
     const timer = setTimeout(function type() {
@@ -15,7 +15,7 @@ export default function Home() {
         index++;
         setTimeout(type, 200);
       }
-    }, 3000); // 3s delay before starting
+    }, 250); // .25s delay before starting
     return () => clearTimeout(timer);
   }, []);
 
@@ -131,6 +131,20 @@ export default function Home() {
     major.toLowerCase().includes(majorSearch.toLowerCase())
   );
 
+  // Add this useEffect to handle click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (showMajorDropdown && !event.target.closest('.major-search-container')) {
+        setShowMajorDropdown(false);
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMajorDropdown]);
+
   // ---------------------------
   // HELPER: Toggle bubble selection
   // ---------------------------
@@ -172,8 +186,26 @@ export default function Home() {
 
   // Add a function to go to personality questions step
   function goToPersonalityStep() {
-    setPersonalityStep(true);
+    if (!classLevel || selectedMajors.length === 0 || selectedInterests.length === 0) {
+      alert('Please complete all fields before proceeding.');
+      return;
+    }
     setCurrentStep(3);
+    setPersonalityStep(true);
+  }
+
+  function goToMealPreferencesStep() {
+    if (!personalityType || !humorType || !conversationType || !plannerType || !hpHouse || !matchPreference) {
+      alert('Please answer all personality questions before proceeding.');
+      return;
+    }
+    setCurrentStep(4);
+    setPersonalityStep(false);
+  }
+
+  function goBackToPersonalityStep() {
+    setCurrentStep(3);
+    setPersonalityStep(true);
   }
 
   // ---------------------------
@@ -238,6 +270,40 @@ export default function Home() {
   const timeSlotSelectedStyle = {
     backgroundColor: '#003865',
     color: 'white'
+  };
+
+  // Add this to your component
+  const isMobile = window.innerWidth <= 768;
+
+  // Update the modal container style
+  const modalContainerStyle = {
+    backgroundColor: '#fff',
+    borderRadius: '1rem',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+    width: isMobile ? '95%' : '500px',
+    maxWidth: '95vw',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    padding: isMobile ? '1.2rem' : '2rem',
+    position: 'relative',
+  };
+
+  // Update input style for mobile
+  const inputStyle = {
+    width: '100%',
+    padding: isMobile ? '0.6rem' : '0.7rem',
+    fontSize: isMobile ? '0.9rem' : '1rem',
+    border: '1px solid #cccccc',
+    borderRadius: 4,
+    fontFamily: '"Courier New", Courier, monospace',
+  };
+
+  // Make bubble container wrap better on mobile
+  const bubbleContainerStyle = {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '0.5rem',
+    justifyContent: isMobile ? 'center' : 'flex-start',
   };
 
   // ---------------------------
@@ -542,19 +608,7 @@ export default function Home() {
         >
           <div
             className="modal"
-            style={{
-              background: '#fff',
-              borderRadius: 20,
-              padding: '3rem',
-              maxWidth: 600,
-              maxHeight: '90%',
-              overflowY: 'auto',
-              width: '90%',
-              boxShadow: '0 0 20px rgba(0,56,101,0.1)',
-              textTransform: 'lowercase',
-              animation: 'fadeIn 0.8s forwards',
-              position: 'relative',
-            }}
+            style={modalContainerStyle}
           >
             <button
               className="close-button"
@@ -631,7 +685,7 @@ export default function Home() {
               <div>
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>choose your major(s):</label>
-                  <div style={{ position: 'relative' }}>
+                  <div className="major-search-container" style={{ position: 'relative' }}>
                     <input
                       type="text"
                       style={{
@@ -663,27 +717,29 @@ export default function Home() {
                           background: 'white'
                         }}
                       >
-                        {filteredMajors.map(major => (
-                          <div
-                            key={major}
-                            style={{
-                              padding: '0.5rem',
-                              cursor: 'pointer',
-                              background: selectedMajors.includes(major) ? '#e6f7ff' : 'white',
-                              borderBottom: '1px solid #eee'
-                            }}
-                            onClick={() => {
-                              toggleSelection(selectedMajors, setSelectedMajors, major);
-                              setMajorSearch('');
-                            }}
-                          >
-                            {major}
-                          </div>
-                        ))}
-                        {filteredMajors.length === 0 && (
-                          <div style={{ padding: '0.5rem', color: '#999' }}>
+                        {filteredMajors.length === 0 ? (
+                          <div style={{ padding: '0.5rem', color: '#999', textAlign: 'center' }}>
                             No matching majors found
                           </div>
+                        ) : (
+                          filteredMajors.map(major => (
+                            <div
+                              key={major}
+                              style={{
+                                padding: '0.5rem',
+                                cursor: 'pointer',
+                                background: selectedMajors.includes(major) ? '#e6f7ff' : 'white',
+                                borderBottom: '1px solid #eee'
+                              }}
+                              onClick={() => {
+                                toggleSelection(selectedMajors, setSelectedMajors, major);
+                                setMajorSearch('');
+                                setShowMajorDropdown(false);
+                              }}
+                            >
+                              {major}
+                            </div>
+                          ))
                         )}
                       </div>
                     )}
@@ -788,9 +844,13 @@ export default function Home() {
               </div>
             )}
 
-            {/* STEP 3 */}
+            {/* STEP 3: PERSONALITY QUESTIONS */}
             {currentStep === 3 && personalityStep && (
-              <div>
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
+                  personality questions
+                </h3>
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>are you an introvert or an extrovert?</label>
                   <div style={bubbleContainerStyle}>
@@ -866,7 +926,7 @@ export default function Home() {
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>which harry potter house are you in?</label>
                   <div style={bubbleContainerStyle}>
-                    {['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin', 'haven\'t watched'].map((house) => (
+                    {['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin', "haven't watched"].map((house) => (
                       <div
                         key={house}
                         style={{
@@ -899,6 +959,24 @@ export default function Home() {
                   </div>
                 </div>
 
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToStep2} style={btnStyle}>
+                    back
+                  </button>
+                  <button onClick={goToMealPreferencesStep} style={btnStyle}>
+                    next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: MEAL PREFERENCES */}
+            {currentStep === 4 && !personalityStep && !signUpSuccess && (
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
+                  meal preferences
+                </h3>
+
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>do you have a meal plan?</label>
                   <div style={bubbleContainerStyle}>
@@ -922,6 +1000,7 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+                
                 {mealPlan && (
                   <div style={{ marginBottom: '1.2rem' }}>
                     <label style={labelStyle}>
@@ -949,6 +1028,7 @@ export default function Home() {
                     </div>
                   </div>
                 )}
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>preferred dining locations:</label>
                   <div style={bubbleContainerStyle}>
@@ -977,6 +1057,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>select meal times</label>
                   <p style={{ fontSize: '0.85rem', marginTop: '-0.5rem' }}>
@@ -1014,9 +1095,8 @@ export default function Home() {
                                 key={timeKey}
                                 style={{
                                   ...bubbleStyle,
-                                  ...(isSelected ? timeSlotSelectedStyle : {}),
                                   backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-                                  color: isSelected ? 'black' : 'black',
+                                  color: isSelected ? 'white' : '#333', // Fixed text color
                                   fontSize: '0.85rem',
                                   padding: '0.4rem 0.8rem',
                                 }}
@@ -1053,8 +1133,9 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
+                
                 <div style={buttonsRowStyle}>
-                  <button onClick={goBackToStep2} style={btnStyle}>
+                  <button onClick={goBackToPersonalityStep} style={btnStyle}>
                     back
                   </button>
                   <button
@@ -1068,9 +1149,9 @@ export default function Home() {
               </div>
             )}
 
-            {/* STEP 4: SUCCESS */}
+            {/* STEP 5: SUCCESS */}
             {currentStep === 4 && signUpSuccess && (
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: 'center', animation: 'fadeIn 0.8s forwards' }}>
                 <h2 style={{ fontSize: '1.5rem' }}>success!</h2>
                 <p style={{ marginTop: '1rem' }}>
                   thank you for signing up. keep an eye on your brandeis email
@@ -1122,14 +1203,6 @@ const labelStyle = {
   fontWeight: 'bold',
   color: '#003865',
 };
-const inputStyle = {
-  width: '100%',
-  padding: '0.7rem',
-  fontSize: '1rem',
-  border: '1px solid #cccccc',
-  borderRadius: 4,
-  fontFamily: '"Courier New", Courier, monospace',
-};
 const btnStyle = {
   padding: '0.7rem 2rem',
   backgroundColor: '#003865',
@@ -1158,11 +1231,6 @@ const bubbleStyle = {
 const bubbleSelectedStyle = {
   backgroundColor: '#003865',
   color: '#fff',
-};
-const bubbleContainerStyle = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.5rem',
 };
 const buttonsRowStyle = {
   display: 'flex',
