@@ -26,6 +26,7 @@ const Admin = () => {
           alert('Error fetching data: ' + error.message);
         } else {
           setProfiles(data);
+          console.log('Sample profile data:', data?.[0] || 'No profiles found');
         }
         setLoading(false);
       };
@@ -35,26 +36,37 @@ const Admin = () => {
 
   // Render meal times in a more readable format
   const renderMealTimes = (mealTimes) => {
-    if (!mealTimes) return null;
-    return Object.entries(mealTimes).map(([day, meals]) => {
-      // Filter only the meals that have times
-      const validMeals = Object.entries(meals)
-        .filter(([, times]) => Array.isArray(times) && times.length > 0)
-        .map(([meal, times]) => (
-          <div key={meal} className="meal">
-            <span className="meal-label">{meal}:</span> {times.join(', ')}
-          </div>
-        ));
-      if (validMeals.length > 0) {
-        return (
-          <div key={day} className="meal-day">
-            <div className="day-label">{day}:</div>
-            <div className="meals-container">{validMeals}</div>
-          </div>
-        );
-      }
-      return null;
-    });
+    if (!mealTimes) return <span>No meal times specified</span>;
+    
+    try {
+      return Object.entries(mealTimes).map(([day, meals]) => {
+        if (!meals || typeof meals !== 'object') {
+          return <div key={day}>{day}: Invalid data format</div>;
+        }
+        
+        // Filter only the meals that have times
+        const validMeals = Object.entries(meals)
+          .filter(([, times]) => Array.isArray(times) && times.length > 0)
+          .map(([meal, times]) => (
+            <div key={meal} className="meal">
+              <span className="meal-label">{meal}:</span> {times.join(', ')}
+            </div>
+          ));
+            
+        if (validMeals.length > 0) {
+          return (
+            <div key={day} className="meal-day">
+              <div className="day-label">{day}:</div>
+              <div className="meals-container">{validMeals}</div>
+            </div>
+          );
+        }
+        return null;
+      }).filter(Boolean); // Remove null entries
+    } catch (err) {
+      console.error('Error rendering meal times:', err, mealTimes);
+      return <span>Error displaying meal times</span>;
+    }
   };
 
   if (!authorized) {
@@ -111,15 +123,15 @@ const Admin = () => {
                   <td>{profile.name}</td>
                   <td>{profile.email}</td>
                   <td>
-                    {Array.isArray(profile.majors)
+                    {Array.isArray(profile.majors) && profile.majors.length > 0
                       ? profile.majors.join(', ')
-                      : ''}
+                      : 'None selected'}
                   </td>
-                  <td>{profile.class_level}</td>
+                  <td>{profile.class_level || 'Not specified'}</td>
                   <td>
-                    {Array.isArray(profile.interests)
+                    {Array.isArray(profile.interests) && profile.interests.length > 0
                       ? profile.interests.join(', ')
-                      : ''}
+                      : 'None selected'}
                   </td>
                   <td>{profile.meal_plan ? 'Yes' : 'No'}</td>
                   <td>{profile.guest_swipe ? 'Yes' : 'No'}</td>

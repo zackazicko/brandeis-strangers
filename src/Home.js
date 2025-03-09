@@ -185,6 +185,21 @@ export default function Home() {
   }
   
   function goToMealPreferencesStep() {
+    // Check if personality questions are answered
+    const missingFields = [];
+    
+    if (!personalityType) missingFields.push('introvert/extrovert');
+    if (!humorType) missingFields.push('humor type');
+    if (!conversationType) missingFields.push('conversation style');
+    if (!plannerType) missingFields.push('planner/procrastinator');
+    if (!hpHouse) missingFields.push('Harry Potter house');
+    if (!matchPreference) missingFields.push('meet someone similar/different');
+    
+    if (missingFields.length > 0) {
+      alert(`Please answer all personality questions. Missing: ${missingFields.join(', ')}`);
+      return;
+    }
+    
     setCurrentStep(4);
     setPersonalityStep(false);
   }
@@ -208,36 +223,57 @@ export default function Home() {
     setLoading(true);
     
     try {
+      // Form validation
+      if (!selectedLocations.length) {
+        alert('Please select at least one dining location.');
+        setLoading(false);
+        return;
+      }
+      
+      // Check if any meal times are selected
+      const hasMealTimes = 
+        (mealTimes.tuesday?.dinner?.length > 0) || 
+        (mealTimes.wednesday?.dinner?.length > 0);
+      
+      if (!hasMealTimes) {
+        alert('Please select at least one meal time.');
+        setLoading(false);
+        return;
+      }
+      
       // Generate a unique ID for the user
       const userId = `brandeis_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
       
-      // Simplify meal times to only include Tuesday and Wednesday dinners
+      // Ensure meal times structure is correct
       const simplifiedMealTimes = {
-        tuesday: { dinner: mealTimes.tuesday?.dinner || [] },
-        wednesday: { dinner: mealTimes.wednesday?.dinner || [] }
+        tuesday: { dinner: Array.isArray(mealTimes.tuesday?.dinner) ? mealTimes.tuesday.dinner : [] },
+        wednesday: { dinner: Array.isArray(mealTimes.wednesday?.dinner) ? mealTimes.wednesday.dinner : [] }
       };
       
-      // Insert into "Main" table without auth
-      const { error: insertError } = await supabase.from('Main').insert([
-        {
-          temp_id: userId,
-          name: name, // Using the state variable directly
-          email: email.trim(),
-          majors: selectedMajors,
-          class_level: classLevel,
-          interests: selectedInterests,
-          meal_plan: mealPlan,
-          guest_swipe: guestSwipe,
-          preferred_dining_locations: selectedLocations,
-          meal_times: simplifiedMealTimes,
-          personality_type: personalityType,
-          humor_type: humorType,
-          conversation_type: conversationType,
-          planner_type: plannerType,
-          hp_house: hpHouse,
-          match_preference: matchPreference
-        }
-      ]);
+      // Prepare the data object
+      const userData = {
+        temp_id: userId,
+        name: name,
+        email: email.trim(),
+        majors: selectedMajors,
+        class_level: classLevel,
+        interests: selectedInterests,
+        meal_plan: mealPlan,
+        guest_swipe: guestSwipe,
+        preferred_dining_locations: selectedLocations,
+        meal_times: simplifiedMealTimes,
+        personality_type: personalityType || null,
+        humor_type: humorType || null,
+        conversation_type: conversationType || null,
+        planner_type: plannerType || null,
+        hp_house: hpHouse || null,
+        match_preference: matchPreference || null
+      };
+      
+      console.log('About to submit data:', userData);
+      
+      // Insert into "Main" table
+      const { error: insertError } = await supabase.from('Main').insert([userData]);
       
       if (insertError) {
         console.error('Error submitting form:', insertError);
@@ -245,7 +281,7 @@ export default function Home() {
         setLoading(false);
         return;
       }
-  
+
       // Show success step
       setSignUpSuccess(true);
       setCurrentStep(4);
@@ -1133,7 +1169,11 @@ export default function Home() {
                   </button>
                   <button
                     onClick={handleSubmit}
-                    style={btnStyle}
+                    style={{
+                      ...btnStyle,
+                      width: isMobile ? '100%' : 'auto',
+                      marginTop: isMobile ? '1rem' : '0',
+                    }}
                     disabled={loading}
                   >
                     {loading ? 'submitting...' : 'sign up'}
