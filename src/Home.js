@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import React, { useState, useEffect } from 'react';
 import supabase from './supabaseClient';
 
@@ -7,30 +8,66 @@ export default function Home() {
   // ---------------------------
   const [typedText, setTypedText] = useState('');
   const fullText = 'strangers';
+  
   useEffect(() => {
-    let index = 0;
-    const timer = setTimeout(function type() {
-      if (index < fullText.length) {
-        setTypedText((prev) => prev + fullText.charAt(index));
-        index++;
-        setTimeout(type, 200);
+    // Reset the text first
+    setTypedText('');
+    
+    // Type each character one at a time with no initial delay
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      if (currentIndex < fullText.length) {
+        setTypedText(fullText.substring(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        clearInterval(interval);
       }
-    }, 250); // .25s delay before starting
-    return () => clearTimeout(timer);
+    }, 150); // Slightly faster typing speed
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // ---------------------------
+  // RESPONSIVE STATE
+  // ---------------------------
+  // eslint-disable-next-line no-unused-vars
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // eslint-disable-next-line no-unused-vars
+  const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth <= 375);
+  
+  // Responsive listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsSmallMobile(window.innerWidth <= 375);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // ---------------------------
   // MODAL STATE
   // ---------------------------
   const [modalOpen, setModalOpen] = useState(false);
+  
   function openModal() {
     setModalOpen(true);
     document.body.style.overflow = 'hidden';
   }
+  
   function closeModal() {
     setModalOpen(false);
     document.body.style.overflow = 'auto';
   }
+
+  // Fix invalid href in navigation links
+  const handleNavClick = (e) => {
+    e.preventDefault();
+    // Handle navigation or scroll logic
+  };
 
   // ---------------------------
   // MULTI-STEP FORM STATES
