@@ -485,10 +485,10 @@ export default function Home() {
 
       {/* Sticky Header */}
       <header
-        style={headerStyle}
+        style={createHeaderStyle(isMobile)}
       >
         <div
-          style={logoStyle}
+          style={createLogoStyle(isMobile)}
         >
           strangers.
         </div>
@@ -1303,6 +1303,10 @@ export default function Home() {
         // Try to resubmit when the component mounts
         attemptToResubmitFailedEntries();
       }, [])}
+
+      {/* Add this INSIDE your component: */}
+      {const headerStyle = createHeaderStyle(isMobile);
+      const logoStyle = createLogoStyle(isMobile);}
     </div>
   );
 }
@@ -1366,7 +1370,7 @@ const buttonsRowStyle = {
 };
 
 // Improved mobile header
-const headerStyle = {
+const createHeaderStyle = (isMobile = false) => ({
   position: 'fixed',
   top: 0,
   left: 0,
@@ -1378,10 +1382,17 @@ const headerStyle = {
   backgroundColor: 'white',
   zIndex: 100,
   boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-};
+});
 
-const logoStyle = {
+const createLogoStyle = (isMobile = false) => ({
   fontWeight: 'bold', 
   fontSize: isMobile ? '1.3rem' : '1.5rem',
   letterSpacing: '-0.5px',
-};
+});
+
+// Add this INSIDE your component, after the useState declarations:
+const btnStyle = createBtnStyle(isMobile);
+const bubbleStyle = createBubbleStyle(isMobile);
+const buttonsRowStyle = createButtonsRowStyle(isMobile);
+const headerStyle = createHeaderStyle(isMobile);
+const logoStyle = createLogoStyle(isMobile);

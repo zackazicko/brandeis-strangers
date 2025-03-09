@@ -18,6 +18,7 @@ const supabase = createClient(supabaseUrl, supabaseKey || 'public-anon-key');
 (async () => {
   try {
     // Check if we can at least connect
+    // eslint-disable-next-line no-unused-vars
     const { data, error } = await supabase.auth.getSession();
     
     if (error) {

@@ -7,6 +7,7 @@ const Admin = () => {
   const [authorized, setAuthorized] = useState(false);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
@@ -21,7 +22,7 @@ const Admin = () => {
     if (authorized) {
       setLoading(true);
       const fetchData = async () => {
-        const { data, error } = await supabase.from('Main').select('*');
+        const { data, error } = await supabase.from('main').select('*');
         if (error) {
           alert('Error fetching data: ' + error.message);
         } else {
@@ -69,6 +70,14 @@ const Admin = () => {
     }
   };
 
+  // Add responsive styles
+  const tableWrapperStyle = {
+    overflowX: isMobile ? 'auto' : 'visible',
+    WebkitOverflowScrolling: 'touch',
+    maxWidth: '100%',
+    padding: isMobile ? '0.5rem' : '1rem',
+  };
+
   if (!authorized) {
     return (
       <div className="admin-container">
@@ -95,7 +104,7 @@ const Admin = () => {
       {loading ? (
         <p>Loading data...</p>
       ) : (
-        <div className="table-wrapper">
+        <div style={tableWrapperStyle}>
           <table className="profiles-table">
             <thead>
               <tr>
