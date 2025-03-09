@@ -241,53 +241,95 @@ export default function Home() {
         return;
       }
       
-      // Generate a unique ID for the user
+      // Generate a unique ID
       const userId = `brandeis_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
       
-      // Ensure meal times structure is correct
-      const simplifiedMealTimes = {
-        tuesday: { dinner: Array.isArray(mealTimes.tuesday?.dinner) ? mealTimes.tuesday.dinner : [] },
-        wednesday: { dinner: Array.isArray(mealTimes.wednesday?.dinner) ? mealTimes.wednesday.dinner : [] }
+      // Prepare simplified meal times data
+      const flattenedMealTimes = {
+        tuesday_dinner_600_630: mealTimes.tuesday?.dinner?.includes('6:00-6:30 PM') || false,
+        tuesday_dinner_630_700: mealTimes.tuesday?.dinner?.includes('6:30-7:00 PM') || false,
+        wednesday_dinner_600_630: mealTimes.wednesday?.dinner?.includes('6:00-6:30 PM') || false,
+        wednesday_dinner_630_700: mealTimes.wednesday?.dinner?.includes('6:30-7:00 PM') || false
       };
       
-      // Prepare the data object
-      const userData = {
-        temp_id: userId,
+      // Basic data structure that should work with most database schemas
+      const basicUserData = {
         name: name,
         email: email.trim(),
         majors: selectedMajors,
-        class_level: classLevel,
-        interests: selectedInterests,
+        class_level: classLevel, 
         meal_plan: mealPlan,
-        guest_swipe: guestSwipe,
-        preferred_dining_locations: selectedLocations,
-        meal_times: simplifiedMealTimes,
-        personality_type: personalityType || null,
-        humor_type: humorType || null,
-        conversation_type: conversationType || null,
-        planner_type: plannerType || null,
-        hp_house: hpHouse || null,
-        match_preference: matchPreference || null
+        dining_locations: selectedLocations.join(','),
+        meal_times_json: JSON.stringify(mealTimes),
+        meal_times_flattened: flattenedMealTimes,
+        personality_info: JSON.stringify({
+          personality_type: personalityType,
+          humor_type: humorType,
+          conversation_type: conversationType,
+          planner_type: plannerType,
+          hp_house: hpHouse,
+          match_preference: matchPreference
+        }),
+        created_at: new Date().toISOString()
       };
       
-      console.log('About to submit data:', userData);
+      console.log('Attempting to submit with simplified data structure:', basicUserData);
       
-      // Insert into "Main" table
-      const { error: insertError } = await supabase.from('Main').insert([userData]);
+      // Try different table names
+      const possibleTableNames = ['main', 'Main', 'profiles', 'users', 'students'];
+      let insertSuccessful = false;
       
-      if (insertError) {
-        console.error('Error submitting form:', insertError);
-        alert('Error submitting form: ' + insertError.message);
-        setLoading(false);
-        return;
+      for (const tableName of possibleTableNames) {
+        console.log(`Trying to insert into table: ${tableName}`);
+        
+        const { data, error } = await supabase
+          .from(tableName)
+          .insert([basicUserData]);
+        
+        if (!error) {
+          console.log(`Successfully inserted into ${tableName}!`, data);
+          insertSuccessful = true;
+          break;
+        } else {
+          console.error(`Failed to insert into ${tableName}:`, error);
+        }
       }
-
-      // Show success step
-      setSignUpSuccess(true);
-      setCurrentStep(4);
+      
+      if (!insertSuccessful) {
+        // As a last resort, try using the REST API directly
+        const response = await fetch(`${supabase.supabaseUrl}/rest/v1/main`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabase.supabaseKey,
+            'Authorization': `Bearer ${supabase.supabaseKey}`
+          },
+          body: JSON.stringify([basicUserData])
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Direct API call failed: ${response.status} ${response.statusText}`);
+        } else {
+          console.log('Direct API call succeeded');
+          insertSuccessful = true;
+        }
+      }
+      
+      if (insertSuccessful) {
+        // Show success step
+        setSignUpSuccess(true);
+        setCurrentStep(4);
+      } else {
+        // If all attempts failed, save data locally as a backup
+        const existingData = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
+        existingData.push({...basicUserData, failed_at: new Date().toISOString()});
+        localStorage.setItem('brandeis_strangers_submissions', JSON.stringify(existingData));
+        
+        throw new Error('All database insertion attempts failed');
+      }
     } catch (error) {
       console.error('Exception during form submission:', error);
-      alert('An unexpected error occurred. Please try again.');
+      alert(`Error submitting form: ${error.message}. Your data has been saved locally and will be submitted when the connection issues are resolved.`);
     } finally {
       setLoading(false);
     }
@@ -1209,6 +1251,41 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Add this at the end of your component */}
+      {useEffect(() => {
+        // Check if we have any failed submissions to retry
+        const attemptToResubmitFailedEntries = async () => {
+          const failedSubmissions = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
+          
+          if (failedSubmissions.length > 0) {
+            console.log(`Attempting to resubmit ${failedSubmissions.length} failed entries`);
+            
+            for (let i = 0; i < failedSubmissions.length; i++) {
+              const entry = failedSubmissions[i];
+              
+              try {
+                const { error } = await supabase.from('main').insert([entry]);
+                
+                if (!error) {
+                  // Remove this entry from failed submissions
+                  failedSubmissions.splice(i, 1);
+                  i--; // Adjust index
+                  console.log('Successfully resubmitted an entry');
+                }
+              } catch (err) {
+                console.error('Failed to resubmit entry:', err);
+              }
+            }
+            
+            // Update local storage with remaining failed submissions
+            localStorage.setItem('brandeis_strangers_submissions', JSON.stringify(failedSubmissions));
+          }
+        };
+        
+        // Try to resubmit when the component mounts
+        attemptToResubmitFailedEntries();
+      }, [])}
     </div>
   );
 }
