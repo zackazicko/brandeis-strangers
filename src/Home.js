@@ -102,8 +102,8 @@ const createHeroSectionStyle = (isMobile = false) => ({
   textAlign: 'center',
   backgroundColor: '#e6f2ff', // Light blue background
   background: 'linear-gradient(180deg, #e6f2ff 0%, #f5f9ff 100%)', 
-  paddingTop: isMobile ? '70px' : '0',
-  marginTop: isMobile ? '0px' : '0',
+  paddingTop: isMobile ? '20px' : '0',
+  marginTop: isMobile ? '0' : '0',
   position: 'relative',
   overflow: 'hidden' // For cloud overlay
 });
@@ -130,15 +130,21 @@ const heroContentStyle = {
   zIndex: 1, // Ensure content appears above the cloud background
   width: '100%',
   maxWidth: '800px',
-  padding: '0 1rem'
+  padding: '0 1rem',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center', // Center align all content
+  textAlign: 'center'
 };
 
 // Create better title styles for hero section
 const createHeroTitleStyle = (isMobile = false) => ({
   fontSize: isMobile ? '3rem' : '5rem',
-  marginTop: isMobile ? '3rem' : '0',
+  marginTop: isMobile ? '1.5rem' : '0', // Reduced from 3rem to 1.5rem
   color: '#003865',
-  marginBottom: '0.5rem'
+  marginBottom: '0.5rem',
+  width: '100%', // Ensure full width for better centering
+  textAlign: 'center'
 });
 
 // Create subtitle style for hero section
@@ -146,7 +152,9 @@ const createHeroSubtitleStyle = (isMobile = false) => ({
   fontWeight: 'normal',
   fontSize: isMobile ? '1.4rem' : '2.5rem',
   marginBottom: '1.5rem',
-  color: '#003865'
+  color: '#003865',
+  width: '100%', // Ensure full width for consistent centering
+  textAlign: 'center'
 });
 
 // Create paragraph style for hero section
@@ -155,7 +163,9 @@ const createHeroTextStyle = (isMobile = false) => ({
   marginBottom: '2rem',
   lineHeight: 1.6,
   fontSize: isMobile ? '0.95rem' : '1.1rem',
-  padding: isMobile ? '0 1rem' : '0'
+  padding: isMobile ? '0' : '0',
+  textAlign: 'center',
+  width: '100%' // Ensure text spans full width of container
 });
 
 export default function Home() {
