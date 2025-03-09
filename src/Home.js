@@ -2,6 +2,94 @@
 import React, { useState, useEffect } from 'react';
 import supabase from './supabaseClient';
 
+// Move these style creator functions to the top, outside component
+const createBtnStyle = (isMobile = false) => ({
+  padding: isMobile ? '0.6rem 1.5rem' : '0.7rem 2rem',
+  backgroundColor: '#003865',
+  border: 'none',
+  color: '#fff',
+  borderRadius: 30,
+  cursor: 'pointer',
+  fontSize: isMobile ? '0.9rem' : '1rem',
+  transition: 'background-color 0.3s ease',
+  fontFamily: '"Courier New", Courier, monospace',
+  textTransform: 'lowercase',
+  marginLeft: isMobile ? '0' : '0.5rem',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
+});
+
+const createBubbleStyle = (isMobile = false) => ({
+  cursor: 'pointer',
+  padding: isMobile ? '0.4rem 0.8rem' : '0.5rem 1rem',
+  borderRadius: 20,
+  backgroundColor: '#fff',
+  border: '2px solid #003865',
+  color: '#003865',
+  transition: 'all 0.3s ease',
+  userSelect: 'none',
+  fontSize: isMobile ? '0.8rem' : '0.9rem',
+  marginBottom: '0.5rem',
+  whiteSpace: 'nowrap'
+});
+
+const createButtonsRowStyle = (isMobile = false) => ({
+  display: 'flex',
+  flexDirection: isMobile ? 'column' : 'row',
+  justifyContent: isMobile ? 'center' : 'space-between',
+  alignItems: isMobile ? 'stretch' : 'center',
+  marginTop: '1.5rem',
+  gap: isMobile ? '0.75rem' : '0'
+});
+
+const createHeaderStyle = (isMobile = false) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  padding: isMobile ? '1rem 1.5rem' : '1.5rem 4rem',
+  backgroundColor: 'white',
+  zIndex: 100,
+  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+});
+
+const createLogoStyle = (isMobile = false) => ({
+  fontWeight: 'bold', 
+  fontSize: isMobile ? '1.3rem' : '1.5rem',
+  letterSpacing: '-0.5px',
+});
+
+// These non-responsive styles don't need to be functions
+const navLinkStyle = {
+  textDecoration: 'none',
+  color: '#003865',
+  fontSize: '1rem',
+  transition: 'color 0.3s',
+};
+
+const featureCardStyle = {
+  background: '#fff',
+  borderRadius: '1rem',
+  padding: '2rem',
+  boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+  textAlign: 'center',
+  transition: 'transform 0.3s',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: '0.5rem',
+  fontWeight: 'bold',
+  color: '#003865',
+};
+
+const bubbleSelectedStyle = {
+  backgroundColor: '#003865',
+  color: '#fff',
+};
+
 export default function Home() {
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
@@ -28,11 +116,9 @@ export default function Home() {
   }, []);
 
   // ---------------------------
-  // RESPONSIVE STATE
+  // RESPONSIVE STATE - KEEP ONLY ONE DECLARATION!
   // ---------------------------
-  // eslint-disable-next-line no-unused-vars
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  // eslint-disable-next-line no-unused-vars
   const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth <= 375);
   
   // Responsive listener
@@ -45,6 +131,55 @@ export default function Home() {
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  
+  // ---------------------------
+  // CREATE RESPONSIVE STYLES - Do this right after isMobile declaration
+  // ---------------------------
+  // Create responsive styles based on isMobile state
+  const btnStyle = createBtnStyle(isMobile);
+  const bubbleStyle = createBubbleStyle(isMobile);
+  const buttonsRowStyle = createButtonsRowStyle(isMobile);
+  const headerStyle = createHeaderStyle(isMobile);
+  const logoStyle = createLogoStyle(isMobile);
+  
+  // Add touch-friendly animations
+  useEffect(() => {
+    // Inject these styles for smooth mobile animations
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @media (max-width: 768px) {
+        /* Overscroll behavior to prevent page bouncing on iOS */
+        body {
+          overscroll-behavior-y: none;
+        }
+        
+        /* Make form elements larger on mobile */
+        input, select, button {
+          font-size: 16px !important; /* Prevents iOS zoom on focus */
+        }
+        
+        /* Add momentum scrolling for modal on mobile */
+        .modal-content {
+          -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Improve button press effect */
+        button:active {
+          transform: scale(0.98);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
     };
   }, []);
 
@@ -335,10 +470,6 @@ export default function Home() {
     };
   }, []);
 
-  // Add mobile state variables
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth <= 375);
-
   // Modal container style
   const modalContainerStyle = {
     backgroundColor: '#fff',
@@ -371,45 +502,6 @@ export default function Home() {
     gap: '0.5rem',
     justifyContent: isMobile ? 'center' : 'flex-start',
   };
-
-  // Add touch-friendly animations
-  useEffect(() => {
-    // Inject these styles for smooth mobile animations
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      
-      @media (max-width: 768px) {
-        /* Overscroll behavior to prevent page bouncing on iOS */
-        body {
-          overscroll-behavior-y: none;
-        }
-        
-        /* Make form elements larger on mobile */
-        input, select, button {
-          font-size: 16px !important; /* Prevents iOS zoom on focus */
-        }
-        
-        /* Add momentum scrolling for modal on mobile */
-        .modal-content {
-          -webkit-overflow-scrolling: touch;
-        }
-        
-        /* Improve button press effect */
-        button:active {
-          transform: scale(0.98);
-        }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
 
   // ---------------------------
   // RENDER
@@ -484,12 +576,8 @@ export default function Home() {
       </style>
 
       {/* Sticky Header */}
-      <header
-        style={createHeaderStyle(isMobile)}
-      >
-        <div
-          style={createLogoStyle(isMobile)}
-        >
+      <header style={headerStyle}>
+        <div style={logoStyle}>
           strangers.
         </div>
         <nav
@@ -1303,96 +1391,6 @@ export default function Home() {
         // Try to resubmit when the component mounts
         attemptToResubmitFailedEntries();
       }, [])}
-
-      {/* Add this INSIDE your component: */}
-      {const headerStyle = createHeaderStyle(isMobile);
-      const logoStyle = createLogoStyle(isMobile);}
     </div>
   );
 }
-
-// ---------------------------
-// STYLES
-// ---------------------------
-const navLinkStyle = {
-  textDecoration: 'none',
-  color: '#003865',
-  fontSize: '1rem',
-  transition: 'color 0.3s',
-};
-const featureCardStyle = {
-  background: '#fff',
-  borderRadius: '1rem',
-  padding: '2rem',
-  boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-  textAlign: 'center',
-  transition: 'transform 0.3s',
-};
-const labelStyle = {
-  display: 'block',
-  marginBottom: '0.5rem',
-  fontWeight: 'bold',
-  color: '#003865',
-};
-const btnStyle = {
-  padding: '0.7rem 2rem',
-  backgroundColor: '#003865',
-  border: 'none',
-  color: '#fff',
-  borderRadius: 30,
-  cursor: 'pointer',
-  fontSize: '1rem',
-  transition: 'background-color 0.3s ease',
-  fontFamily: '"Courier New", Courier, monospace',
-  textTransform: 'lowercase',
-  marginLeft: '0.5rem',
-};
-const bubbleStyle = {
-  cursor: 'pointer',
-  padding: '0.5rem 1rem',
-  borderRadius: 20,
-  backgroundColor: '#fff',
-  border: '2px solid #003865',
-  color: '#003865',
-  transition: 'all 0.3s ease',
-  userSelect: 'none',
-  fontSize: '0.9rem',
-  marginBottom: '0.5rem',
-};
-const bubbleSelectedStyle = {
-  backgroundColor: '#003865',
-  color: '#fff',
-};
-const buttonsRowStyle = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  marginTop: '1.5rem',
-};
-
-// Improved mobile header
-const createHeaderStyle = (isMobile = false) => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  padding: isMobile ? '1rem 1.5rem' : '1.5rem 4rem',
-  backgroundColor: 'white',
-  zIndex: 100,
-  boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-});
-
-const createLogoStyle = (isMobile = false) => ({
-  fontWeight: 'bold', 
-  fontSize: isMobile ? '1.3rem' : '1.5rem',
-  letterSpacing: '-0.5px',
-});
-
-// Add this INSIDE your component, after the useState declarations:
-const btnStyle = createBtnStyle(isMobile);
-const bubbleStyle = createBubbleStyle(isMobile);
-const buttonsRowStyle = createButtonsRowStyle(isMobile);
-const headerStyle = createHeaderStyle(isMobile);
-const logoStyle = createLogoStyle(isMobile);
