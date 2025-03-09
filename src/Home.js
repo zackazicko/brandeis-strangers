@@ -100,10 +100,38 @@ const createHeroSectionStyle = (isMobile = false) => ({
   justifyContent: 'center',
   alignItems: 'center',
   textAlign: 'center',
-  backgroundImage: 'linear-gradient(to bottom, #f0f8ff, #ffffff)',
+  backgroundColor: '#e6f2ff', // Light blue background
+  background: 'linear-gradient(180deg, #e6f2ff 0%, #f5f9ff 100%)', 
   paddingTop: isMobile ? '70px' : '0',
-  marginTop: isMobile ? '0px' : '0'
+  marginTop: isMobile ? '0px' : '0',
+  position: 'relative',
+  overflow: 'hidden' // For cloud overlay
 });
+
+// Add cloud decorative elements
+const cloudOverlayStyle = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  pointerEvents: 'none', // So clicks pass through
+  opacity: 0.8,
+  zIndex: 0,
+  backgroundImage: 'url("https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80")',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  mixBlendMode: 'overlay' // Creates a nice blended effect with the text
+};
+
+// Make content appear above the clouds
+const heroContentStyle = {
+  position: 'relative',
+  zIndex: 1, // Ensure content appears above the cloud background
+  width: '100%',
+  maxWidth: '800px',
+  padding: '0 1rem'
+};
 
 // Create better title styles for hero section
 const createHeroTitleStyle = (isMobile = false) => ({
@@ -576,6 +604,32 @@ export default function Home() {
     justifyContent: isMobile ? 'center' : 'flex-start',
   };
 
+  // Add this effect for CSS-based cloud background
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .cloud-bg {
+        background-color: #e6f2ff;
+        background-image: 
+          radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 25%),
+          radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 35%),
+          radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 30%),
+          radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 25%);
+        animation: moveClouds 60s infinite alternate ease-in-out;
+      }
+      
+      @keyframes moveClouds {
+        0% { background-position: 0% 0%; }
+        100% { background-position: 100% 100%; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   // ---------------------------
   // RENDER
   // ---------------------------
@@ -674,28 +728,37 @@ export default function Home() {
         )}
       </header>
 
-      {/* Hero section */}
-      <section id="signup" style={heroSectionStyle}>
-        <h1 style={heroTitleStyle}>
-          {typedText}
-        </h1>
-        <h2 style={heroSubtitleStyle}>
-          brandeis meal match
-        </h2>
-        <p style={heroTextStyle}>
-          connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need.
-        </p>
-        <button 
-          onClick={openModal} 
-          style={{
-            ...btnStyle,
-            padding: '0.8rem 2.5rem',
-            fontSize: isMobile ? '1rem' : '1.1rem',
-            marginLeft: 0
-          }}
-        >
-          sign up
-        </button>
+      {/* Hero section with restored blue clouds */}
+      <section id="signup" style={heroSectionStyle} className="cloud-bg">
+        {/* Cloud background overlay */}
+        <div style={cloudOverlayStyle}></div>
+        
+        {/* Content layer above clouds */}
+        <div style={heroContentStyle}>
+          <h1 style={heroTitleStyle}>
+            {typedText}
+          </h1>
+          <h2 style={heroSubtitleStyle}>
+            brandeis meal match
+          </h2>
+          <p style={heroTextStyle}>
+            connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need.
+          </p>
+          <button 
+            onClick={openModal} 
+            style={{
+              ...btnStyle,
+              padding: '0.8rem 2.5rem',
+              fontSize: isMobile ? '1rem' : '1.1rem',
+              marginLeft: 0,
+              position: 'relative', // Ensure button is above clouds
+              zIndex: 2,
+              boxShadow: '0 4px 15px rgba(0,56,101,0.2)' // Add a subtle shadow
+            }}
+          >
+            sign up
+          </button>
+        </div>
       </section>
 
       {/* Problem statement */}
