@@ -175,31 +175,22 @@ export default function Home() {
     setCurrentStep(1);
   }
   
-  function goToStep3() {
-    setPersonalityStep(false);
-    setCurrentStep(3);
-  }
-  
-  function goBackToStep2() {
-    setCurrentStep(2);
-  }
-
-  // Add a function to go to personality questions step
   function goToPersonalityStep() {
-    if (!classLevel || selectedMajors.length === 0 || selectedInterests.length === 0) {
-      alert('Please complete all fields before proceeding.');
+    if (!classLevel || selectedMajors.length === 0) {
+      alert('Please select your class level and at least one major.');
       return;
     }
     setCurrentStep(3);
     setPersonalityStep(true);
   }
-
+  
   function goToMealPreferencesStep() {
-    if (!personalityType || !humorType || !conversationType || !plannerType || !hpHouse || !matchPreference) {
-      alert('Please answer all personality questions before proceeding.');
-      return;
-    }
     setCurrentStep(4);
+    setPersonalityStep(false);
+  }
+
+  function goBackToStep2() {
+    setCurrentStep(2);
     setPersonalityStep(false);
   }
 
@@ -275,7 +266,7 @@ export default function Home() {
   // Add this to your component
   const isMobile = window.innerWidth <= 768;
 
-  // Update the modal container style
+  // Modal container style
   const modalContainerStyle = {
     backgroundColor: '#fff',
     borderRadius: '1rem',
@@ -286,6 +277,8 @@ export default function Home() {
     overflowY: 'auto',
     padding: isMobile ? '1.2rem' : '2rem',
     position: 'relative',
+    textTransform: 'lowercase',
+    animation: 'fadeIn 0.8s forwards',
   };
 
   // Update input style for mobile
@@ -837,7 +830,7 @@ export default function Home() {
                   <button onClick={goBackToStep1} style={btnStyle}>
                     back
                   </button>
-                  <button onClick={goToStep3} style={btnStyle}>
+                  <button onClick={goToPersonalityStep} style={btnStyle}>
                     next
                   </button>
                 </div>
@@ -1096,7 +1089,7 @@ export default function Home() {
                                 style={{
                                   ...bubbleStyle,
                                   backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-                                  color: isSelected ? 'white' : '#333', // Fixed text color
+                                  color: isSelected ? 'white' : '#333',
                                   fontSize: '0.85rem',
                                   padding: '0.4rem 0.8rem',
                                 }}
