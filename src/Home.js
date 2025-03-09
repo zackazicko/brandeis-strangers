@@ -36,11 +36,17 @@ export default function Home() {
   // MULTI-STEP FORM STATES
   // ---------------------------
   const [currentStep, setCurrentStep] = useState(1);
-
-  // Basic info
+  
+  // Basic info - name is now properly declared as a state variable
+  const [name, setName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+
+  // Update name when first or last name changes
+  useEffect(() => {
+    setName(`${firstName} ${lastName}`.trim());
+  }, [firstName, lastName]);
 
   // Step 2: major, class level, interests
   const [selectedMajors, setSelectedMajors] = useState([]);
@@ -53,13 +59,8 @@ export default function Home() {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
   const [mealTimes, setMealTimes] = useState({
-    monday: { breakfast: [], lunch: [], dinner: [] },
-    tuesday: { breakfast: [], lunch: [], dinner: [] },
-    wednesday: { breakfast: [], lunch: [], dinner: [] },
-    thursday: { breakfast: [], lunch: [], dinner: [] },
-    friday: { breakfast: [], lunch: [], dinner: [] },
-    saturday: { breakfast: [], lunch: [], dinner: [] },
-    sunday: { breakfast: [], lunch: [], dinner: [] },
+    tuesday: { dinner: [] },
+    wednesday: { dinner: [] }
   });
 
   // Final: show success message
@@ -130,14 +131,6 @@ export default function Home() {
     major.toLowerCase().includes(majorSearch.toLowerCase())
   );
 
-  // Add name as a state variable if it doesn't exist
-  const [name, setName] = useState('');
-
-  // Add this useEffect to update the name when firstName or lastName changes
-  useEffect(() => {
-    setName(`${firstName} ${lastName}`.trim());
-  }, [firstName, lastName]);
-
   // ---------------------------
   // HELPER: Toggle bubble selection
   // ---------------------------
@@ -163,13 +156,16 @@ export default function Home() {
     }
     setCurrentStep(2);
   }
+  
   function goBackToStep1() {
     setCurrentStep(1);
   }
+  
   function goToStep3() {
     setPersonalityStep(false);
-    setCurrentStep(4);
+    setCurrentStep(3);
   }
+  
   function goBackToStep2() {
     setCurrentStep(2);
   }
@@ -184,44 +180,65 @@ export default function Home() {
   // SUBMIT FORM: Sign up + Insert
   // ---------------------------
   const [loading, setLoading] = useState(false);
+  
   async function handleSubmit() {
     setLoading(true);
     
-    // Generate a unique ID for the user
-    const userId = `brandeis_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    
-    // Insert into "Main" table without auth
-    const { error: insertError } = await supabase.from('Main').insert([
-      {
-        temp_id: userId,
-        name: name,
-        email: email.trim(),
-        majors: selectedMajors,
-        class_level: classLevel,
-        interests: selectedInterests,
-        meal_plan: mealPlan,
-        guest_swipe: guestSwipe,
-        preferred_dining_locations: selectedLocations,
-        meal_times: mealTimes,
-        personality_type: personalityType,
-        humor_type: humorType,
-        conversation_type: conversationType,
-        planner_type: plannerType,
-        hp_house: hpHouse,
-        match_preference: matchPreference
-      },
-    ]);
-    if (insertError) {
-      alert('Error submitting form: ' + insertError.message);
+    try {
+      // Generate a unique ID for the user
+      const userId = `brandeis_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Simplify meal times to only include Tuesday and Wednesday dinners
+      const simplifiedMealTimes = {
+        tuesday: { dinner: mealTimes.tuesday?.dinner || [] },
+        wednesday: { dinner: mealTimes.wednesday?.dinner || [] }
+      };
+      
+      // Insert into "Main" table without auth
+      const { error: insertError } = await supabase.from('Main').insert([
+        {
+          temp_id: userId,
+          name: name, // Using the state variable directly
+          email: email.trim(),
+          majors: selectedMajors,
+          class_level: classLevel,
+          interests: selectedInterests,
+          meal_plan: mealPlan,
+          guest_swipe: guestSwipe,
+          preferred_dining_locations: selectedLocations,
+          meal_times: simplifiedMealTimes,
+          personality_type: personalityType,
+          humor_type: humorType,
+          conversation_type: conversationType,
+          planner_type: plannerType,
+          hp_house: hpHouse,
+          match_preference: matchPreference
+        }
+      ]);
+      
+      if (insertError) {
+        console.error('Error submitting form:', insertError);
+        alert('Error submitting form: ' + insertError.message);
+        setLoading(false);
+        return;
+      }
+  
+      // Show success step
+      setSignUpSuccess(true);
+      setCurrentStep(4);
+    } catch (error) {
+      console.error('Exception during form submission:', error);
+      alert('An unexpected error occurred. Please try again.');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Show success step
-    setSignUpSuccess(true);
-    setCurrentStep(4);
-    setLoading(false);
   }
+
+  // Fix the color for selected time slots - should be white text on dark background
+  const timeSlotSelectedStyle = {
+    backgroundColor: '#003865',
+    color: 'white'
+  };
 
   // ---------------------------
   // RENDER
@@ -997,6 +1014,7 @@ export default function Home() {
                                 key={timeKey}
                                 style={{
                                   ...bubbleStyle,
+                                  ...(isSelected ? timeSlotSelectedStyle : {}),
                                   backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                   color: isSelected ? 'black' : 'black',
                                   fontSize: '0.85rem',
