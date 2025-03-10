@@ -282,6 +282,17 @@ const ModalHeader = ({ title, onBack }) => (
   </div>
 );
 
+// Add this style definition for category headers
+const categoryHeaderStyle = {
+  display: 'block',
+  marginTop: '1.8rem', // More space above each category
+  marginBottom: '0.8rem', // Consistent spacing below headers
+  fontWeight: 'bold',
+  color: '#003865',
+  fontSize: '0.95rem', // Matches the labelStyle fontSize
+  textTransform: 'lowercase' // Consistent with the app's style
+};
+
 export default function Home() {
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
@@ -1082,7 +1093,7 @@ export default function Home() {
                   <label style={labelStyle}>select your interests</label>
                   
                   {/* Entertainment & Media */}
-                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                  <p style={categoryHeaderStyle}>
                     Entertainment & Media
                   </p>
                   <div style={bubbleContainerStyle}>
@@ -1108,7 +1119,7 @@ export default function Home() {
                   </div>
                   
                   {/* Activities */}
-                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                  <p style={categoryHeaderStyle}>
                     Activities
                   </p>
                   <div style={bubbleContainerStyle}>
@@ -1133,7 +1144,7 @@ export default function Home() {
                   </div>
                   
                   {/* Arts & Culture */}
-                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                  <p style={categoryHeaderStyle}>
                     Arts & Culture
                   </p>
                   <div style={bubbleContainerStyle}>
@@ -1158,7 +1169,7 @@ export default function Home() {
                   </div>
                   
                   {/* Academic & Intellectual */}
-                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                  <p style={categoryHeaderStyle}>
                     Academic & Intellectual
                   </p>
                   <div style={bubbleContainerStyle}>
@@ -1183,7 +1194,7 @@ export default function Home() {
                   </div>
                   
                   {/* Social & Campus Life */}
-                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                  <p style={categoryHeaderStyle}>
                     Social & Campus Life
                   </p>
                   <div style={bubbleContainerStyle}>
@@ -1208,7 +1219,7 @@ export default function Home() {
                   </div>
                   
                   {/* Tech & Gaming */}
-                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                  <p style={categoryHeaderStyle}>
                     Tech & Gaming
                   </p>
                   <div style={bubbleContainerStyle}>
@@ -1232,7 +1243,7 @@ export default function Home() {
                   </div>
                   
                   {/* Lifestyle */}
-                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                  <p style={categoryHeaderStyle}>
                     Lifestyle
                   </p>
                   <div style={bubbleContainerStyle}>
