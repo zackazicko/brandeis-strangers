@@ -326,6 +326,13 @@ const categoryHeaderStyle = {
   textTransform: 'lowercase' // Consistent with the app's style
 };
 
+// First, let's create a style for the submit button that handles the loading state
+const createSubmitBtnStyle = (isMobile = false, isLoading = false) => ({
+  ...createNextBtnStyle(isMobile),
+  opacity: isLoading ? 0.7 : 1,
+  cursor: isLoading ? 'wait' : 'pointer'
+});
+
 export default function Home() {
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
@@ -794,6 +801,9 @@ export default function Home() {
       document.head.removeChild(style);
     };
   }, []);
+
+  // Inside your component, add:
+  const submitBtnStyle = createSubmitBtnStyle(isMobile, loading);
 
   // ---------------------------
   // RENDER
@@ -1640,11 +1650,7 @@ export default function Home() {
                   </button>
                   <button
                     onClick={handleSubmit}
-                    style={{
-                      ...nextBtnStyle,
-                      width: isMobile ? '100%' : 'auto',
-                      marginTop: isMobile ? '1rem' : '0',
-                    }}
+                    style={submitBtnStyle}
                     disabled={loading}
                   >
                     {loading ? 'submitting...' : 'sign up'}
