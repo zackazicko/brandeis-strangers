@@ -102,7 +102,7 @@ const createHeroSectionStyle = (isMobile = false) => ({
   textAlign: 'center',
   backgroundColor: '#e6f2ff',
   background: 'linear-gradient(180deg, #e6f2ff 0%, #f5f9ff 100%)', 
-  paddingTop: isMobile ? '70px' : '0',
+  paddingTop: isMobile ? '70px' : '80px',
   paddingBottom: '4rem',
   marginTop: isMobile ? '0' : '0',
   position: 'relative',
@@ -141,7 +141,7 @@ const heroContentStyle = {
 // Create better title styles for hero section
 const createHeroTitleStyle = (isMobile = false) => ({
   fontSize: isMobile ? '3rem' : '5rem',
-  marginTop: isMobile ? '1.5rem' : '0',
+  marginTop: isMobile ? '2.5rem' : '2rem',
   color: '#003865',
   marginBottom: '0.5rem',
   width: '100%',
@@ -502,15 +502,11 @@ export default function Home() {
   // ---------------------------
   // HELPER: Toggle bubble selection
   // ---------------------------
-  function toggleSelection(currentSelections, setSelections, item, maxSelections = undefined) {
+  function toggleSelection(currentSelections, setSelections, item) {
     if (currentSelections.includes(item)) {
       setSelections(currentSelections.filter((i) => i !== item));
     } else {
-      // Check if we've reached the maximum selections
-      if (maxSelections && currentSelections.length >= maxSelections) {
-        alert(`You can only select up to ${maxSelections} items.`);
-        return;
-      }
+      // No limit check - allow unlimited selections
       setSelections([...currentSelections, item]);
     }
   }
@@ -915,7 +911,7 @@ export default function Home() {
 
             {/* STEP 2 */}
             {currentStep === 2 && (
-              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
+              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative', paddingTop: '1rem' }}>
                 <BackButton onClick={goBackToStep1} />
                 
                 <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
@@ -1048,7 +1044,7 @@ export default function Home() {
                 </h3>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>select your interests (choose up to 5)</label>
+                  <label style={labelStyle}>select your interests</label>
                   
                   {/* Entertainment & Media */}
                   <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
@@ -1069,7 +1065,7 @@ export default function Home() {
                           ...bubbleStyle,
                           ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
                       </div>
@@ -1094,7 +1090,7 @@ export default function Home() {
                           ...bubbleStyle,
                           ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
                       </div>
@@ -1119,7 +1115,7 @@ export default function Home() {
                           ...bubbleStyle,
                           ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
                       </div>
@@ -1144,7 +1140,7 @@ export default function Home() {
                           ...bubbleStyle,
                           ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
                       </div>
@@ -1169,7 +1165,7 @@ export default function Home() {
                           ...bubbleStyle,
                           ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
                       </div>
@@ -1193,7 +1189,7 @@ export default function Home() {
                           ...bubbleStyle,
                           ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
                       </div>
@@ -1218,7 +1214,7 @@ export default function Home() {
                           ...bubbleStyle,
                           ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
                       </div>
@@ -1613,16 +1609,19 @@ const BackButton = ({ onClick }) => (
       position: 'absolute',
       top: '1rem',
       left: '1rem',
-      background: 'none',
+      backgroundColor: '#003865',
       border: 'none',
-      color: '#003865',
-      fontSize: '0.9rem',
+      color: '#fff',
+      borderRadius: 30,
       cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      padding: 0
+      fontSize: '0.9rem',
+      transition: 'background-color 0.3s ease',
+      fontFamily: '"Courier New", Courier, monospace',
+      textTransform: 'lowercase',
+      padding: '0.6rem 1.2rem',
+      boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
     }}
   >
-    <span style={{ marginRight: '0.3rem' }}>←</span> back
+    back
   </button>
 );
