@@ -34,11 +34,44 @@ const createBubbleStyle = (isMobile = false) => ({
 
 const createButtonsRowStyle = (isMobile = false) => ({
   display: 'flex',
-  flexDirection: isMobile ? 'column' : 'row',
-  justifyContent: isMobile ? 'center' : 'space-between',
-  alignItems: isMobile ? 'stretch' : 'center',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
   marginTop: '1.5rem',
-  gap: isMobile ? '0.75rem' : '0'
+  width: '100%',
+  gap: '0.8rem'
+});
+
+const createBackBtnStyle = (isMobile = false) => ({
+  padding: isMobile ? '0.6rem 0' : '0.7rem 2rem',
+  backgroundColor: '#ffffff',
+  border: '2px solid #003865',
+  color: '#003865',
+  borderRadius: 30,
+  cursor: 'pointer',
+  fontSize: isMobile ? '0.9rem' : '1rem',
+  transition: 'background-color 0.3s ease',
+  fontFamily: '"Courier New", Courier, monospace',
+  textTransform: 'lowercase',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+  flex: isMobile ? 1 : 'none',
+  textAlign: 'center'
+});
+
+const createNextBtnStyle = (isMobile = false) => ({
+  padding: isMobile ? '0.6rem 0' : '0.7rem 2rem',
+  backgroundColor: '#003865',
+  border: 'none',
+  color: '#fff',
+  borderRadius: 30,
+  cursor: 'pointer',
+  fontSize: isMobile ? '0.9rem' : '1rem',
+  transition: 'background-color 0.3s ease',
+  fontFamily: '"Courier New", Courier, monospace',
+  textTransform: 'lowercase',
+  boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+  flex: isMobile ? 1 : 'none',
+  textAlign: 'center'
 });
 
 const createHeaderStyle = (isMobile = false) => ({
@@ -924,7 +957,11 @@ export default function Home() {
             {/* STEP 1 */}
             {currentStep === 1 && (
               <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
                   basic info
                 </h3>
                 
@@ -955,8 +992,9 @@ export default function Home() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
-                  <button onClick={goToStep2} style={btnStyle}>
+                <div style={buttonsRowStyle}>
+                  <div style={{ flex: isMobile ? 1 : 'none', visibility: 'hidden' }}></div>
+                  <button onClick={goToStep2} style={nextBtnStyle}>
                     next
                   </button>
                 </div>
@@ -966,7 +1004,13 @@ export default function Home() {
             {/* STEP 2 */}
             {currentStep === 2 && (
               <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <ModalHeader title="academic info" onBack={goBackToStep1} />
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  academic info
+                </h3>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>choose your major(s):</label>
@@ -1076,8 +1120,11 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
-                  <button onClick={goToStep3} style={btnStyle}>
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToStep1} style={backBtnStyle}>
+                    back
+                  </button>
+                  <button onClick={goToStep3} style={nextBtnStyle}>
                     next
                   </button>
                 </div>
@@ -1087,10 +1134,16 @@ export default function Home() {
             {/* STEP 3 */}
             {currentStep === 3 && (
               <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <ModalHeader title="interests" onBack={goBackToStep2} />
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  interests
+                </h3>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>select your interests</label>
+                  <label style={labelStyle}>select your interests - as many as you want! </label>
                   
                   {/* Entertainment & Media */}
                   <p style={categoryHeaderStyle}>
@@ -1268,8 +1321,11 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
-                  <button onClick={goToPersonalityStep} style={btnStyle}>
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToStep2} style={backBtnStyle}>
+                    back
+                  </button>
+                  <button onClick={goToPersonalityStep} style={nextBtnStyle}>
                     next
                   </button>
                 </div>
@@ -1279,7 +1335,13 @@ export default function Home() {
             {/* STEP 4 */}
             {currentStep === 4 && personalityStep && (
               <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <ModalHeader title="personality questions" onBack={goBackToStep3} />
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  personality questions
+                </h3>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>are you an introvert or an extrovert?</label>
@@ -1389,8 +1451,11 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
-                  <button onClick={goToMealPreferencesStep} style={btnStyle}>
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToStep3} style={backBtnStyle}>
+                    back
+                  </button>
+                  <button onClick={goToMealPreferencesStep} style={nextBtnStyle}>
                     next
                   </button>
                 </div>
@@ -1400,7 +1465,13 @@ export default function Home() {
             {/* STEP 5 */}
             {currentStep === 5 && !personalityStep && !signUpSuccess && (
               <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <ModalHeader title="meal preferences" onBack={goBackToPersonalityStep} />
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  meal preferences
+                </h3>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>do you have a meal plan?</label>
@@ -1559,11 +1630,14 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToPersonalityStep} style={backBtnStyle}>
+                    back
+                  </button>
                   <button
                     onClick={handleSubmit}
                     style={{
-                      ...btnStyle,
+                      ...nextBtnStyle,
                       width: isMobile ? '100%' : 'auto',
                       marginTop: isMobile ? '1rem' : '0',
                     }}
