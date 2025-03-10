@@ -502,11 +502,16 @@ export default function Home() {
   // ---------------------------
   // HELPER: Toggle bubble selection
   // ---------------------------
-  function toggleSelection(array, setArray, value) {
-    if (array.includes(value)) {
-      setArray(array.filter((item) => item !== value));
+  function toggleSelection(currentSelections, setSelections, item, maxSelections = undefined) {
+    if (currentSelections.includes(item)) {
+      setSelections(currentSelections.filter((i) => i !== item));
     } else {
-      setArray([...array, value]);
+      // Check if we've reached the maximum selections
+      if (maxSelections && currentSelections.length >= maxSelections) {
+        alert(`You can only select up to ${maxSelections} items.`);
+        return;
+      }
+      setSelections([...currentSelections, item]);
     }
   }
 
@@ -529,42 +534,34 @@ export default function Home() {
     setCurrentStep(1);
   }
   
+  function goToStep3() {
+    setCurrentStep(3);
+  }
+  
+  function goBackToStep2() {
+    setCurrentStep(2);
+  }
+  
   function goToPersonalityStep() {
     if (!classLevel || selectedMajors.length === 0) {
       alert('Please select your class level and at least one major.');
       return;
     }
-    setCurrentStep(3);
+    setCurrentStep(4);
     setPersonalityStep(true);
   }
   
   function goToMealPreferencesStep() {
-    // Check if personality questions are answered
-    const missingFields = [];
-    
-    if (!personalityType) missingFields.push('introvert/extrovert');
-    if (!humorType) missingFields.push('humor type');
-    if (!conversationType) missingFields.push('conversation style');
-    if (!plannerType) missingFields.push('planner/procrastinator');
-    if (!hpHouse) missingFields.push('Harry Potter house');
-    if (!matchPreference) missingFields.push('meet someone similar/different');
-    
-    if (missingFields.length > 0) {
-      alert(`Please answer all personality questions. Missing: ${missingFields.join(', ')}`);
-      return;
-    }
-    
-    setCurrentStep(4);
+    setCurrentStep(5);
     setPersonalityStep(false);
   }
 
-  function goBackToStep2() {
-    setCurrentStep(2);
-    setPersonalityStep(false);
+  function goBackToStep3() {
+    setCurrentStep(3);
   }
 
   function goBackToPersonalityStep() {
-    setCurrentStep(3);
+    setCurrentStep(4);
     setPersonalityStep(true);
   }
 
@@ -622,7 +619,7 @@ export default function Home() {
       
       // Show success message
       setSignUpSuccess(true);
-      setCurrentStep(4);
+      setCurrentStep(5);
       
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -877,6 +874,10 @@ export default function Home() {
             {/* STEP 1 */}
             {currentStep === 1 && (
               <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
+                  basic info
+                </h3>
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>first name:</label>
                   <input
@@ -904,13 +905,7 @@ export default function Home() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    marginTop: '1.5rem',
-                  }}
-                >
+                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
                   <button onClick={goToStep2} style={btnStyle}>
                     next
                   </button>
@@ -920,7 +915,13 @@ export default function Home() {
 
             {/* STEP 2 */}
             {currentStep === 2 && (
-              <div>
+              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
+                <BackButton onClick={goBackToStep1} />
+                
+                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
+                  academic info
+                </h3>
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>choose your major(s):</label>
                   <div className="major-search-container" style={{ position: 'relative' }}>
@@ -1029,52 +1030,203 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
+                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
+                  <button onClick={goToStep3} style={btnStyle}>
+                    next
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3 */}
+            {currentStep === 3 && (
+              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
+                <BackButton onClick={goBackToStep2} />
+                
+                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
+                  interests
+                </h3>
+                
                 <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>select interests:</label>
+                  <label style={labelStyle}>select your interests (choose up to 5)</label>
+                  
+                  {/* Entertainment & Media */}
+                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                    Entertainment & Media
+                  </p>
                   <div style={bubbleContainerStyle}>
                     {[
-                      'sports',
-                      'art',
-                      'movies',
-                      'hiking',
-                      'reading',
-                      'volunteering',
-                      'gaming',
-                      'music',
-                      'dance',
-                      'cooking',
-                      'photography',
-                      'theater',
-                      'science fiction',
-                      'travel',
-                      'politics',
-                      'poetry',
+                      'anime & manga',
+                      'k-pop & k-dramas',
+                      'taylor swift',
+                      'marvel & dc',
+                      'reality tv',
+                      'tiktok'
                     ].map((interest) => (
                       <div
                         key={interest}
                         style={{
                           ...bubbleStyle,
-                          ...(selectedInterests.includes(interest)
-                            ? bubbleSelectedStyle
-                            : {}),
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                         }}
-                        onClick={() =>
-                          toggleSelection(
-                            selectedInterests,
-                            setSelectedInterests,
-                            interest
-                          )
-                        }
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Activities */}
+                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                    Activities
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'thrifting',
+                      'foodie adventures',
+                      'gym & fitness',
+                      'coffee shop hopping',
+                      'boston exploring'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Arts & Culture */}
+                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                    Arts & Culture
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'photography',
+                      'music production',
+                      'fashion',
+                      'creative writing',
+                      'theater & improv'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Academic & Intellectual */}
+                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                    Academic & Intellectual
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'social justice',
+                      'entrepreneurship',
+                      'climate activism',
+                      'research',
+                      'debate & politics'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Social & Campus Life */}
+                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                    Social & Campus Life
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'cultural clubs',
+                      'greek life',
+                      'club sports',
+                      'student government',
+                      'volunteering'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Tech & Gaming */}
+                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                    Tech & Gaming
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'video games',
+                      'coding & tech',
+                      'crypto & nfts',
+                      'ai & chatgpt'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Lifestyle */}
+                  <p style={{ fontWeight: 'bold', marginTop: '1rem', fontSize: '0.85rem', color: '#003865' }}>
+                    Lifestyle
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'plant parent',
+                      'cooking & baking',
+                      'mental health',
+                      'spirituality',
+                      'sustainability'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest, 5)}
                       >
                         {interest}
                       </div>
                     ))}
                   </div>
                 </div>
-                <div style={buttonsRowStyle}>
-                  <button onClick={goBackToStep1} style={btnStyle}>
-                    back
-                  </button>
+                
+                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
                   <button onClick={goToPersonalityStep} style={btnStyle}>
                     next
                   </button>
@@ -1082,9 +1234,11 @@ export default function Home() {
               </div>
             )}
 
-            {/* STEP 3: PERSONALITY QUESTIONS */}
-            {currentStep === 3 && personalityStep && (
-              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+            {/* STEP 4 */}
+            {currentStep === 4 && personalityStep && (
+              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
+                <BackButton onClick={goBackToStep3} />
+                
                 <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
                   personality questions
                 </h3>
@@ -1197,10 +1351,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div style={buttonsRowStyle}>
-                  <button onClick={goBackToStep2} style={btnStyle}>
-                    back
-                  </button>
+                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
                   <button onClick={goToMealPreferencesStep} style={btnStyle}>
                     next
                   </button>
@@ -1208,13 +1359,15 @@ export default function Home() {
               </div>
             )}
 
-            {/* STEP 4: MEAL PREFERENCES */}
-            {currentStep === 4 && !personalityStep && !signUpSuccess && (
-              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+            {/* STEP 5 */}
+            {currentStep === 5 && !personalityStep && !signUpSuccess && (
+              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
+                <BackButton onClick={goBackToPersonalityStep} />
+                
                 <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
                   meal preferences
                 </h3>
-
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>do you have a meal plan?</label>
                   <div style={bubbleContainerStyle}>
@@ -1372,10 +1525,7 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div style={buttonsRowStyle}>
-                  <button onClick={goBackToPersonalityStep} style={btnStyle}>
-                    back
-                  </button>
+                <div style={{ ...buttonsRowStyle, justifyContent: 'flex-end' }}>
                   <button
                     onClick={handleSubmit}
                     style={{
@@ -1391,8 +1541,8 @@ export default function Home() {
               </div>
             )}
 
-            {/* STEP 5: SUCCESS */}
-            {currentStep === 4 && signUpSuccess && (
+            {/* STEP 5 */}
+            {currentStep === 5 && signUpSuccess && (
               <div style={{ textAlign: 'center', animation: 'fadeIn 0.8s forwards' }}>
                 <h2 style={{ fontSize: '1.5rem' }}>success!</h2>
                 <p style={{ marginTop: '1rem' }}>
@@ -1454,3 +1604,25 @@ export default function Home() {
     </div>
   );
 }
+
+// 1. First, let's define a back button component to reuse across steps
+const BackButton = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      position: 'absolute',
+      top: '1rem',
+      left: '1rem',
+      background: 'none',
+      border: 'none',
+      color: '#003865',
+      fontSize: '0.9rem',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      padding: 0
+    }}
+  >
+    <span style={{ marginRight: '0.3rem' }}>←</span> back
+  </button>
+);
