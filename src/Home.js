@@ -239,6 +239,49 @@ const stepDescriptionStyle = {
   color: '#555'
 };
 
+// First, let's create a better modal header component
+const ModalHeader = ({ title, onBack }) => (
+  <div style={{
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '1.5rem',
+    position: 'relative',
+    height: '50px'
+  }}>
+    {onBack && (
+      <button
+        onClick={onBack}
+        style={{
+          backgroundColor: '#003865',
+          border: 'none',
+          color: '#fff',
+          borderRadius: 30,
+          cursor: 'pointer',
+          fontSize: '0.9rem',
+          transition: 'background-color 0.3s ease',
+          fontFamily: '"Courier New", Courier, monospace',
+          textTransform: 'lowercase',
+          padding: '0.6rem 1.2rem',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+          position: 'absolute',
+          left: 0
+        }}
+      >
+        back
+      </button>
+    )}
+    <h3 style={{
+      fontSize: '1.1rem',
+      margin: 0,
+      textAlign: 'center',
+      flex: 1,
+      color: '#003865'
+    }}>
+      {title}
+    </h3>
+  </div>
+);
+
 export default function Home() {
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
@@ -911,12 +954,8 @@ export default function Home() {
 
             {/* STEP 2 */}
             {currentStep === 2 && (
-              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative', paddingTop: '1rem' }}>
-                <BackButton onClick={goBackToStep1} />
-                
-                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
-                  academic info
-                </h3>
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <ModalHeader title="academic info" onBack={goBackToStep1} />
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>choose your major(s):</label>
@@ -1036,12 +1075,8 @@ export default function Home() {
 
             {/* STEP 3 */}
             {currentStep === 3 && (
-              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
-                <BackButton onClick={goBackToStep2} />
-                
-                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
-                  interests
-                </h3>
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <ModalHeader title="interests" onBack={goBackToStep2} />
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>select your interests</label>
@@ -1232,12 +1267,8 @@ export default function Home() {
 
             {/* STEP 4 */}
             {currentStep === 4 && personalityStep && (
-              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
-                <BackButton onClick={goBackToStep3} />
-                
-                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
-                  personality questions
-                </h3>
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <ModalHeader title="personality questions" onBack={goBackToStep3} />
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>are you an introvert or an extrovert?</label>
@@ -1357,12 +1388,8 @@ export default function Home() {
 
             {/* STEP 5 */}
             {currentStep === 5 && !personalityStep && !signUpSuccess && (
-              <div style={{ animation: 'fadeIn 0.8s forwards', position: 'relative' }}>
-                <BackButton onClick={goBackToPersonalityStep} />
-                
-                <h3 style={{ marginBottom: '1.2rem', fontSize: '1.1rem' }}>
-                  meal preferences
-                </h3>
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <ModalHeader title="meal preferences" onBack={goBackToPersonalityStep} />
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>do you have a meal plan?</label>
@@ -1600,28 +1627,3 @@ export default function Home() {
     </div>
   );
 }
-
-// 1. First, let's define a back button component to reuse across steps
-const BackButton = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    style={{
-      position: 'absolute',
-      top: '1rem',
-      left: '1rem',
-      backgroundColor: '#003865',
-      border: 'none',
-      color: '#fff',
-      borderRadius: 30,
-      cursor: 'pointer',
-      fontSize: '0.9rem',
-      transition: 'background-color 0.3s ease',
-      fontFamily: '"Courier New", Courier, monospace',
-      textTransform: 'lowercase',
-      padding: '0.6rem 1.2rem',
-      boxShadow: '0 2px 5px rgba(0,0,0,0.1)'
-    }}
-  >
-    back
-  </button>
-);
