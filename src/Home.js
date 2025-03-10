@@ -384,6 +384,10 @@ export default function Home() {
   const heroSubtitleStyle = createHeroSubtitleStyle(isMobile);
   const heroTextStyle = createHeroTextStyle(isMobile);
   
+  // Add these two lines to fix the undefined variables
+  const backBtnStyle = createBackBtnStyle(isMobile);
+  const nextBtnStyle = createNextBtnStyle(isMobile);
+
   // Add touch-friendly animations
   useEffect(() => {
     // Inject these styles for smooth mobile animations
