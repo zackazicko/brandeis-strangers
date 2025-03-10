@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import supabase from './supabaseClient';
 
 // Move these style creator functions to the top, outside component
@@ -805,6 +805,20 @@ export default function Home() {
   // Inside your component, add:
   const submitBtnStyle = createSubmitBtnStyle(isMobile, loading);
 
+  // Add a ref for the modal content
+  const modalContentRef = useRef(null);
+  
+  // Add an effect that scrolls to top when step changes
+  useEffect(() => {
+    if (modalContentRef.current) {
+      // Smooth scroll animation
+      modalContentRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentStep, personalityStep]); // Trigger on step changes
+
   // ---------------------------
   // RENDER
   // ---------------------------
@@ -929,19 +943,24 @@ export default function Home() {
           alignItems: 'center',
           zIndex: 1000
         }}>
-          <div onClick={(e) => e.stopPropagation()} style={{
-            backgroundColor: '#fff',
-            borderRadius: '1rem',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-            width: isMobile ? '90%' : '500px',
-            maxWidth: '95vw',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            padding: '2rem',
-            position: 'relative',
-            textTransform: 'lowercase',
-            animation: 'fadeIn 0.5s'
-          }}>
+          <div 
+            ref={modalContentRef}
+            onClick={(e) => e.stopPropagation()} 
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: '1rem',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+              width: isMobile ? '90%' : '500px',
+              maxWidth: '95vw',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '2rem',
+              position: 'relative',
+              textTransform: 'lowercase',
+              animation: 'fadeIn 0.5s'
+            }}
+            className="modal-content"
+          >
             <button
               className="close-button"
               onClick={closeModal}
