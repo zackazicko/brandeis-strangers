@@ -810,6 +810,8 @@ export default function Home() {
         {/* Only show full navigation on desktop */}
         {!isMobile ? (
           <nav style={{ display: 'flex', gap: '2rem' }}>
+            <a href="#problem" style={navLinkStyle}>problem</a>
+            <a href="#features" style={navLinkStyle}>features</a>
             <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>
           </nav>
         ) : (
@@ -824,7 +826,7 @@ export default function Home() {
           >
             sign up
           </button>
-        )}t
+        )}
       </header>
 
       {/* Hero section with integrated "How It Works" */}
