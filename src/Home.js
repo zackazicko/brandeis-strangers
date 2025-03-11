@@ -668,8 +668,16 @@ export default function Home() {
     setLoading(true);
     
     try {
+      // Check if email is valid
+      const emailLower = email.trim().toLowerCase();
+      if (!emailLower.endsWith('@brandeis.edu')) {
+        alert('Please use your brandeis.edu email address.');
+        setLoading(false);
+        return;
+      }
+      
       // Basic validation
-      if (!name || !email || !mealTimes.wednesday?.dinner?.length) {
+      if (!name || !emailLower || !mealTimes.wednesday?.dinner?.length) {
         alert('Please fill in all required fields and select at least one time slot.');
         setLoading(false);
         return;
@@ -678,7 +686,7 @@ export default function Home() {
       // Force Sherman as the only location for the pilot
       const userData = {
         name: name,
-        email: email.trim(),
+        email: emailLower, // Store lowercase email for consistency
         majors: selectedMajors,
         class_level: classLevel,
         interests: selectedInterests,
@@ -687,8 +695,8 @@ export default function Home() {
         dining_locations: ['sherman'], // Force Sherman as the only location
         meal_times_json: JSON.stringify(mealTimes),
         meal_times_flattened: JSON.stringify({
-          wednesday_dinner_600_630: mealTimes.wednesday?.dinner?.includes('6:00-6:30 PM') || false,
-          wednesday_dinner_630_700: mealTimes.wednesday?.dinner?.includes('6:30-7:00 PM') || false
+          wednesday_dinner_600_630: mealTimes.wednesday?.dinner?.includes('6:00-6:30 pm') || false,
+          wednesday_dinner_630_700: mealTimes.wednesday?.dinner?.includes('6:30-7:00 pm') || false
         }),
         personality_type: personalityType,
         humor_type: humorType,
@@ -698,9 +706,8 @@ export default function Home() {
         match_preference: matchPreference
       };
       
-      console.log('Submitting to main table:', userData);
+      console.log('Submitting data to main table:', userData);
       
-      // Insert data into the main table
       const { data, error } = await supabase
         .from('main')
         .insert([userData]);
@@ -711,11 +718,21 @@ export default function Home() {
       
       // Show success message
       setSignUpSuccess(true);
-      setCurrentStep(5);
       
     } catch (error) {
       console.error('Error submitting form:', error);
-      alert(`Error: ${error.message}. Please try again or contact support.`);
+      
+      // Store failed submission for later retry
+      try {
+        const failedSubmissions = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
+        failedSubmissions.push(userData);
+        localStorage.setItem('brandeis_strangers_submissions', JSON.stringify(failedSubmissions));
+        console.log('Stored failed submission for later retry');
+      } catch (storageError) {
+        console.error('Failed to store submission for retry:', storageError);
+      }
+      
+      alert(`Error: ${error.message}. We've saved your submission and will try again when you return to the site.`);
     } finally {
       setLoading(false);
     }
@@ -878,7 +895,7 @@ export default function Home() {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            🚀 Pilot launch: Wednesday, March 12th at Sherman Dining Hall only!
+            🚀 pilot launch: wednesday, march 12th at sherman dining hall only!
           </p>
           <button 
             onClick={openModal} 
@@ -1581,14 +1598,14 @@ export default function Home() {
                     </div>
                   </div>
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666' }}>
-                    For our pilot, we're starting with Sherman Dining Hall only.
+                    for our pilot, we're starting with sherman dining hall only.
                   </p>
                 </div>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>select meal times</label>
                   <p style={{ fontSize: '0.85rem', marginTop: '-0.5rem' }}>
-                    Wednesday, March 12th dinner time slots (6:00-7:00 PM)
+                    wednesday, march 12th dinner time slots (6:00-7:00 pm)
                   </p>
                   <div
                     style={{
@@ -1608,9 +1625,9 @@ export default function Home() {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Wednesday, March 12th</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday, march 12th</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        {['6:00-6:30 PM', '6:30-7:00 PM'].map((timeSlot) => {
+                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
                           // Create unique key for each time slot
                           const timeKey = `wednesday-${timeSlot}`;
                           const isSelected = mealTimes.wednesday?.dinner?.includes(timeSlot) || false;
@@ -1637,7 +1654,7 @@ export default function Home() {
                                   updatedMealTimes.wednesday.dinner = [];
                                 }
                                 
-                                // Toggle time slot
+                                // Toggle time slot (with lowercase time periods)
                                 if (updatedMealTimes.wednesday.dinner.includes(timeSlot)) {
                                   updatedMealTimes.wednesday.dinner = updatedMealTimes.wednesday.dinner.filter(
                                     time => time !== timeSlot
