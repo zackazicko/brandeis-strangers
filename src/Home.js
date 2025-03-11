@@ -669,13 +669,13 @@ export default function Home() {
     
     try {
       // Basic validation
-      if (!name || !email || !selectedLocations.length) {
-        alert('Please fill in all required fields.');
+      if (!name || !email || !mealTimes.wednesday?.dinner?.length) {
+        alert('Please fill in all required fields and select at least one time slot.');
         setLoading(false);
         return;
       }
       
-      // Simpler data structure aligned with our new table
+      // Force Sherman as the only location for the pilot
       const userData = {
         name: name,
         email: email.trim(),
@@ -684,11 +684,9 @@ export default function Home() {
         interests: selectedInterests,
         meal_plan: mealPlan,
         guest_swipe: guestSwipe,
-        dining_locations: selectedLocations,
+        dining_locations: ['sherman'], // Force Sherman as the only location
         meal_times_json: JSON.stringify(mealTimes),
         meal_times_flattened: JSON.stringify({
-          tuesday_dinner_600_630: mealTimes.tuesday?.dinner?.includes('6:00-6:30 PM') || false,
-          tuesday_dinner_630_700: mealTimes.tuesday?.dinner?.includes('6:30-7:00 PM') || false,
           wednesday_dinner_600_630: mealTimes.wednesday?.dinner?.includes('6:00-6:30 PM') || false,
           wednesday_dinner_630_700: mealTimes.wednesday?.dinner?.includes('6:30-7:00 PM') || false
         }),
@@ -849,7 +847,7 @@ export default function Home() {
           >
             sign up
           </button>
-        )}
+        )}t
       </header>
 
       {/* Hero section with integrated "How It Works" */}
@@ -868,6 +866,19 @@ export default function Home() {
           </h2>
           <p style={heroTextStyle}>
             connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need.
+          </p>
+          <p style={{
+            fontSize: isMobile ? '0.9rem' : '1rem',
+            color: '#003865',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            padding: '0.5rem 1rem',
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            maxWidth: '100%',
+            textAlign: 'center',
+            fontWeight: 'bold'
+          }}>
+            🚀 Pilot launch: Wednesday, March 12th at Sherman Dining Hall only!
           </p>
           <button 
             onClick={openModal} 
@@ -1557,38 +1568,27 @@ export default function Home() {
                 )}
                 
                 <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>preferred dining locations:</label>
+                  <label style={labelStyle}>dining location:</label>
                   <div style={bubbleContainerStyle}>
-                    {[
-                      'sherman',
-                      'usdan',
-                    ].map((loc) => (
-                      <div
-                        key={loc}
-                        style={{
-                          ...bubbleStyle,
-                          ...(selectedLocations.includes(loc)
-                            ? bubbleSelectedStyle
-                            : {}),
-                        }}
-                        onClick={() =>
-                          toggleSelection(
-                            selectedLocations,
-                            setSelectedLocations,
-                            loc
-                          )
-                        }
-                      >
-                        {loc}
-                      </div>
-                    ))}
+                    <div
+                      style={{
+                        ...bubbleStyle,
+                        ...bubbleSelectedStyle,
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      sherman
+                    </div>
                   </div>
+                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666' }}>
+                    For our pilot, we're starting with Sherman Dining Hall only.
+                  </p>
                 </div>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>select meal times</label>
                   <p style={{ fontSize: '0.85rem', marginTop: '-0.5rem' }}>
-                    select available 30-minute time slots (6:00-7:00 PM)
+                    Wednesday, March 12th dinner time slots (6:00-7:00 PM)
                   </p>
                   <div
                     style={{
@@ -1596,68 +1596,65 @@ export default function Home() {
                       justifyContent: 'center',
                     }}
                   >
-                    {['tuesday', 'wednesday'].map((day) => (
-                      <div
-                        key={day}
-                        style={{
-                          position: 'relative',
-                          margin: '0.5rem',
-                          padding: '0.5rem 1rem',
-                          borderRadius: '20px',
-                          backgroundColor: '#f0f0f0',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                        }}
-                      >
-                        <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{day}</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {['6:00-6:30 PM', '6:30-7:00 PM'].map((timeSlot) => {
-                            // Create unique key for each day-time combination
-                            const timeKey = `${day}-${timeSlot}`;
-                            const isSelected = mealTimes[day]?.dinner?.includes(timeSlot) || false;
-                            
-                            return (
-                              <div
-                                key={timeKey}
-                                style={{
-                                  ...bubbleStyle,
-                                  backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-                                  color: isSelected ? 'white' : '#333',
-                                  fontSize: '0.85rem',
-                                  padding: '0.4rem 0.8rem',
-                                }}
-                                onClick={() => {
-                                  // Create a deep copy of mealTimes
-                                  const updatedMealTimes = { ...mealTimes };
-                                  
-                                  // Initialize day and meal if needed
-                                  if (!updatedMealTimes[day]) {
-                                    updatedMealTimes[day] = {};
-                                  }
-                                  if (!updatedMealTimes[day].dinner) {
-                                    updatedMealTimes[day].dinner = [];
-                                  }
-                                  
-                                  // Toggle time slot
-                                  if (updatedMealTimes[day].dinner.includes(timeSlot)) {
-                                    updatedMealTimes[day].dinner = updatedMealTimes[day].dinner.filter(
-                                      time => time !== timeSlot
-                                    );
-                                  } else {
-                                    updatedMealTimes[day].dinner.push(timeSlot);
-                                  }
-                                  
-                                  setMealTimes(updatedMealTimes);
-                                }}
-                              >
-                                {timeSlot}
-                              </div>
-                            );
-                          })}
-                        </div>
+                    <div
+                      style={{
+                        position: 'relative',
+                        margin: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        backgroundColor: '#f0f0f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Wednesday, March 12th</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {['6:00-6:30 PM', '6:30-7:00 PM'].map((timeSlot) => {
+                          // Create unique key for each time slot
+                          const timeKey = `wednesday-${timeSlot}`;
+                          const isSelected = mealTimes.wednesday?.dinner?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                              style={{
+                                ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.wednesday) {
+                                  updatedMealTimes.wednesday = {};
+                                }
+                                if (!updatedMealTimes.wednesday.dinner) {
+                                  updatedMealTimes.wednesday.dinner = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.wednesday.dinner.includes(timeSlot)) {
+                                  updatedMealTimes.wednesday.dinner = updatedMealTimes.wednesday.dinner.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.wednesday.dinner.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                            </div>
+                          );
+                        })}
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
                 
