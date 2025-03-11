@@ -104,6 +104,7 @@ const navLinkStyle = {
   transition: 'color 0.3s',
 };
 
+// eslint-disable-next-line no-unused-vars
 const featureCardStyle = {
   background: '#fff',
   borderRadius: '1rem',
@@ -272,49 +273,6 @@ const stepDescriptionStyle = {
   color: '#555'
 };
 
-// First, let's create a better modal header component
-const ModalHeader = ({ title, onBack }) => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '1.5rem',
-    position: 'relative',
-    height: '50px'
-  }}>
-    {onBack && (
-      <button
-        onClick={onBack}
-        style={{
-          backgroundColor: '#003865',
-          border: 'none',
-          color: '#fff',
-          borderRadius: 30,
-          cursor: 'pointer',
-          fontSize: '0.9rem',
-          transition: 'background-color 0.3s ease',
-          fontFamily: '"Courier New", Courier, monospace',
-          textTransform: 'lowercase',
-          padding: '0.6rem 1.2rem',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-          position: 'absolute',
-          left: 0
-        }}
-      >
-        back
-      </button>
-    )}
-    <h3 style={{
-      fontSize: '1.1rem',
-      margin: 0,
-      textAlign: 'center',
-      flex: 1,
-      color: '#003865'
-    }}>
-      {title}
-    </h3>
-  </div>
-);
-
 // Add this style definition for category headers
 const categoryHeaderStyle = {
   display: 'block',
@@ -362,6 +320,7 @@ export default function Home() {
   // RESPONSIVE STATE - KEEP ONLY ONE DECLARATION!
   // ---------------------------
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  // eslint-disable-next-line no-unused-vars
   const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth <= 375);
   
   // Responsive listener
@@ -666,6 +625,7 @@ export default function Home() {
   
   async function handleSubmit() {
     setLoading(true);
+    let userData = {}; // Initialize outside try block so it's accessible in catch
     
     try {
       // Check if email is valid
@@ -684,7 +644,7 @@ export default function Home() {
       }
       
       // Force Sherman as the only location for the pilot
-      const userData = {
+      userData = {
         name: name,
         email: emailLower, // Store lowercase email for consistency
         majors: selectedMajors,
@@ -722,7 +682,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error submitting form:', error);
       
-      // Store failed submission for later retry
+      // Now userData is accessible here
       try {
         const failedSubmissions = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
         failedSubmissions.push(userData);

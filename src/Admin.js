@@ -7,7 +7,10 @@ const Admin = () => {
   const [authorized, setAuthorized] = useState(false);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, 
+    // eslint-disable-next-line no-unused-vars
+    setIsMobile
+  ] = useState(window.innerWidth <= 768);
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
