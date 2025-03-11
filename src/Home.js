@@ -628,8 +628,11 @@ export default function Home() {
     let userData = {}; // Initialize outside try block so it's accessible in catch
     
     try {
-      // Check if email is valid
-      const emailLower = email.trim().toLowerCase();
+      // Check if email is valid - ensure lowercase comparison
+      const emailInput = email.trim();
+      const emailLower = emailInput.toLowerCase();
+      
+      // Case insensitive check for brandeis.edu
       if (!emailLower.endsWith('@brandeis.edu')) {
         alert('Please use your brandeis.edu email address.');
         setLoading(false);
@@ -637,7 +640,7 @@ export default function Home() {
       }
       
       // Basic validation
-      if (!name || !emailLower || !mealTimes.wednesday?.dinner?.length) {
+      if (!name || !emailInput || !mealTimes.wednesday?.dinner?.length) {
         alert('Please fill in all required fields and select at least one time slot.');
         setLoading(false);
         return;
@@ -646,7 +649,7 @@ export default function Home() {
       // Force Sherman as the only location for the pilot
       userData = {
         name: name,
-        email: emailLower, // Store lowercase email for consistency
+        email: emailLower, // Always store lowercase email for consistency
         majors: selectedMajors,
         class_level: classLevel,
         interests: selectedInterests,
