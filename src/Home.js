@@ -571,11 +571,25 @@ export default function Home() {
   // ---------------------------
   // STEP NAVIGATION
   // ---------------------------
+  function isValidBrandeisEmail(email) {
+    // First normalize the email by trimming
+    const emailInput = email.trim();
+    
+    // Hardcoded check for multiple capitalization variants
+    return emailInput.endsWith('@brandeis.edu') || 
+           emailInput.endsWith('@Brandeis.edu') || 
+           emailInput.endsWith('@BRANDEIS.edu') || 
+           emailInput.endsWith('@BRANDEIS.EDU') || 
+           emailInput.endsWith('@Brandeis.EDU') || 
+           emailInput.toLowerCase().endsWith('@brandeis.edu'); // Catch-all
+  }
+
   function goToStep2() {
-    if (!email.endsWith('@brandeis.edu')) {
-      alert('Please use your brandeis email (@brandeis.edu).');
+    if (!isValidBrandeisEmail(email)) {
+      alert('please use your brandeis.edu email address.');
       return;
     }
+    
     if (!firstName.trim() || !lastName.trim()) {
       alert('Please provide both first and last name.');
       return;
@@ -628,13 +642,11 @@ export default function Home() {
     let userData = {}; // Initialize outside try block so it's accessible in catch
     
     try {
-      // Check if email is valid - ensure lowercase comparison
       const emailInput = email.trim();
       const emailLower = emailInput.toLowerCase();
       
-      // Case insensitive check for brandeis.edu
-      if (!emailLower.endsWith('@brandeis.edu')) {
-        alert('Please use your brandeis.edu email address.');
+      if (!isValidBrandeisEmail(email)) {
+        alert('please use your brandeis.edu email address.');
         setLoading(false);
         return;
       }
@@ -1009,9 +1021,18 @@ export default function Home() {
                   <label style={labelStyle}>brandeis email:</label>
                   <input
                     type="email"
-                    style={inputStyle}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your.name@brandeis.edu"
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem',
+                      fontSize: '1rem',
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      marginBottom: '1rem'
+                    }}
+                    required
                   />
                 </div>
                 <div style={buttonsRowStyle}>
