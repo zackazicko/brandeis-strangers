@@ -1030,7 +1030,8 @@ export default function Home() {
                       fontSize: '1rem',
                       border: '1px solid #ccc',
                       borderRadius: '8px',
-                      marginBottom: '1rem'
+                      marginBottom: '1rem',
+                      fontFamily: '"Courier New", Courier, monospace'
                     }}
                     required
                   />
