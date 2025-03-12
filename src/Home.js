@@ -647,16 +647,16 @@ export default function Home() {
       
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
       
       // Basic validation
       if (!name || !emailInput || !mealTimes.wednesday?.dinner?.length) {
         alert('Please fill in all required fields and select at least one time slot.');
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
       
       // Force Sherman as the only location for the pilot
       userData = {
@@ -683,33 +683,117 @@ export default function Home() {
       
       console.log('Submitting data to main table:', userData);
       
+      // Add detailed logging for network requests
+      console.log('Starting Supabase insert request...');
+      
+      // Try first with a direct fetch - most robust method for user submissions
+      try {
+        console.log('Attempting direct fetch submission...');
+        const response = await fetch('https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/main', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1Mzk5MjMsImV4cCI6MjA1NzExNTkyM30.58_hiFuTYtikitJOthuBTLlNiQZuWyvqZWESl0o9Tzc',
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1Mzk5MjMsImV4cCI6MjA1NzExNTkyM30.58_hiFuTYtikitJOthuBTLlNiQZuWyvqZWESl0o9Tzc`,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify(userData) // Send as single object, not array
+        });
+        
+        if (response.ok) {
+          console.log('Direct fetch submission successful!');
+          // Show success message
+          setSignUpSuccess(true);
+          setLoading(false);
+          return; // Exit early on success
+        } else {
+          const errorText = await response.text();
+          console.error('Direct fetch error:', response.status, errorText);
+          
+          // Special handling for common errors
+          if (response.status === 401 || response.status === 403) {
+            console.error('This appears to be a permission issue (RLS policy)');
+          }
+          
+          console.log('Falling back to Supabase client...');
+          // Continue to the supabase client approach below
+        }
+      } catch (directFetchError) {
+        console.error('Direct fetch attempt failed:', directFetchError);
+        console.log('Falling back to Supabase client...');
+        // Continue to the supabase client approach below
+      }
+      
+      // Test Supabase connection before insert (fallback approach)
+      console.log('Testing Supabase connection...');
+      const { data: connectionTest, error: connectionError } = await supabase
+        .from('main')
+        .select('count(*)', { count: 'exact', head: true })
+        .limit(1);
+      
+      if (connectionError) {
+        console.error('Connection test error:', connectionError);
+        throw new Error(`Connection error: ${connectionError.message}`);
+      }
+      
+      console.log('Connection test successful, proceeding with Supabase insert...');
+      
+      // Attempt submission via Supabase client
       const { data, error } = await supabase
         .from('main')
         .insert([userData]);
       
       if (error) {
+        console.error('Insert error details:', error);
+        // Log more details about the type of error
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Error details:', error.details);
+        
+        // For permission errors, try another approach
+        if (error.code === '42501' || error.message.includes('permission') || error.message.includes('access')) {
+          console.log('Permission error detected, checking the error details...');
+          
+          // Check if it might be an RLS policy issue
+          if (error.message.includes('row-level security')) {
+            console.error('This appears to be a Row Level Security (RLS) policy issue');
+            throw new Error('Database permission error. This is likely due to Row Level Security (RLS) policies. Please contact the administrator.');
+          }
+          
+          throw new Error('Permission error: ' + error.message);
+        }
+        
         throw new Error(error.message);
       }
       
+      console.log('Insert successful!', data);
+      
       // Show success message
-    setSignUpSuccess(true);
+      setSignUpSuccess(true);
       
     } catch (error) {
       console.error('Error submitting form:', error);
       
-      // Now userData is accessible here
+      // Check if it's a network error
+      if (error.message && (error.message.includes('NetworkError') || error.message.includes('Failed to fetch'))) {
+        console.error('Network error detected - check internet connection');
+      }
+      
+      // Store for later retry
       try {
         const failedSubmissions = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
         failedSubmissions.push(userData);
         localStorage.setItem('brandeis_strangers_submissions', JSON.stringify(failedSubmissions));
         console.log('Stored failed submission for later retry');
+        
+        // Show a more helpful message to users
+        alert(`We couldn't submit your sign-up information right now. This could be due to network connectivity or server issues. Don't worry - we've saved your information locally and will try again next time you visit the site.`);
       } catch (storageError) {
         console.error('Failed to store submission for retry:', storageError);
+        alert(`Error: ${error.message}. Please try again later or contact support.`);
       }
-      
-      alert(`Error: ${error.message}. We've saved your submission and will try again when you return to the site.`);
     } finally {
-    setLoading(false);
+      setLoading(false);
     }
   }
 
