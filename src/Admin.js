@@ -87,25 +87,34 @@ const Admin = () => {
       setTableInfo({ exists: false, permissions: false, count: 0 });
       
       // Get the service key directly to ensure it's available
-      console.log('Environment check in Admin component:');
-      console.log('REACT_APP_SUPABASE_SERVICE_KEY exists:', !!process.env.REACT_APP_SUPABASE_SERVICE_KEY);
+      console.log('Admin panel: Checking for service key...');
       
-      const serviceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
+      // Check both CRA and Next.js environment variable patterns
+      const serviceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY || 
+                         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
       
       if (!serviceKey) {
-        console.error('Service key not found in environment variables. Admin functionality may not work properly.');
-        console.error('Check that:');
-        console.error('1. The .env file has REACT_APP_SUPABASE_SERVICE_KEY on its own line');
-        console.error('2. There are no spaces around the = sign');
-        console.error('3. You\'ve restarted your development server after changes');
+        console.error('Service key not found in environment variables. Admin functionality will not work properly.');
+        console.error('For Vercel deployments, you need to add this in the Environment Variables section of your project settings.');
         
-        alert('Error: The admin service key is missing from environment variables. Please ensure your .env file contains REACT_APP_SUPABASE_SERVICE_KEY with the proper value. Admin functionality will be limited.');
+        alert(`
+          Service key missing or inaccessible. 
+          
+          For local development:
+          - Ensure your .env file has REACT_APP_SUPABASE_SERVICE_KEY set
+          - Each variable should be on its own line
+          - Restart your development server
+          
+          For Vercel deployment:
+          - Add NEXT_PUBLIC_SUPABASE_SERVICE_KEY in Vercel Project Settings → Environment Variables
+        `);
+        
         setLoading(false);
-        
-        // Still try to proceed with regular client as fallback
         setTableInfo({ exists: true, permissions: false, count: 0 });
         return;
       }
+      
+      console.log('Service key found! Attempting to fetch data...');
       
       // Fetch profiles - first check if the table exists
       console.log('Requesting profiles from "main" table...');
