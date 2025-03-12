@@ -44,8 +44,8 @@ const Admin = () => {
   useEffect(() => {
     if (!authorized) return;
     
-    // Set up subscription to Supabase changes
-    const subscription = supabase
+    // Set up subscription to Supabase changes - use supabaseAdmin
+    const subscription = supabaseAdmin
       .channel('main-changes')
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'main' }, 
@@ -56,8 +56,8 @@ const Admin = () => {
       )
       .subscribe();
       
-    // Set up subscription for feedback
-    const feedbackSubscription = supabase
+    // Set up subscription for feedback - use supabaseAdmin
+    const feedbackSubscription = supabaseAdmin
       .channel('feedback-changes')
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'feedback' },
@@ -69,8 +69,8 @@ const Admin = () => {
       .subscribe();
       
     return () => {
-      supabase.removeChannel(subscription);
-      supabase.removeChannel(feedbackSubscription);
+      supabaseAdmin.removeChannel(subscription);
+      supabaseAdmin.removeChannel(feedbackSubscription);
     };
   }, [authorized]);
 
@@ -85,25 +85,69 @@ const Admin = () => {
       // Initialize tableInfo
       setTableInfo({ exists: false, permissions: false, count: 0 });
       
+      // Get the service key directly to ensure it's available
+      const serviceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY || 
+                         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MTUzOTkyMywiZXhwIjoyMDU3MTE1OTIzfQ.n8qbcDBa2RyMtmE4vpRmF_w3kqnBHuarLQyhq6TsJjk';
+      
       // Fetch profiles - first check if the table exists
       console.log('Requesting profiles from "main" table...');
-      const { data: profileData, error: profileError, count: profileCount } = await supabaseAdmin
-        .from('main')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
+      
+      try {
+        // Try direct fetch first as a more reliable method
+        console.log('Attempting direct fetch first...');
+        const response = await fetch(
+          'https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/main?select=*',
+          {
+            headers: {
+              'apikey': serviceKey,
+              'Authorization': `Bearer ${serviceKey}`
+            }
+          }
+        );
         
-      if (profileError) {
-        console.error('Error fetching profiles:', profileError);
-        
-        // Check if the error is because the table doesn't exist
-        if (profileError.code === '42P01') {
-          console.error('Table "main" does not exist');
-          setTableInfo(prev => ({ ...prev, exists: false }));
+        if (response.ok) {
+          const directData = await response.json();
+          console.log('Direct fetch successful, found', directData.length, 'profiles');
           
-          // Show alert with SQL to create the table
-          if (window.confirm('The "main" table does not exist. Would you like to see the SQL to create it?')) {
-            alert(`Create the main table with this SQL in Supabase SQL Editor:
+          // Update UI with the fetched data
+          setProfiles(directData || []);
+          setTableInfo({ 
+            exists: true, 
+            permissions: true, 
+            count: directData.length
+          });
+          
+          // Update sync time and clear pending
+          setLastSyncTime(syncTime);
+          setNewProfiles([]);
+          
+          // Skip to feedback fetch
+          console.log('Skipping supabase client fetch since direct fetch succeeded');
+        } else {
+          console.error('Direct fetch failed with status:', response.status);
+          throw new Error(`Direct fetch failed: ${response.status}`);
+        }
+      } catch (directFetchError) {
+        console.warn('Direct fetch failed, falling back to supabase client:', directFetchError);
+        
+        // Fall back to supabase client
+        const { data: profileData, error: profileError, count: profileCount } = await supabaseAdmin
+          .from('main')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false });
+          
+        if (profileError) {
+          console.error('Error fetching profiles:', profileError);
+          
+          // Check if the error is because the table doesn't exist
+          if (profileError.code === '42P01') {
+            console.error('Table "main" does not exist');
+            setTableInfo(prev => ({ ...prev, exists: false }));
             
+            // Show alert with SQL to create the table
+            if (window.confirm('The "main" table does not exist. Would you like to see the SQL to create it?')) {
+              alert(`Create the main table with this SQL in Supabase SQL Editor:
+              
 CREATE TABLE public.main (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
@@ -139,50 +183,80 @@ ON public.main FOR SELECT TO authenticated USING (true);
 GRANT INSERT ON public.main TO anon;
 GRANT INSERT ON public.main TO authenticated;
 GRANT ALL ON public.main TO service_role;`);
+            }
+          } else {
+            // Other error - likely permissions
+            setTableInfo(prev => ({ ...prev, exists: true, permissions: false }));
           }
+          
+          // Still set an empty profiles array
+          setProfiles([]);
         } else {
-          // Other error - likely permissions
-          setTableInfo(prev => ({ ...prev, exists: true, permissions: false }));
+          // Debug raw data
+          console.log('Raw profile data response:', JSON.stringify(profileData).substring(0, 100) + '...');
+          
+          console.log(`Received ${profileData?.length || 0} profiles from "main" table`);
+          setTableInfo({ 
+            exists: true, 
+            permissions: true, 
+            count: profileCount || 0 
+          });
+          
+          if (profileData && profileData.length > 0) {
+            console.log('First profile sample:', JSON.stringify(profileData[0], null, 2));
+            // Log array type to debug issues
+            console.log('Profile data type:', Array.isArray(profileData) ? 'Array' : typeof profileData);
+            console.log('Profile count from response:', profileData.length);
+          } else {
+            console.log('No profiles found in "main" table');
+          }
+          
+          // Store profiles
+          setProfiles(profileData || []);
         }
-        
-        // Still set an empty profiles array
-        setProfiles([]);
-      } else {
-        console.log(`Received ${profileData?.length || 0} profiles from "main" table`);
-        setTableInfo({ 
-          exists: true, 
-          permissions: true, 
-          count: profileCount || 0 
-        });
-        
-        if (profileData && profileData.length > 0) {
-          console.log('First profile sample:', JSON.stringify(profileData[0], null, 2));
-        } else {
-          console.log('No profiles found in "main" table');
-        }
-        
-        // Store profiles
-        setProfiles(profileData || []);
       }
       
       // Fetch feedback
       console.log('Requesting feedback data...');
-      const { data: feedbackData, error: feedbackError } = await supabaseAdmin
-        .from('feedback')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        // Try direct fetch for feedback too
+        const feedbackResponse = await fetch(
+          'https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/feedback?select=*',
+          {
+            headers: {
+              'apikey': serviceKey,
+              'Authorization': `Bearer ${serviceKey}`
+            }
+          }
+        );
         
-      if (feedbackError) {
-        console.error('Error fetching feedback:', feedbackError);
+        if (feedbackResponse.ok) {
+          const feedbackData = await feedbackResponse.json();
+          console.log('Direct fetch for feedback successful, found', feedbackData.length, 'entries');
+          setFeedback(feedbackData || []);
+          setNewFeedback([]);
+        } else {
+          throw new Error('Direct fetch for feedback failed');
+        }
+      } catch (directFeedbackError) {
+        console.warn('Direct fetch for feedback failed, falling back to supabase client:', directFeedbackError);
         
-        // Check if the error is because the table doesn't exist
-        if (feedbackError.code === '42P01') {
-          console.error('Table "feedback" does not exist');
+        const { data: feedbackData, error: feedbackError } = await supabaseAdmin
+          .from('feedback')
+          .select('*')
+          .order('created_at', { ascending: false });
           
-          // Show alert with SQL to create the feedback table
-          if (window.confirm('The "feedback" table does not exist. Would you like to see the SQL to create it?')) {
-            alert(`Create the feedback table with this SQL in Supabase SQL Editor:
+        if (feedbackError) {
+          console.error('Error fetching feedback:', feedbackError);
+          
+          // Check if the error is because the table doesn't exist
+          if (feedbackError.code === '42P01') {
+            console.error('Table "feedback" does not exist');
             
+            // Show alert with SQL to create the feedback table
+            if (window.confirm('The "feedback" table does not exist. Would you like to see the SQL to create it?')) {
+              alert(`Create the feedback table with this SQL in Supabase SQL Editor:
+              
 CREATE TABLE public.feedback (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     text TEXT NOT NULL,
@@ -203,22 +277,21 @@ ON public.feedback USING (true);
 GRANT SELECT, INSERT ON public.feedback TO anon;
 GRANT ALL ON public.feedback TO authenticated;
 GRANT ALL ON public.feedback TO service_role;`);
+            }
           }
+          
+          // Still set an empty feedback array
+          setFeedback([]);
+        } else {
+          console.log(`Received ${feedbackData?.length || 0} feedback entries`);
+          setFeedback(feedbackData || []);
         }
-        
-        // Still set an empty feedback array
-        setFeedback([]);
-      } else {
-        console.log(`Received ${feedbackData?.length || 0} feedback entries`);
-        setFeedback(feedbackData || []);
       }
       
-      // Update sync time
-      setLastSyncTime(syncTime);
-      
-      // Clear any pending "new" profiles and feedback
-      setNewProfiles([]);
-      setNewFeedback([]);
+      // Update sync time if not already updated
+      if (!lastSyncTime) {
+        setLastSyncTime(syncTime);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       alert('Error fetching data: ' + error.message);

@@ -13,6 +13,7 @@ const serviceRoleKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
 
 // Log connection details (remove sensitive info in production)
 console.log('Connecting to Supabase...');
+console.log('Service role key available:', !!serviceRoleKey);
 
 // Create and export a default supabase client
 const supabase = createClient(supabaseUrl, supabaseKey || 'public-anon-key');
@@ -37,6 +38,21 @@ export const supabaseAdmin = serviceRoleKey ?
       // Test admin client if available
       if (serviceRoleKey) {
         console.log('Service role key detected - admin functionality should be available');
+        
+        // Test a direct query to main table
+        try {
+          const { count, error: testError } = await supabaseAdmin
+            .from('main')
+            .select('*', { count: 'exact', head: true });
+            
+          if (testError) {
+            console.error('Admin client test error:', testError);
+          } else {
+            console.log('Admin client test successful, found', count, 'rows in main table');
+          }
+        } catch (e) {
+          console.error('Admin client test exception:', e);
+        }
       }
     }
   } catch (err) {
