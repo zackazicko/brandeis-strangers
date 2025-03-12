@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import supabase, { supabaseAdmin } from './supabaseClient';
+import config from './config'; // Import secure configuration
 import './Admin.css'; // import the CSS file for styles
 
 const Admin = () => {
@@ -26,7 +27,7 @@ const Admin = () => {
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
-    if (adminPassword === 'zachisking') {
+    if (config.validateAdminPassword(adminPassword)) {
       setAuthorized(true);
     } else {
       alert('Incorrect admin password.');
@@ -86,8 +87,17 @@ const Admin = () => {
       setTableInfo({ exists: false, permissions: false, count: 0 });
       
       // Get the service key directly to ensure it's available
-      const serviceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY || 
-                         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0MTUzOTkyMywiZXhwIjoyMDU3MTE1OTIzfQ.n8qbcDBa2RyMtmE4vpRmF_w3kqnBHuarLQyhq6TsJjk';
+      const serviceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
+      
+      if (!serviceKey) {
+        console.error('Service key not found in environment variables. Admin functionality may not work properly.');
+        alert('Error: The admin service key is missing from environment variables. Please ensure your .env file contains REACT_APP_SUPABASE_SERVICE_KEY with the proper value. Admin functionality will be limited.');
+        setLoading(false);
+        
+        // Still try to proceed with regular client as fallback
+        setTableInfo({ exists: true, permissions: false, count: 0 });
+        return;
+      }
       
       // Fetch profiles - first check if the table exists
       console.log('Requesting profiles from "main" table...');

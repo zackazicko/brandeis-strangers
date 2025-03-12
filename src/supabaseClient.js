@@ -13,7 +13,12 @@ const serviceRoleKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
 
 // Log connection details (remove sensitive info in production)
 console.log('Connecting to Supabase...');
-console.log('Service role key available:', !!serviceRoleKey);
+if (!serviceRoleKey) {
+  console.warn('⚠️ REACT_APP_SUPABASE_SERVICE_KEY not found in environment variables!');
+  console.warn('Admin functionality will be limited. Please ensure your .env file contains this key.');
+} else {
+  console.log('✅ Service role key available - admin functionality should work');
+}
 
 // Create and export a default supabase client
 const supabase = createClient(supabaseUrl, supabaseKey || 'public-anon-key');

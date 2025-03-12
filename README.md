@@ -2,6 +2,20 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Environment Setup
+
+This application requires environment variables for proper functioning. Create a `.env` file in the root directory with the following variables:
+
+```
+# Supabase configuration
+REACT_APP_SUPABASE_SERVICE_KEY=your_service_role_key_here
+
+# Admin credentials
+REACT_APP_ADMIN_PASSWORD=your_admin_password_here
+```
+
+**Note:** The `.env` file is ignored by git for security reasons. Never commit sensitive credentials to version control.
+
 ## Available Scripts
 
 In the project directory, you can run:
