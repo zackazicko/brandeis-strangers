@@ -4,16 +4,16 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://qahwzhxwqgzlfymtcnde.supabase.co';
 
 // Enhanced environment variable handling for Vercel deployment
-console.log('Environment variable diagnostics:');
+console.log('Supabase environment variables checking...');
 
 // Vercel exposes environment variables to the browser only if they start with NEXT_PUBLIC_
 const serviceRoleKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
-                      
-// The public anon key is less sensitive but still needed
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
-                   'public-anon-key'; // Fallback value
 
-// Log environment variable status (but not the actual values)
+// Use the provided anon key or the hardcoded one from the console logs
+const providedAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1Mzk5MjMsImV4cCI6MjA1NzExNTkyM30.58_hiFuTYtikitJOthuBTLlNiQZuWyvqZWESl0o9Tzc';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || providedAnonKey;
+
+// Log environment variable status with detailed information
 console.log('Service role key available:', !!serviceRoleKey);
 console.log('Anon key available:', !!supabaseKey);
 
@@ -25,10 +25,18 @@ export const supabaseAdmin = serviceRoleKey ?
   createClient(supabaseUrl, serviceRoleKey) : 
   supabase; // Fallback to regular client if no service key available
 
+// Show a warning about missing service key
+if (!serviceRoleKey) {
+  console.error('⚠️ IMPORTANT: Service role key is missing from environment variables');
+  console.error('The admin panel requires this key to function properly');
+  console.error('Please add NEXT_PUBLIC_SUPABASE_SERVICE_KEY to your Vercel environment variables');
+  console.error('Instructions: https://vercel.com/docs/projects/environment-variables');
+}
+
 // Simple connectivity test
 (async () => {
   try {
-    console.log('Testing Supabase connection...');
+    console.log('Testing basic Supabase connection...');
     const { data, error } = await supabase.auth.getSession();
     
     if (error) {

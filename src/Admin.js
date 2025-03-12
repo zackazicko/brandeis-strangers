@@ -97,12 +97,18 @@ const Admin = () => {
         console.error('For Vercel deployments, you need to add this in the Environment Variables section of your project settings.');
         
         alert(`
-          Service key missing or inaccessible. 
+          Service key missing or inaccessible.
           
-          For Vercel deployment:
-          - Add NEXT_PUBLIC_SUPABASE_SERVICE_KEY in Vercel Project Settings → Environment Variables
-          - Ensure the key is set for all environments (Production, Preview, Development)
-          - After adding the environment variable, redeploy your application
+          To fix this issue:
+          
+          1. Go to your Supabase dashboard → Project Settings → API
+          2. Copy your "service_role" key (NOT the anon/public key)
+          3. Go to Vercel dashboard → Project Settings → Environment Variables
+          4. Add a variable named NEXT_PUBLIC_SUPABASE_SERVICE_KEY with the service role key as value
+          5. Make sure it's enabled for all environments (Production, Preview, Development)
+          6. Redeploy your application
+          
+          Note: The service role key is different from your public/anon key and has admin permissions.
         `);
         
         setLoading(false);
