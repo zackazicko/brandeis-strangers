@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import supabase from './supabaseClient';
+import supabase, { supabaseAdmin } from './supabaseClient';
 import './Admin.css'; // import the CSS file for styles
 
 const Admin = () => {
@@ -14,6 +14,7 @@ const Admin = () => {
   const [newFeedback, setNewFeedback] = useState([]);
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
+  const [tableInfo, setTableInfo] = useState({ exists: false, permissions: false, count: 0 });
   
   // UI states
   const [selectedRows, setSelectedRows] = useState([]);
@@ -79,47 +80,143 @@ const Admin = () => {
     try {
       // Get the current time for tracking new entries
       const syncTime = new Date();
-      console.log('Fetching data from Supabase...');
+      console.log('Fetching data from Supabase using admin client...');
       
-      // Fetch profiles
+      // Initialize tableInfo
+      setTableInfo({ exists: false, permissions: false, count: 0 });
+      
+      // Fetch profiles - first check if the table exists
       console.log('Requesting profiles from "main" table...');
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData, error: profileError, count: profileCount } = await supabaseAdmin
         .from('main')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
         
       if (profileError) {
         console.error('Error fetching profiles:', profileError);
-        throw profileError;
-      }
-      
-      console.log(`Received ${profileData?.length || 0} profiles from "main" table`);
-      if (profileData && profileData.length > 0) {
-        console.log('First profile sample:', JSON.stringify(profileData[0], null, 2));
+        
+        // Check if the error is because the table doesn't exist
+        if (profileError.code === '42P01') {
+          console.error('Table "main" does not exist');
+          setTableInfo(prev => ({ ...prev, exists: false }));
+          
+          // Show alert with SQL to create the table
+          if (window.confirm('The "main" table does not exist. Would you like to see the SQL to create it?')) {
+            alert(`Create the main table with this SQL in Supabase SQL Editor:
+            
+CREATE TABLE public.main (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    name TEXT,
+    email TEXT,
+    majors TEXT[] DEFAULT '{}'::TEXT[],
+    class_level TEXT,
+    interests TEXT[] DEFAULT '{}'::TEXT[],
+    meal_plan BOOLEAN DEFAULT false,
+    guest_swipe BOOLEAN DEFAULT false,
+    dining_locations TEXT[] DEFAULT '{}'::TEXT[],
+    meal_times_json JSONB,
+    meal_times_flattened JSONB,
+    personality_type TEXT,
+    humor_type TEXT,
+    conversation_type TEXT,
+    planner_type TEXT,
+    hp_house TEXT,
+    match_preference TEXT
+);
+
+-- Enable RLS
+ALTER TABLE public.main ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "Allow users to insert their own profiles" 
+ON public.main FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+CREATE POLICY "Allow admin read access" 
+ON public.main FOR SELECT TO authenticated USING (true);
+
+-- Grant permissions
+GRANT INSERT ON public.main TO anon;
+GRANT INSERT ON public.main TO authenticated;
+GRANT ALL ON public.main TO service_role;`);
+          }
+        } else {
+          // Other error - likely permissions
+          setTableInfo(prev => ({ ...prev, exists: true, permissions: false }));
+        }
+        
+        // Still set an empty profiles array
+        setProfiles([]);
       } else {
-        console.log('No profiles found in "main" table');
+        console.log(`Received ${profileData?.length || 0} profiles from "main" table`);
+        setTableInfo({ 
+          exists: true, 
+          permissions: true, 
+          count: profileCount || 0 
+        });
+        
+        if (profileData && profileData.length > 0) {
+          console.log('First profile sample:', JSON.stringify(profileData[0], null, 2));
+        } else {
+          console.log('No profiles found in "main" table');
+        }
+        
+        // Store profiles
+        setProfiles(profileData || []);
       }
       
       // Fetch feedback
       console.log('Requesting feedback data...');
-      const { data: feedbackData, error: feedbackError } = await supabase
+      const { data: feedbackData, error: feedbackError } = await supabaseAdmin
         .from('feedback')
         .select('*')
         .order('created_at', { ascending: false });
         
       if (feedbackError) {
         console.error('Error fetching feedback:', feedbackError);
-        throw feedbackError;
+        
+        // Check if the error is because the table doesn't exist
+        if (feedbackError.code === '42P01') {
+          console.error('Table "feedback" does not exist');
+          
+          // Show alert with SQL to create the feedback table
+          if (window.confirm('The "feedback" table does not exist. Would you like to see the SQL to create it?')) {
+            alert(`Create the feedback table with this SQL in Supabase SQL Editor:
+            
+CREATE TABLE public.feedback (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    text TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "Allow anonymous inserts" 
+ON public.feedback FOR INSERT TO anon WITH CHECK (true);
+
+CREATE POLICY "Allow admin full access" 
+ON public.feedback USING (true);
+
+-- Grant permissions
+GRANT SELECT, INSERT ON public.feedback TO anon;
+GRANT ALL ON public.feedback TO authenticated;
+GRANT ALL ON public.feedback TO service_role;`);
+          }
+        }
+        
+        // Still set an empty feedback array
+        setFeedback([]);
+      } else {
+        console.log(`Received ${feedbackData?.length || 0} feedback entries`);
+        setFeedback(feedbackData || []);
       }
       
-      console.log(`Received ${feedbackData?.length || 0} feedback entries`);
-      
-      // Store all profiles and feedback
-      setProfiles(profileData || []);
-      setFeedback(feedbackData || []);
+      // Update sync time
       setLastSyncTime(syncTime);
       
-      // Clear any pending "new" profiles and feedback since we just did a full sync
+      // Clear any pending "new" profiles and feedback
       setNewProfiles([]);
       setNewFeedback([]);
     } catch (error) {
@@ -351,36 +448,43 @@ const Admin = () => {
             onClick={async () => {
               console.log('Testing Supabase connection...');
               try {
-                // Test general connection
-                const { data: tablesData, error: tablesError } = await supabase
-                  .from('pg_tables')
-                  .select('*')
-                  .eq('schemaname', 'public')
-                  .order('tablename');
-                
-                if (tablesError) {
-                  console.error('Error accessing tables:', tablesError);
-                  alert('Supabase connection issue: ' + tablesError.message);
-                  return;
-                }
-                
-                console.log('Available tables:', tablesData?.map(t => t.tablename));
-                
-                // Test direct access to main table
-                const { data: mainCount, error: mainError } = await supabase
+                // Test direct access to the main table
+                const { data, error, count } = await supabaseAdmin
                   .from('main')
                   .select('*', { count: 'exact', head: true });
                 
-                if (mainError) {
-                  console.error('Error accessing main table:', mainError);
-                  alert('Cannot access "main" table: ' + mainError.message);
+                if (error) {
+                  console.error('Error accessing main table:', error);
+                  
+                  // Check if the error indicates the table doesn't exist
+                  if (error.code === '42P01') {
+                    alert('The "main" table does not exist in your database. Please create it using the SQL commands provided.');
+                  } else {
+                    alert(`Error accessing "main" table: ${error.message}`);
+                  }
                 } else {
-                  console.log('Main table accessible, count:', mainCount?.length);
-                  alert(`Successfully connected to "main" table.`);
+                  console.log('Main table accessible, count:', count);
+                  
+                  if (count === 0) {
+                    alert('The "main" table exists but contains no data yet.');
+                  } else {
+                    alert(`Successfully connected to "main" table.\nFound ${count} user profiles.`);
+                  }
+                  
+                  // Now check feedback table
+                  const { data: feedbackData, error: feedbackError, count: feedbackCount } = await supabaseAdmin
+                    .from('feedback')
+                    .select('*', { count: 'exact', head: true });
+                    
+                  if (feedbackError) {
+                    console.error('Error accessing feedback table:', feedbackError);
+                  } else {
+                    console.log(`Feedback table accessible, count: ${feedbackCount}`);
+                  }
                 }
               } catch (err) {
                 console.error('Debug test failed:', err);
-                alert('Debug test failed: ' + err.message);
+                alert(`Debug test failed: ${err.message}`);
               }
             }}
             className="sync-button"
@@ -395,6 +499,46 @@ const Admin = () => {
           )}
         </div>
       </header>
+      
+      {/* Add diagnostic alerts */}
+      {tableInfo.exists === false && (
+        <div className="admin-alert" style={{ 
+          backgroundColor: '#FFEBEE', 
+          color: '#C62828', 
+          padding: '10px 15px',
+          borderRadius: '5px',
+          margin: '15px 0',
+          fontSize: '0.9rem'
+        }}>
+          ⚠️ The 'main' table doesn't exist in your database. Click "Debug Connection" and follow the prompts to create it.
+        </div>
+      )}
+      
+      {tableInfo.exists && !tableInfo.permissions && (
+        <div className="admin-alert" style={{ 
+          backgroundColor: '#FFF8E1', 
+          color: '#F57F17', 
+          padding: '10px 15px',
+          borderRadius: '5px',
+          margin: '15px 0',
+          fontSize: '0.9rem'
+        }}>
+          ⚠️ Your API key doesn't have sufficient permissions to access the 'main' table. The service_role key should be set correctly.
+        </div>
+      )}
+      
+      {tableInfo.exists && tableInfo.permissions && tableInfo.count === 0 && (
+        <div className="admin-alert" style={{ 
+          backgroundColor: '#E3F2FD', 
+          color: '#1565C0', 
+          padding: '10px 15px',
+          borderRadius: '5px',
+          margin: '15px 0',
+          fontSize: '0.9rem'
+        }}>
+          ℹ️ The 'main' table exists but contains no data. This is normal if you haven't had any sign-ups yet. When sign-ups are enabled and users register, data will appear here.
+        </div>
+      )}
       
       <div className="admin-toolbar">
         <div className="admin-search">
