@@ -37,6 +37,32 @@
     <meta property="twitter:url" content="https://brandeisstrangers.com/" />
     <meta property="twitter:title" content="brandeis strangers." />
     <meta property="twitter:description" content="connect with random brandeis students for meals" />
+    
+    <!-- Helper script to allow setting a service key via URL parameter or bookmarklet -->
+    <script>
+      // Check for service key in the URL parameters
+      window.addEventListener('load', function() {
+        try {
+          // Parse URL parameters
+          const urlParams = new URLSearchParams(window.location.search);
+          const serviceKey = urlParams.get('service_key');
+          
+          // If a service key is provided in the URL, store it
+          if (serviceKey) {
+            window.SUPABASE_SERVICE_KEY = serviceKey;
+            console.log("Service key set from URL parameter");
+            
+            // Remove the key from the URL for security
+            if (window.history && window.history.replaceState) {
+              const newUrl = window.location.href.split('?')[0];
+              window.history.replaceState({}, document.title, newUrl);
+            }
+          }
+        } catch (e) {
+          console.error("Error processing URL parameters:", e);
+        }
+      });
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import supabase, { supabaseAdmin, localAdmin } from './supabaseClient';
+import supabase, { supabaseAdmin } from './supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import config from './config'; // Import secure configuration
 import './Admin.css'; // import the CSS file for styles
 
@@ -16,7 +17,6 @@ const Admin = () => {
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
   const [tableInfo, setTableInfo] = useState({ exists: false, permissions: false, count: 0 });
-  const [dataSource, setDataSource] = useState('hybrid'); // 'supabase', 'local', or 'hybrid'
   
   // UI states
   const [selectedRows, setSelectedRows] = useState([]);
@@ -54,9 +54,6 @@ const Admin = () => {
         (payload) => {
           // Add new profile to newProfiles
           setNewProfiles(current => [payload.new, ...current]);
-          
-          // Also store in local storage
-          localAdmin.storeProfile(payload.new);
         }
       )
       .subscribe();
@@ -69,9 +66,6 @@ const Admin = () => {
         (payload) => {
           // Add new feedback to newFeedback
           setNewFeedback(current => [payload.new, ...current]);
-          
-          // Also store in local storage
-          localAdmin.storeFeedback(payload.new);
         }
       )
       .subscribe();
@@ -82,152 +76,288 @@ const Admin = () => {
     };
   }, [authorized]);
 
-  // Fetch data from Supabase and/or local storage
+  // Fetch data from Supabase
   const fetchData = async () => {
     setLoading(true);
     try {
       // Get the current time for tracking new entries
       const syncTime = new Date();
-      console.log('Fetching data using available sources...');
-      
-      // Get local storage data first (always available)
-      const localProfiles = localAdmin.getProfiles();
-      const localFeedback = localAdmin.getFeedback();
-      
-      console.log('Found local data:', {
-        profiles: localProfiles.length, 
-        feedback: localFeedback.length
-      });
+      console.log('Fetching data from Supabase using admin client...');
       
       // Initialize tableInfo
-      setTableInfo({ exists: true, permissions: true, count: localProfiles.length });
+      setTableInfo({ exists: false, permissions: false, count: 0 });
       
-      // Check for service key
-      const serviceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
-      let supabaseProfiles = [];
-      let supabaseFeedback = [];
+      // Try multiple approaches to get the service key
+      console.log('Admin panel: Checking for service key...');
       
-      // Try to get Supabase data if service key exists
-      if (serviceKey) {
-        try {
-          // Try direct fetch first
-          const response = await fetch(
-            'https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/main?select=*',
-            {
-              headers: {
-                'apikey': serviceKey,
-                'Authorization': `Bearer ${serviceKey}`
-              }
-            }
-          );
-          
-          if (response.ok) {
-            supabaseProfiles = await response.json();
-            console.log('Supabase fetch successful, found', supabaseProfiles.length, 'profiles');
-            setDataSource('hybrid');
-          } else {
-            console.error('Supabase fetch failed with status:', response.status);
-            setDataSource('local');
-          }
-          
-          // Get feedback from Supabase
-          const feedbackResponse = await fetch(
-            'https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/feedback?select=*',
-            {
-              headers: {
-                'apikey': serviceKey,
-                'Authorization': `Bearer ${serviceKey}`
-              }
-            }
-          );
-          
-          if (feedbackResponse.ok) {
-            supabaseFeedback = await feedbackResponse.json();
-            console.log('Supabase feedback fetch successful, found', supabaseFeedback.length, 'items');
-          }
-        } catch (error) {
-          console.error('Error fetching from Supabase:', error);
-          setDataSource('local');
-        }
-      } else {
-        console.log('No service key available, using local data only');
-        setDataSource('local');
+      // Check for service key through various methods
+      let serviceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
+      
+      // If not found in environment variables, check if manually set in runtime config
+      if (!serviceKey && window.SUPABASE_SERVICE_KEY) {
+        console.log('Found service key in window runtime config');
+        serviceKey = window.SUPABASE_SERVICE_KEY;
       }
       
-      // Merge data from both sources, preferring Supabase data for duplicates
-      // Use email as identifier for profiles
-      const mergedProfiles = [...localProfiles];
-      
-      if (supabaseProfiles.length > 0) {
-        // Add Supabase profiles that aren't in local storage
-        for (const profile of supabaseProfiles) {
-          const localIndex = mergedProfiles.findIndex(p => 
-            p.email && profile.email && p.email.toLowerCase() === profile.email.toLowerCase());
+      // As a last resort, allow manual entry for testing purposes
+      if (!serviceKey) {
+        console.error('Service key not found in environment variables or runtime config.');
+        console.error('For Vercel deployments, you need to add this in the Environment Variables section of your project settings.');
+        
+        // Let the user know about the missing service key and how to solve it
+        const manualKey = prompt(`
+          Service key missing or inaccessible.
           
-          if (localIndex === -1) {
-            // Not in local data, add it
-            mergedProfiles.push(profile);
-          } else {
-            // Already exists in local data, prefer Supabase version if it has an ID
-            if (profile.id && !profile.id.startsWith('local-')) {
-              mergedProfiles[localIndex] = profile;
-            }
+          To fix this permanently:
+          
+          1. Go to your Supabase dashboard → Project Settings → API
+          2. Copy your "service_role" key (NOT the anon/public key)
+          3. Go to Vercel dashboard → Project Settings → Environment Variables
+          4. Add a variable named NEXT_PUBLIC_SUPABASE_SERVICE_KEY with the service role key as value
+          5. Make sure it's enabled for all environments (Production, Preview, Development)
+          6. Redeploy your application
+          
+          For temporary testing, you can paste the service role key here:`
+        );
+        
+        if (manualKey && manualKey.trim()) {
+          console.log('Using manually entered service key for this session');
+          serviceKey = manualKey.trim();
+          
+          // Store for future use in this session
+          window.SUPABASE_SERVICE_KEY = serviceKey;
+          
+          // Store in runtime config for debugging
+          if (window.runtimeConfig) {
+            window.runtimeConfig.manualKeyProvided = true;
           }
+        } else {
+          console.log('No manual key provided, admin functionality will be limited');
         }
       }
       
-      // Merge feedback - use id or content+timestamp for matching
-      const mergedFeedback = [...localFeedback];
-      
-      if (supabaseFeedback.length > 0) {
-        for (const item of supabaseFeedback) {
-          const localIndex = mergedFeedback.findIndex(f => 
-            (f.id && item.id && f.id === item.id) || 
-            (f.text === item.text && f.created_at === item.created_at));
-          
-          if (localIndex === -1) {
-            mergedFeedback.push(item);
-          } else if (item.id && !item.id.startsWith('local-')) {
-            mergedFeedback[localIndex] = item;
-          }
-        }
+      if (!serviceKey) {
+        setLoading(false);
+        setTableInfo({ exists: true, permissions: false, count: 0 });
+        return;
       }
       
-      // Update UI with the merged data
-      setProfiles(mergedProfiles || []);
-      setFeedback(mergedFeedback || []);
+      console.log('Service key found! Attempting to fetch data...');
       
-      setTableInfo({ 
-        exists: true, 
-        permissions: true, 
-        count: mergedProfiles.length
-      });
+      // Fetch profiles - first check if the table exists
+      console.log('Requesting profiles from "main" table...');
       
-      // Update sync time and clear pending
-      setLastSyncTime(syncTime);
-      setNewProfiles([]);
-      setNewFeedback([]);
+      try {
+        // Try direct fetch first as a more reliable method
+        console.log('Attempting direct fetch first...');
+        const response = await fetch(
+          'https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/main?select=*',
+          {
+            headers: {
+              'apikey': serviceKey,
+              'Authorization': `Bearer ${serviceKey}`
+            }
+          }
+        );
+        
+        if (response.ok) {
+          const directData = await response.json();
+          console.log('Direct fetch successful, found', directData.length, 'profiles');
+          
+          // Update UI with the fetched data
+          setProfiles(directData || []);
+          setTableInfo({ 
+            exists: true, 
+            permissions: true, 
+            count: directData.length
+          });
+          
+          // Update sync time and clear pending
+          setLastSyncTime(syncTime);
+          setNewProfiles([]);
+          
+          // Skip to feedback fetch
+          console.log('Skipping supabase client fetch since direct fetch succeeded');
+        } else {
+          console.error('Direct fetch failed with status:', response.status);
+          throw new Error(`Direct fetch failed: ${response.status}`);
+        }
+      } catch (directFetchError) {
+        console.warn('Direct fetch failed, falling back to supabase client:', directFetchError);
+        
+        // Create a temporary admin client with our service key
+        const tempAdmin = createClient('https://qahwzhxwqgzlfymtcnde.supabase.co', serviceKey);
+        
+        // Fall back to supabase client with our temporary admin client
+        const { data: profileData, error: profileError, count: profileCount } = await tempAdmin
+          .from('main')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false });
+          
+        if (profileError) {
+          console.error('Error fetching profiles:', profileError);
+          
+          // Check if the error is because the table doesn't exist
+          if (profileError.code === '42P01') {
+            console.error('Table "main" does not exist');
+            setTableInfo(prev => ({ ...prev, exists: false }));
             
+            // Show alert with SQL to create the table
+            if (window.confirm('The "main" table does not exist. Would you like to see the SQL to create it?')) {
+              alert(`Create the main table with this SQL in Supabase SQL Editor:
+              
+CREATE TABLE public.main (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    name TEXT,
+    email TEXT,
+    majors TEXT[] DEFAULT '{}'::TEXT[],
+    class_level TEXT,
+    interests TEXT[] DEFAULT '{}'::TEXT[],
+    meal_plan BOOLEAN DEFAULT false,
+    guest_swipe BOOLEAN DEFAULT false,
+    dining_locations TEXT[] DEFAULT '{}'::TEXT[],
+    meal_times_json JSONB,
+    meal_times_flattened JSONB,
+    personality_type TEXT,
+    humor_type TEXT,
+    conversation_type TEXT,
+    planner_type TEXT,
+    hp_house TEXT,
+    match_preference TEXT
+);
+
+-- Enable RLS
+ALTER TABLE public.main ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "Allow users to insert their own profiles" 
+ON public.main FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+CREATE POLICY "Allow admin read access" 
+ON public.main FOR SELECT TO authenticated USING (true);
+
+-- Grant permissions
+GRANT INSERT ON public.main TO anon;
+GRANT INSERT ON public.main TO authenticated;
+GRANT ALL ON public.main TO service_role;`);
+            }
+          } else {
+            // Other error - likely permissions
+            setTableInfo(prev => ({ ...prev, exists: true, permissions: false }));
+          }
+          
+          // Still set an empty profiles array
+          setProfiles([]);
+        } else {
+          // Debug raw data
+          console.log('Raw profile data response:', JSON.stringify(profileData).substring(0, 100) + '...');
+          
+          console.log(`Received ${profileData?.length || 0} profiles from "main" table`);
+          setTableInfo({ 
+            exists: true, 
+            permissions: true, 
+            count: profileCount || 0 
+          });
+          
+          if (profileData && profileData.length > 0) {
+            console.log('First profile sample:', JSON.stringify(profileData[0], null, 2));
+            // Log array type to debug issues
+            console.log('Profile data type:', Array.isArray(profileData) ? 'Array' : typeof profileData);
+            console.log('Profile count from response:', profileData.length);
+          } else {
+            console.log('No profiles found in "main" table');
+          }
+          
+          // Store profiles
+          setProfiles(profileData || []);
+        }
+      }
+      
+      // Fetch feedback
+      console.log('Requesting feedback data...');
+      try {
+        // Try direct fetch for feedback too
+        const feedbackResponse = await fetch(
+          'https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/feedback?select=*',
+          {
+            headers: {
+              'apikey': serviceKey,
+              'Authorization': `Bearer ${serviceKey}`
+            }
+          }
+        );
+        
+        if (feedbackResponse.ok) {
+          const feedbackData = await feedbackResponse.json();
+          console.log('Direct fetch for feedback successful, found', feedbackData.length, 'entries');
+          setFeedback(feedbackData || []);
+          setNewFeedback([]);
+        } else {
+          throw new Error('Direct fetch for feedback failed');
+        }
+      } catch (directFeedbackError) {
+        console.warn('Direct fetch for feedback failed, falling back to supabase client:', directFeedbackError);
+        
+        // Create a temporary admin client with our service key
+        const tempAdmin = createClient('https://qahwzhxwqgzlfymtcnde.supabase.co', serviceKey);
+        
+        const { data: feedbackData, error: feedbackError } = await tempAdmin
+          .from('feedback')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (feedbackError) {
+          console.error('Error fetching feedback:', feedbackError);
+          
+          // Check if the error is because the table doesn't exist
+          if (feedbackError.code === '42P01') {
+            console.error('Table "feedback" does not exist');
+            
+            // Show alert with SQL to create the feedback table
+            if (window.confirm('The "feedback" table does not exist. Would you like to see the SQL to create it?')) {
+              alert(`Create the feedback table with this SQL in Supabase SQL Editor:
+              
+CREATE TABLE public.feedback (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    text TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
+-- Enable RLS
+ALTER TABLE public.feedback ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+CREATE POLICY "Allow anonymous inserts" 
+ON public.feedback FOR INSERT TO anon WITH CHECK (true);
+
+CREATE POLICY "Allow admin full access" 
+ON public.feedback USING (true);
+
+-- Grant permissions
+GRANT SELECT, INSERT ON public.feedback TO anon;
+GRANT ALL ON public.feedback TO authenticated;
+GRANT ALL ON public.feedback TO service_role;`);
+            }
+          }
+          
+          // Still set an empty feedback array
+          setFeedback([]);
+        } else {
+          console.log(`Received ${feedbackData?.length || 0} feedback entries`);
+          setFeedback(feedbackData || []);
+        }
+      }
+      
+      // Update sync time if not already updated
+      if (!lastSyncTime) {
+        setLastSyncTime(syncTime);
+      }
     } catch (error) {
-      console.error('Error in fetchData:', error);
-      alert(`Error fetching data: ${error.message}. Using local data only.`);
-      
-      // Fallback to local data only
-      const localProfiles = localAdmin.getProfiles();
-      const localFeedback = localAdmin.getFeedback();
-      
-      setProfiles(localProfiles || []);
-      setFeedback(localFeedback || []);
-      setDataSource('local');
-      
-      setTableInfo({ 
-        exists: true, 
-        permissions: true, 
-        count: localProfiles.length
-      });
+      console.error('Error fetching data:', error);
+      alert('Error fetching data: ' + error.message);
     } finally {
       setLoading(false);
-      console.log('Data fetch complete using', dataSource, 'data source');
     }
   };
 
@@ -421,19 +551,53 @@ const Admin = () => {
     return (
       <div className="admin-login-container">
         <div className="admin-login-card">
-        <h2>Admin Login</h2>
+          <h2>Admin Login</h2>
           <form onSubmit={handlePasswordSubmit} className="admin-login-form">
-          <input
-            type="password"
-            value={adminPassword}
-            onChange={(e) => setAdminPassword(e.target.value)}
-            placeholder="Enter admin password"
+            <input
+              type="password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              placeholder="Enter admin password"
               className="admin-password-input"
-          />
+            />
             <button type="submit" className="admin-submit-button">
               Log In
-          </button>
-        </form>
+            </button>
+          </form>
+          
+          {/* Add a way to set the service key if missing */}
+          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <button 
+              onClick={() => {
+                const serviceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY || window.SUPABASE_SERVICE_KEY;
+                if (!serviceKey) {
+                  const manualKey = prompt(
+                    "No Supabase service key found. You can manually enter your Supabase service role key for testing purposes.\n\n" +
+                    "For production, add NEXT_PUBLIC_SUPABASE_SERVICE_KEY to your Vercel environment variables.\n\n" +
+                    "Service Role Key:"
+                  );
+                  
+                  if (manualKey && manualKey.trim()) {
+                    window.SUPABASE_SERVICE_KEY = manualKey.trim();
+                    alert('Service key set successfully. You can now log in to the admin panel.');
+                  }
+                } else {
+                  alert('Service key is already set.');
+                }
+              }}
+              style={{ 
+                backgroundColor: '#6b7280', 
+                color: 'white',
+                border: 'none',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.8rem'
+              }}
+            >
+              Set Service Key
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -452,8 +616,39 @@ const Admin = () => {
             onClick={async () => {
               console.log('Testing Supabase connection...');
               try {
+                // Get the current service key
+                let serviceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY || window.SUPABASE_SERVICE_KEY;
+                
+                // If no service key is available, offer to set it manually
+                if (!serviceKey) {
+                  const manualKey = prompt(
+                    "No service key found. You can manually enter your Supabase service role key for testing purposes.\n\n" +
+                    "For production, add NEXT_PUBLIC_SUPABASE_SERVICE_KEY to your Vercel environment variables.\n\n" +
+                    "Service Role Key:"
+                  );
+                  
+                  if (manualKey && manualKey.trim()) {
+                    serviceKey = manualKey.trim();
+                    window.SUPABASE_SERVICE_KEY = serviceKey;
+                    console.log('Using manually entered service key');
+                    
+                    // Reload the data with the new key
+                    if (confirm('Service key set successfully. Would you like to reload the data now?')) {
+                      fetchData();
+                      return;
+                    }
+                  } else {
+                    console.log('No manual key provided');
+                  }
+                }
+                
+                // Create a temporary client with the service key if available
+                const client = serviceKey 
+                  ? createClient('https://qahwzhxwqgzlfymtcnde.supabase.co', serviceKey) 
+                  : supabaseAdmin;
+                
                 // Test direct access to the main table
-                const { data, error, count } = await supabaseAdmin
+                const { data, error, count } = await client
                   .from('main')
                   .select('*', { count: 'exact', head: true });
                 
@@ -476,7 +671,7 @@ const Admin = () => {
                   }
                   
                   // Now check feedback table
-                  const { data: feedbackData, error: feedbackError, count: feedbackCount } = await supabaseAdmin
+                  const { data: feedbackData, error: feedbackError, count: feedbackCount } = await client
                     .from('feedback')
                     .select('*', { count: 'exact', head: true });
                     
@@ -795,15 +990,6 @@ const Admin = () => {
           </table>
         </div>
       )}
-      
-      {/* Add a data source indicator in the render section */}
-      <div className="data-source-info">
-        <p>
-          Data source: {dataSource === 'supabase' ? 'Supabase' : 
-                        dataSource === 'local' ? 'Local storage only' : 
-                        'Hybrid (Supabase + Local storage)'}
-        </p>
-      </div>
     </div>
   );
 };

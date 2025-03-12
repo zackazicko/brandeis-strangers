@@ -1,6 +1,6 @@
 // eslint-disable-next-line
 import React, { useState, useEffect, useRef } from 'react';
-import supabase, { localAdmin } from './supabaseClient';
+import supabase from './supabaseClient';
 
 // Move these style creator functions to the top, outside component
 const createBtnStyle = (isMobile = false) => ({
@@ -691,25 +691,18 @@ export default function Home() {
         throw new Error(error.message);
       }
       
-      // Store in local admin storage regardless of Supabase success
-      localAdmin.storeProfile(userData);
-      
       // Show success message
-      setSignUpSuccess(true);
+    setSignUpSuccess(true);
       
     } catch (error) {
       console.error('Error submitting form:', error);
       
       // Now userData is accessible here
       try {
-        // Store in failed submissions for retry
         const failedSubmissions = JSON.parse(localStorage.getItem('brandeis_strangers_submissions') || '[]');
         failedSubmissions.push(userData);
         localStorage.setItem('brandeis_strangers_submissions', JSON.stringify(failedSubmissions));
         console.log('Stored failed submission for later retry');
-        
-        // Also store in admin local storage so it's visible there
-        localAdmin.storeProfile(userData);
       } catch (storageError) {
         console.error('Failed to store submission for retry:', storageError);
       }
@@ -827,31 +820,24 @@ export default function Home() {
     if (!feedbackText.trim()) return;
     
     setIsSubmitting(true);
-    const feedbackData = { 
-      text: feedbackText,
-      created_at: new Date().toISOString()
-    };
-    
     try {
       // Submit feedback to the database
       const { error } = await supabase
         .from('feedback')
-        .insert([feedbackData]);
+        .insert([
+          { 
+            text: feedbackText,
+            created_at: new Date().toISOString()
+          }
+        ]);
         
       if (error) throw error;
-      
-      // Also store locally for admin viewing
-      localAdmin.storeFeedback(feedbackData);
       
       setFeedbackSubmitted(true);
       setFeedbackText('');
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      
-      // Still store locally even if Supabase fails
-      localAdmin.storeFeedback(feedbackData);
-      
-      alert('Failed to submit feedback to server, but it has been stored locally.');
+      alert('Failed to submit feedback. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
