@@ -803,7 +803,7 @@ export default function Home() {
     if (modalContentRef.current) {
       // Smooth scroll animation
       modalContentRef.current.scrollTo({
-        top: 0,
+          top: 0,
         behavior: 'smooth'
       });
     }
@@ -909,9 +909,9 @@ export default function Home() {
             🚀 pilot launch 2: next week, starting march 17th!
         </p>
         {isSignupEnabled ? (
-          <button
-            onClick={openModal}
-            style={{
+        <button
+          onClick={openModal}
+          style={{
                 ...btnStyle,
                 padding: '0.8rem 2.5rem',
                 fontSize: isMobile ? '1rem' : '1.1rem',
@@ -919,10 +919,10 @@ export default function Home() {
                 position: 'relative',
                 zIndex: 2,
                 boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
-            }}
-          >
-            sign up
-          </button>
+          }}
+        >
+          sign up
+        </button>
         ) : (
           <div>
             <div style={{...btnStyle, cursor: 'default'}}>
@@ -944,7 +944,7 @@ export default function Home() {
                       }
                     }}
                     placeholder="Have feedback? Let us know! (200 character limit)"
-                    style={{
+          style={{
                       width: '100%',
                       padding: '10px',
                       borderRadius: '8px',
@@ -964,12 +964,12 @@ export default function Home() {
                       fontSize: '0.8rem',
                       color: '#666'
                     }}>
-                      {feedbackText.length}/200 characters
+                      {feedbackText.length}/200
                     </div>
                     <button
                       onClick={submitFeedback}
                       disabled={isSubmitting || !feedbackText.trim()}
-                      style={{
+            style={{
                         padding: '8px 16px',
                         backgroundColor: '#003865',
                         color: 'white',
@@ -982,7 +982,7 @@ export default function Home() {
                     >
                       {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                     </button>
-                  </div>
+        </div>
                 </>
               ) : (
                 <div style={{
@@ -1014,8 +1014,8 @@ export default function Home() {
                   <div style={stepTitleStyle}>quick sign up</div>
                   <div style={stepDescriptionStyle}>
                     sign up with your brandeis email, tell us your availability and meal preferences
-        </div>
-                </div>
+          </div>
+          </div>
               </div>
               
               <div style={stepStyle}>

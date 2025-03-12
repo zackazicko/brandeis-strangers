@@ -22,7 +22,7 @@ const Admin = () => {
   const [filterConfig, setFilterConfig] = useState({});
   const [viewMode, setViewMode] = useState('all'); // 'all', 'new', 'filtered', 'feedback'
   const [expandedRow, setExpandedRow] = useState(null);
-  
+
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (adminPassword === 'zachisking') {
@@ -38,7 +38,7 @@ const Admin = () => {
       fetchData();
     }
   }, [authorized]);
-  
+
   // Set up real-time subscriptions for new data
   useEffect(() => {
     if (!authorized) return;
@@ -320,19 +320,19 @@ const Admin = () => {
     return (
       <div className="admin-login-container">
         <div className="admin-login-card">
-          <h2>Admin Login</h2>
+        <h2>Admin Login</h2>
           <form onSubmit={handlePasswordSubmit} className="admin-login-form">
-            <input
-              type="password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              placeholder="Enter admin password"
+          <input
+            type="password"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            placeholder="Enter admin password"
               className="admin-password-input"
-            />
+          />
             <button type="submit" className="admin-submit-button">
               Log In
-            </button>
-          </form>
+          </button>
+        </form>
         </div>
       </div>
     );
@@ -543,20 +543,20 @@ const Admin = () => {
                       />
                     </td>
                     <td>{profile.name || 'Not specified'}</td>
-                    <td>{profile.email}</td>
-                    <td>
+                  <td>{profile.email}</td>
+                  <td>
                       <span 
                         className="filterable-value"
                         onClick={() => setFilter('class_level', profile.class_level)}
                       >
                         {profile.class_level || 'Not specified'}
                       </span>
-                    </td>
+                  </td>
                     <td>{formatArrayField(profile.majors)}</td>
                     <td>{formatArrayField(profile.interests)}</td>
-                    <td>
+                  <td>
                       {formatArrayField(profile.dining_locations)}
-                    </td>
+                  </td>
                     <td>{formatDate(profile.created_at)}</td>
                     <td>
                       <button 
@@ -565,7 +565,7 @@ const Admin = () => {
                       >
                         {expandedRow === profile.id ? 'Collapse' : 'Details'}
                       </button>
-                    </td>
+                  </td>
                   </tr>
                   
                   {/* Expanded row with details */}
@@ -638,8 +638,8 @@ const Admin = () => {
                             </div>
                           </div>
                         </div>
-                      </td>
-                    </tr>
+                  </td>
+                </tr>
                   )}
                 </React.Fragment>
               ))}
