@@ -3,6 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 // Use hardcoded URL but get key from environment variable
 const supabaseUrl = 'https://qahwzhxwqgzlfymtcnde.supabase.co';
 
+// Environment diagnostics
+console.log('Environment variable diagnostics in supabaseClient.js:');
+console.log('- REACT_APP_SUPABASE_SERVICE_KEY exists:', !!process.env.REACT_APP_SUPABASE_SERVICE_KEY);
+console.log('- REACT_APP_SUPABASE_ANON_KEY exists:', !!process.env.REACT_APP_SUPABASE_ANON_KEY);
+
 // Support multiple ways to access the key for different environments
 const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 
                    process.env.SUPABASE_KEY || 
@@ -16,6 +21,11 @@ console.log('Connecting to Supabase...');
 if (!serviceRoleKey) {
   console.warn('⚠️ REACT_APP_SUPABASE_SERVICE_KEY not found in environment variables!');
   console.warn('Admin functionality will be limited. Please ensure your .env file contains this key.');
+  console.warn('Make sure:');
+  console.warn('1. Each environment variable is on its own line in .env');
+  console.warn('2. There are no spaces around the = sign');
+  console.warn('3. Values with special characters are quoted');
+  console.warn('4. You\'ve restarted your development server after changes');
 } else {
   console.log('✅ Service role key available - admin functionality should work');
 }

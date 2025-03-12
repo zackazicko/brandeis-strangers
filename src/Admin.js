@@ -87,10 +87,18 @@ const Admin = () => {
       setTableInfo({ exists: false, permissions: false, count: 0 });
       
       // Get the service key directly to ensure it's available
+      console.log('Environment check in Admin component:');
+      console.log('REACT_APP_SUPABASE_SERVICE_KEY exists:', !!process.env.REACT_APP_SUPABASE_SERVICE_KEY);
+      
       const serviceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
       
       if (!serviceKey) {
         console.error('Service key not found in environment variables. Admin functionality may not work properly.');
+        console.error('Check that:');
+        console.error('1. The .env file has REACT_APP_SUPABASE_SERVICE_KEY on its own line');
+        console.error('2. There are no spaces around the = sign');
+        console.error('3. You\'ve restarted your development server after changes');
+        
         alert('Error: The admin service key is missing from environment variables. Please ensure your .env file contains REACT_APP_SUPABASE_SERVICE_KEY with the proper value. Admin functionality will be limited.');
         setLoading(false);
         
