@@ -10,6 +10,8 @@ const Admin = () => {
   // Data states
   const [profiles, setProfiles] = useState([]);
   const [newProfiles, setNewProfiles] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [newFeedback, setNewFeedback] = useState([]);
   const [loading, setLoading] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(null);
   
@@ -18,7 +20,7 @@ const Admin = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
   const [filterConfig, setFilterConfig] = useState({});
-  const [viewMode, setViewMode] = useState('all'); // 'all', 'new', 'filtered'
+  const [viewMode, setViewMode] = useState('all'); // 'all', 'new', 'filtered', 'feedback'
   const [expandedRow, setExpandedRow] = useState(null);
   
   const handlePasswordSubmit = (e) => {
@@ -53,8 +55,21 @@ const Admin = () => {
       )
       .subscribe();
       
+    // Set up subscription for feedback
+    const feedbackSubscription = supabase
+      .channel('feedback-changes')
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'feedback' },
+        (payload) => {
+          // Add new feedback to newFeedback
+          setNewFeedback(current => [payload.new, ...current]);
+        }
+      )
+      .subscribe();
+      
     return () => {
       supabase.removeChannel(subscription);
+      supabase.removeChannel(feedbackSubscription);
     };
   }, [authorized]);
 
@@ -65,21 +80,34 @@ const Admin = () => {
       // Get the current time for tracking new entries
       const syncTime = new Date();
       
-      const { data, error } = await supabase
+      // Fetch profiles
+      const { data: profileData, error: profileError } = await supabase
         .from('main')
         .select('*')
         .order('created_at', { ascending: false });
         
-      if (error) {
-        throw error;
+      if (profileError) {
+        throw profileError;
       }
       
-      // Store all profiles
-      setProfiles(data || []);
+      // Fetch feedback
+      const { data: feedbackData, error: feedbackError } = await supabase
+        .from('feedback')
+        .select('*')
+        .order('created_at', { ascending: false });
+        
+      if (feedbackError) {
+        throw feedbackError;
+      }
+      
+      // Store all profiles and feedback
+      setProfiles(profileData || []);
+      setFeedback(feedbackData || []);
       setLastSyncTime(syncTime);
       
-      // Clear any pending "new" profiles since we just did a full sync
+      // Clear any pending "new" profiles and feedback since we just did a full sync
       setNewProfiles([]);
+      setNewFeedback([]);
     } catch (error) {
       console.error('Error fetching data:', error);
       alert('Error fetching data: ' + error.message);
@@ -130,8 +158,21 @@ const Admin = () => {
     setNewProfiles([]);
   };
   
+  // Handle marking feedback as viewed
+  const markFeedbackAsViewed = () => {
+    if (!newFeedback.length) return;
+    
+    setFeedback(prev => [...newFeedback, ...prev]);
+    setNewFeedback([]);
+  };
+  
   // Filtered and sorted data for display
   const displayedProfiles = useMemo(() => {
+    // If we're in feedback mode, return an empty array
+    if (viewMode === 'feedback') {
+      return [];
+    }
+    
     let result = [];
     
     // Determine which dataset to use
@@ -184,6 +225,33 @@ const Admin = () => {
     
     return result;
   }, [profiles, newProfiles, viewMode, filterConfig, searchQuery, sortConfig]);
+  
+  // Calculate displayed feedback
+  const displayedFeedback = useMemo(() => {
+    // Only return feedback if we're in feedback mode
+    if (viewMode !== 'feedback') {
+      return [];
+    }
+    
+    let result = [...feedback];
+    
+    // Apply search if needed
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(item => 
+        item.text?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply sorting
+    result.sort((a, b) => {
+      return sortConfig.direction === 'asc'
+        ? new Date(a.created_at) - new Date(b.created_at)
+        : new Date(b.created_at) - new Date(a.created_at);
+    });
+    
+    return result;
+  }, [feedback, viewMode, searchQuery, sortConfig]);
   
   // Request a sort by column
   const requestSort = (key) => {
@@ -277,7 +345,7 @@ const Admin = () => {
         <div className="admin-search">
           <input
             type="text"
-            placeholder="Search users..."
+            placeholder={viewMode === 'feedback' ? "Search feedback..." : "Search users..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
@@ -305,6 +373,13 @@ const Admin = () => {
           >
             Filtered
           </button>
+          <button 
+            className={`view-button ${viewMode === 'feedback' ? 'active' : ''}`}
+            onClick={() => setViewMode('feedback')}
+          >
+            Feedback
+            {newFeedback.length > 0 && <span className="badge">{newFeedback.length}</span>}
+          </button>
         </div>
         
         <div className="admin-actions">
@@ -318,6 +393,11 @@ const Admin = () => {
               Mark All As Viewed
             </button>
           )}
+          {newFeedback.length > 0 && viewMode === 'feedback' && (
+            <button onClick={markFeedbackAsViewed} className="action-button mark-viewed-button">
+              Mark Feedback As Viewed
+            </button>
+          )}
           {Object.keys(filterConfig).length > 0 && (
             <button onClick={clearFilters} className="action-button clear-filters-button">
               Clear Filters
@@ -328,7 +408,34 @@ const Admin = () => {
       
       {loading && <div className="loading-indicator">Loading data...</div>}
       
-      {!loading && displayedProfiles.length === 0 ? (
+      {!loading && viewMode === 'feedback' ? (
+        // Feedback display section
+        <div className="data-table-container">
+          {displayedFeedback.length === 0 ? (
+            <div className="no-data-message">No feedback available.</div>
+          ) : (
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th className="sortable" onClick={() => requestSort('created_at')}>
+                    Date {sortConfig.key === 'created_at' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th>Feedback</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedFeedback.map((item, index) => (
+                  <tr key={item.id || index} className={newFeedback.some(f => f.id === item.id) ? 'new-entry' : ''}>
+                    <td>{formatDate(item.created_at)}</td>
+                    <td>{item.text}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      ) : !loading && displayedProfiles.length === 0 ? (
+        // No data message for profiles
         <div className="no-data-message">
           {viewMode === 'new' 
             ? "No new users since last sync." 
@@ -337,6 +444,7 @@ const Admin = () => {
               : "No user data available."}
         </div>
       ) : (
+        // Profiles display section
         <div className="data-table-container">
           <table className="data-table">
             <thead>

@@ -447,7 +447,7 @@ export default function Home() {
   // MULTI-STEP FORM STATES
   // ---------------------------
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   // Basic info - name is now properly declared as a state variable
   const [name, setName] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -647,16 +647,16 @@ export default function Home() {
       
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
       
       // Basic validation
       if (!name || !emailInput || !mealTimes.wednesday?.dinner?.length) {
         alert('Please fill in all required fields and select at least one time slot.');
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
       
       // Force Sherman as the only location for the pilot
       userData = {
@@ -692,7 +692,7 @@ export default function Home() {
       }
       
       // Show success message
-      setSignUpSuccess(true);
+    setSignUpSuccess(true);
       
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -709,7 +709,7 @@ export default function Home() {
       
       alert(`Error: ${error.message}. We've saved your submission and will try again when you return to the site.`);
     } finally {
-      setLoading(false);
+    setLoading(false);
     }
   }
 
@@ -809,6 +809,40 @@ export default function Home() {
     }
   }, [currentStep, personalityStep]); // Trigger on step changes
 
+  // Add signup toggle state - set to false to disable signups
+  const [isSignupEnabled, setIsSignupEnabled] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Add function to handle feedback submission
+  async function submitFeedback() {
+    if (!feedbackText.trim()) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Submit feedback to the database
+      const { error } = await supabase
+        .from('feedback')
+        .insert([
+          { 
+            text: feedbackText,
+            created_at: new Date().toISOString()
+          }
+        ]);
+        
+      if (error) throw error;
+      
+      setFeedbackSubmitted(true);
+      setFeedbackText('');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('Failed to submit feedback. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   // ---------------------------
   // RENDER
   // ---------------------------
@@ -830,7 +864,7 @@ export default function Home() {
         ) : (
           <button 
             onClick={openModal}
-            style={{
+        style={{
               ...btnStyle,
               padding: '0.5rem 1.2rem',
               fontSize: '0.85rem',
@@ -851,13 +885,15 @@ export default function Home() {
         <div style={heroContentStyle}>
           {/* Hero content */}
           <h1 style={heroTitleStyle}>
-            {typedText}
-          </h1>
+          {typedText}
+        </h1>
           <h2 style={heroSubtitleStyle}>
-            brandeis meal match
-          </h2>
+          brandeis meal match
+        </h2>
           <p style={heroTextStyle}>
-            connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need.
+            {isSignupEnabled 
+              ? "answer a few questions, and we'll match you with someone new." 
+              : "our sign-ups are temporarily closed while we prepare for our next round."}
           </p>
           <p style={{
             fontSize: isMobile ? '0.9rem' : '1rem',
@@ -871,21 +907,97 @@ export default function Home() {
             fontWeight: 'bold'
           }}>
             🚀 pilot launch: wednesday, march 12th at sherman dining hall only!
-          </p>
-          <button 
-            onClick={openModal} 
+        </p>
+        {isSignupEnabled ? (
+          <button
+            onClick={openModal}
             style={{
-              ...btnStyle,
-              padding: '0.8rem 2.5rem',
-              fontSize: isMobile ? '1rem' : '1.1rem',
-              marginLeft: 0,
-              position: 'relative',
-              zIndex: 2,
-              boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
+                ...btnStyle,
+                padding: '0.8rem 2.5rem',
+                fontSize: isMobile ? '1rem' : '1.1rem',
+                marginLeft: 0,
+                position: 'relative',
+                zIndex: 2,
+                boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
             }}
           >
             sign up
           </button>
+        ) : (
+          <div>
+            <div style={{...btnStyle, cursor: 'default'}}>
+              back soon!
+            </div>
+            <div style={{
+              marginTop: '20px',
+              maxWidth: '500px',
+              textAlign: 'center'
+            }}>
+              {!feedbackSubmitted ? (
+                <>
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => {
+                      // Limit to 200 characters
+                      if (e.target.value.length <= 200) {
+                        setFeedbackText(e.target.value);
+                      }
+                    }}
+                    placeholder="Have feedback? Let us know! (200 character limit)"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #ccc',
+                      fontFamily: 'inherit',
+                      marginBottom: '10px',
+                      resize: 'vertical',
+                      minHeight: '80px'
+                    }}
+                  />
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div style={{
+                      fontSize: '0.8rem',
+                      color: '#666'
+                    }}>
+                      {feedbackText.length}/200 characters
+                    </div>
+                    <button
+                      onClick={submitFeedback}
+                      disabled={isSubmitting || !feedbackText.trim()}
+                      style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#003865',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '20px',
+                        cursor: feedbackText.trim() ? 'pointer' : 'not-allowed',
+                        opacity: feedbackText.trim() ? 1 : 0.6,
+                        fontFamily: 'inherit'
+                      }}
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div style={{
+                  backgroundColor: '#e6f7eb',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  color: '#2e7d32',
+                  textAlign: 'center'
+                }}>
+                  Thanks for your feedback! We'll see you when sign-ups reopen.
+                </div>
+              )}
+            </div>
+          </div>
+        )}
           
           {/* How It Works section integrated into hero */}
           <div style={howItWorksContainerStyle}>
@@ -902,7 +1014,7 @@ export default function Home() {
                   <div style={stepTitleStyle}>quick sign up</div>
                   <div style={stepDescriptionStyle}>
                     sign up with your brandeis email, tell us your availability and meal preferences
-                  </div>
+        </div>
                 </div>
               </div>
               
@@ -912,8 +1024,8 @@ export default function Home() {
                   <div style={stepTitleStyle}>get matched</div>
                   <div style={stepDescriptionStyle}>
                     we match you with someone new based on your compatible meal times and preferences
-                  </div>
-                </div>
+          </div>
+          </div>
               </div>
               
               <div style={stepStyle}>
@@ -933,14 +1045,14 @@ export default function Home() {
       {/* Modal */}
       {modalOpen && (
         <div onClick={closeModal} style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
+            position: 'fixed',
+            top: 0,
+            left: 0,
           right: 0,
           bottom: 0,
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          justifyContent: 'center',
+            display: 'flex',
+            justifyContent: 'center',
           alignItems: 'center',
           zIndex: 1000
         }}>
@@ -1023,7 +1135,6 @@ export default function Home() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your.name@brandeis.edu"
                     style={{
                       width: '100%',
                       padding: '0.8rem',
@@ -1059,7 +1170,7 @@ export default function Home() {
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>choose your major(s):</label>
                   <div className="major-search-container" style={{ position: 'relative' }}>
-                    <input
+                  <input
                       type="text"
                       style={{
                         ...inputStyle,
@@ -1093,12 +1204,12 @@ export default function Home() {
                         {filteredMajors.length === 0 ? (
                           <div style={{ padding: '0.5rem', color: '#999', textAlign: 'center' }}>
                             No matching majors found
-                          </div>
+                </div>
                         ) : (
                           filteredMajors.map(major => (
-                            <div
+                <div
                               key={major}
-                              style={{
+                  style={{
                                 padding: '0.5rem',
                                 cursor: 'pointer',
                                 background: selectedMajors.includes(major) ? '#e6f7ff' : 'white',
@@ -1111,11 +1222,11 @@ export default function Home() {
                               }}
                             >
                               {major}
-                            </div>
+                </div>
                           ))
                         )}
-                      </div>
-                    )}
+              </div>
+            )}
                   </div>
                   
                   {/* Display selected majors as bubbles */}
@@ -1286,7 +1397,7 @@ export default function Home() {
                         onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
                       >
                         {interest}
-                      </div>
+                </div>
                     ))}
                   </div>
                   
@@ -1573,14 +1684,14 @@ export default function Home() {
                   <label style={labelStyle}>dining location:</label>
                   <div style={bubbleContainerStyle}>
                     <div
-                      style={{
-                        ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                         ...bubbleSelectedStyle,
                         pointerEvents: 'none'
                       }}
                     >
                       sherman
-                    </div>
+                      </div>
                   </div>
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666' }}>
                     for our pilot, we're starting with sherman dining hall only.
@@ -1599,7 +1710,7 @@ export default function Home() {
                     }}
                   >
                     <div
-                      style={{
+                        style={{
                         position: 'relative',
                         margin: '0.5rem',
                         padding: '0.5rem 1rem',
@@ -1607,7 +1718,7 @@ export default function Home() {
                         backgroundColor: '#f0f0f0',
                         display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center',
+                            alignItems: 'center',
                       }}
                     >
                       <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday, march 12th</div>
@@ -1617,17 +1728,17 @@ export default function Home() {
                           const timeKey = `wednesday-${timeSlot}`;
                           const isSelected = mealTimes.wednesday?.dinner?.includes(timeSlot) || false;
                           
-                          return (
+                                return (
                             <div
                               key={timeKey}
-                              style={{
-                                ...bubbleStyle,
+                                style={{
+                                  ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
                                 padding: '0.4rem 0.8rem',
-                              }}
-                              onClick={() => {
+                                }}
+                                onClick={() => {
                                 // Create a deep copy of mealTimes
                                 const updatedMealTimes = { ...mealTimes };
                                 
@@ -1652,12 +1763,12 @@ export default function Home() {
                               }}
                             >
                               {timeSlot}
-                            </div>
+                              </div>
                           );
                         })}
-                      </div>
+                        </div>
                     </div>
-                  </div>
+                </div>
                 </div>
                 
                 <div style={buttonsRowStyle}>
