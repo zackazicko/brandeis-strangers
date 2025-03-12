@@ -2,19 +2,18 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Environment Setup
+## Deployment
 
-This application requires environment variables for proper functioning. Create a `.env` file in the root directory with the following variables:
+This application is optimized for deployment on Vercel. For detailed deployment instructions, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md).
+
+### Required Environment Variables
+
+When deploying to Vercel, you need to set the following environment variables in the Vercel dashboard:
 
 ```
-# Supabase configuration
-REACT_APP_SUPABASE_SERVICE_KEY=your_service_role_key_here
-
-# Admin credentials
-REACT_APP_ADMIN_PASSWORD=your_admin_password_here
+NEXT_PUBLIC_SUPABASE_SERVICE_KEY=your_service_role_key_here
+NEXT_PUBLIC_ADMIN_PASSWORD=your_admin_password_here
 ```
-
-**Note:** The `.env` file is ignored by git for security reasons. Never commit sensitive credentials to version control.
 
 ## Available Scripts
 
@@ -77,7 +76,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/a
 
 ### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+For detailed Vercel deployment instructions, see [VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md).
 
 ### `npm run build` fails to minify
 

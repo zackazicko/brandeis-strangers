@@ -3,17 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 // Use hardcoded URL but get key from environment variable
 const supabaseUrl = 'https://qahwzhxwqgzlfymtcnde.supabase.co';
 
-// Enhanced environment variable handling
+// Enhanced environment variable handling for Vercel deployment
 console.log('Environment variable diagnostics:');
 
-// IMPORTANT: In React apps built with Create React App, all environment variables must be prefixed with REACT_APP_
 // Vercel exposes environment variables to the browser only if they start with NEXT_PUBLIC_
-const serviceRoleKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY || 
-                      process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
+const serviceRoleKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
                       
 // The public anon key is less sensitive but still needed
-const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 
-                   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
                    'public-anon-key'; // Fallback value
 
 // Log environment variable status (but not the actual values)
@@ -58,7 +55,7 @@ export const supabaseAdmin = serviceRoleKey ?
         }
       } else {
         console.warn('⚠️ No service role key available - admin functionality will be limited.');
-        console.warn('If you need admin access, add REACT_APP_SUPABASE_SERVICE_KEY to your environment variables.');
+        console.warn('If you need admin access, add NEXT_PUBLIC_SUPABASE_SERVICE_KEY to your Vercel environment variables.');
       }
     }
   } catch (err) {

@@ -89,9 +89,8 @@ const Admin = () => {
       // Get the service key directly to ensure it's available
       console.log('Admin panel: Checking for service key...');
       
-      // Check both CRA and Next.js environment variable patterns
-      const serviceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY || 
-                         process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
+      // Check for Vercel environment variable pattern
+      const serviceKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
       
       if (!serviceKey) {
         console.error('Service key not found in environment variables. Admin functionality will not work properly.');
@@ -100,13 +99,10 @@ const Admin = () => {
         alert(`
           Service key missing or inaccessible. 
           
-          For local development:
-          - Ensure your .env file has REACT_APP_SUPABASE_SERVICE_KEY set
-          - Each variable should be on its own line
-          - Restart your development server
-          
           For Vercel deployment:
           - Add NEXT_PUBLIC_SUPABASE_SERVICE_KEY in Vercel Project Settings → Environment Variables
+          - Ensure the key is set for all environments (Production, Preview, Development)
+          - After adding the environment variable, redeploy your application
         `);
         
         setLoading(false);
