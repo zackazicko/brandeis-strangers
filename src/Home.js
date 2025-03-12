@@ -906,7 +906,7 @@ export default function Home() {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            🚀 pilot launch: wednesday, march 12th at sherman dining hall only!
+            🚀 pilot launch 2: next week, starting march 17th!
         </p>
         {isSignupEnabled ? (
           <button

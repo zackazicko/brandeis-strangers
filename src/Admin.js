@@ -79,26 +79,40 @@ const Admin = () => {
     try {
       // Get the current time for tracking new entries
       const syncTime = new Date();
+      console.log('Fetching data from Supabase...');
       
       // Fetch profiles
+      console.log('Requesting profiles from "main" table...');
       const { data: profileData, error: profileError } = await supabase
         .from('main')
         .select('*')
         .order('created_at', { ascending: false });
         
       if (profileError) {
+        console.error('Error fetching profiles:', profileError);
         throw profileError;
       }
       
+      console.log(`Received ${profileData?.length || 0} profiles from "main" table`);
+      if (profileData && profileData.length > 0) {
+        console.log('First profile sample:', JSON.stringify(profileData[0], null, 2));
+      } else {
+        console.log('No profiles found in "main" table');
+      }
+      
       // Fetch feedback
+      console.log('Requesting feedback data...');
       const { data: feedbackData, error: feedbackError } = await supabase
         .from('feedback')
         .select('*')
         .order('created_at', { ascending: false });
         
       if (feedbackError) {
+        console.error('Error fetching feedback:', feedbackError);
         throw feedbackError;
       }
+      
+      console.log(`Received ${feedbackData?.length || 0} feedback entries`);
       
       // Store all profiles and feedback
       setProfiles(profileData || []);
@@ -332,6 +346,47 @@ const Admin = () => {
         <div className="admin-controls">
           <button onClick={fetchData} disabled={loading} className="sync-button">
             {loading ? 'Syncing...' : 'Sync Data'}
+          </button>
+          <button 
+            onClick={async () => {
+              console.log('Testing Supabase connection...');
+              try {
+                // Test general connection
+                const { data: tablesData, error: tablesError } = await supabase
+                  .from('pg_tables')
+                  .select('*')
+                  .eq('schemaname', 'public')
+                  .order('tablename');
+                
+                if (tablesError) {
+                  console.error('Error accessing tables:', tablesError);
+                  alert('Supabase connection issue: ' + tablesError.message);
+                  return;
+                }
+                
+                console.log('Available tables:', tablesData?.map(t => t.tablename));
+                
+                // Test direct access to main table
+                const { data: mainCount, error: mainError } = await supabase
+                  .from('main')
+                  .select('*', { count: 'exact', head: true });
+                
+                if (mainError) {
+                  console.error('Error accessing main table:', mainError);
+                  alert('Cannot access "main" table: ' + mainError.message);
+                } else {
+                  console.log('Main table accessible, count:', mainCount?.length);
+                  alert(`Successfully connected to "main" table.`);
+                }
+              } catch (err) {
+                console.error('Debug test failed:', err);
+                alert('Debug test failed: ' + err.message);
+              }
+            }}
+            className="sync-button"
+            style={{ backgroundColor: '#6b7280', marginLeft: '10px' }}
+          >
+            Debug Connection
           </button>
           {lastSyncTime && (
             <span className="last-sync">
