@@ -20,6 +20,67 @@ console.log('Anon key available:', !!supabaseKey);
 // Create the regular supabase client with the anon key
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Helper function to manage local storage for admin data
+export const localAdmin = {
+  // Store a profile in local storage
+  storeProfile: (profile) => {
+    try {
+      const profiles = JSON.parse(localStorage.getItem('brandeis_admin_profiles') || '[]');
+      // Add ID and timestamp if missing
+      if (!profile.id) profile.id = `local-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      if (!profile.created_at) profile.created_at = new Date().toISOString();
+      
+      // Add to beginning of array
+      profiles.unshift(profile);
+      localStorage.setItem('brandeis_admin_profiles', JSON.stringify(profiles));
+      console.log('Profile stored locally for admin view:', profile);
+      return true;
+    } catch (err) {
+      console.error('Failed to store profile locally:', err);
+      return false;
+    }
+  },
+  
+  // Get all profiles from local storage
+  getProfiles: () => {
+    try {
+      return JSON.parse(localStorage.getItem('brandeis_admin_profiles') || '[]');
+    } catch (err) {
+      console.error('Failed to retrieve profiles from local storage:', err);
+      return [];
+    }
+  },
+  
+  // Store feedback in local storage
+  storeFeedback: (feedback) => {
+    try {
+      const feedbackItems = JSON.parse(localStorage.getItem('brandeis_admin_feedback') || '[]');
+      // Add ID and timestamp if missing
+      if (!feedback.id) feedback.id = `local-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+      if (!feedback.created_at) feedback.created_at = new Date().toISOString();
+      
+      // Add to beginning of array
+      feedbackItems.unshift(feedback);
+      localStorage.setItem('brandeis_admin_feedback', JSON.stringify(feedbackItems));
+      console.log('Feedback stored locally for admin view:', feedback);
+      return true;
+    } catch (err) {
+      console.error('Failed to store feedback locally:', err);
+      return false;
+    }
+  },
+  
+  // Get all feedback from local storage
+  getFeedback: () => {
+    try {
+      return JSON.parse(localStorage.getItem('brandeis_admin_feedback') || '[]');
+    } catch (err) {
+      console.error('Failed to retrieve feedback from local storage:', err);
+      return [];
+    }
+  }
+};
+
 // Create the admin client with the service role key, if available
 export const supabaseAdmin = serviceRoleKey ? 
   createClient(supabaseUrl, serviceRoleKey) : 
@@ -27,10 +88,8 @@ export const supabaseAdmin = serviceRoleKey ?
 
 // Show a warning about missing service key
 if (!serviceRoleKey) {
-  console.error('⚠️ IMPORTANT: Service role key is missing from environment variables');
-  console.error('The admin panel requires this key to function properly');
-  console.error('Please add NEXT_PUBLIC_SUPABASE_SERVICE_KEY to your Vercel environment variables');
-  console.error('Instructions: https://vercel.com/docs/projects/environment-variables');
+  console.error('⚠️ IMPORTANT: Service role key is missing - admin functionality will use local storage fallback');
+  console.error('Regular users can still submit data via the public anon key');
 }
 
 // Simple connectivity test
@@ -62,8 +121,8 @@ if (!serviceRoleKey) {
           console.error('⚠️ Admin client test exception:', e);
         }
       } else {
-        console.warn('⚠️ No service role key available - admin functionality will be limited.');
-        console.warn('If you need admin access, add NEXT_PUBLIC_SUPABASE_SERVICE_KEY to your Vercel environment variables.');
+        console.warn('⚠️ Admin functionality will use local storage for displaying user data');
+        console.warn('Data will still be sent to Supabase with the anon key when users submit forms');
       }
     }
   } catch (err) {
