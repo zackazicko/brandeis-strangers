@@ -2,6 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import supabase from './supabaseClient';
 
+// SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
+const CONFIG = {
+  SIGNUP_ENABLED: false // Set to true to enable signups, false to lock the site
+};
+
 // Move these style creator functions to the top, outside component
 const createBtnStyle = (isMobile = false) => ({
   padding: isMobile ? '0.6rem 1.5rem' : '0.7rem 2rem',
@@ -291,6 +296,25 @@ const createSubmitBtnStyle = (isMobile = false, isLoading = false) => ({
   cursor: isLoading ? 'wait' : 'pointer'
 });
 
+// Add additional styles for the lock overlay
+const lockOverlayStyle = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0, 56, 101, 0.9)',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  zIndex: 2000,
+  padding: '2rem',
+  textAlign: 'center',
+  color: 'white',
+  backdropFilter: 'blur(5px)'
+};
+
 export default function Home() {
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
@@ -428,8 +452,13 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   
   function openModal() {
-    setModalOpen(true);
-    document.body.style.overflow = 'hidden';
+    if (isSignupEnabled) {
+      setModalOpen(true);
+      document.body.style.overflow = 'hidden';
+    } else {
+      // If signups are disabled, don't open the modal
+      alert('Signups are currently closed. Please check back later!');
+    }
   }
   
   function closeModal() {
@@ -453,6 +482,7 @@ export default function Home() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState(''); // Add phone number state
 
   // Update name when first or last name changes
   useEffect(() => {
@@ -585,6 +615,13 @@ export default function Home() {
            emailInput.toLowerCase().endsWith('@brandeis.edu'); // Catch-all
   }
 
+  // Function to validate US phone number
+  function isValidPhoneNumber(phoneNumber) {
+    // Simple validation - requires at least 10 digits
+    const digitsOnly = phoneNumber.replace(/\D/g, '');
+    return digitsOnly.length >= 10;
+  }
+
   function goToStep2() {
     if (!isValidBrandeisEmail(email)) {
       alert('please use your brandeis.edu email address.');
@@ -595,6 +632,12 @@ export default function Home() {
       alert('Please provide both first and last name.');
       return;
     }
+    
+    if (!isValidPhoneNumber(phone)) {
+      alert('Please provide a valid phone number (at least 10 digits).');
+      return;
+    }
+    
     setCurrentStep(2);
   }
   
@@ -648,9 +691,9 @@ export default function Home() {
       
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
       
       // Basic validation - check if at least one meal time is selected across all days
       const hasSelectedMealTime = 
@@ -661,11 +704,11 @@ export default function Home() {
          mealTimes.wednesday?.lunch?.length > 0 || 
          mealTimes.wednesday?.dinner?.length > 0);
       
-      if (!name || !emailInput || !hasSelectedMealTime) {
+      if (!name || !emailInput || !phone || !hasSelectedMealTime) {
         alert('Please fill in all required fields and select at least one time slot.');
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
@@ -692,6 +735,7 @@ export default function Home() {
       userData = {
         name: name,
         email: emailLower, // Always store lowercase email for consistency
+        phone: phone, // Add phone to the userData
         majors: selectedMajors,
         class_level: classLevel,
         interests: selectedInterests,
@@ -921,7 +965,7 @@ export default function Home() {
   }, [currentStep, personalityStep]); // Trigger on step changes
 
   // Add signup toggle state - set to false to disable signups
-  const [isSignupEnabled, setIsSignupEnabled] = useState(true);
+  const [isSignupEnabled, setIsSignupEnabled] = useState(CONFIG.SIGNUP_ENABLED);
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -975,7 +1019,7 @@ export default function Home() {
         ) : (
           <button 
             onClick={openModal}
-        style={{
+            style={{
               ...btnStyle,
               padding: '0.5rem 1.2rem',
               fontSize: '0.85rem',
@@ -996,11 +1040,11 @@ export default function Home() {
         <div style={heroContentStyle}>
           {/* Hero content */}
           <h1 style={heroTitleStyle}>
-          {typedText}
-        </h1>
+            {typedText}
+          </h1>
           <h2 style={heroSubtitleStyle}>
-          brandeis meal match
-        </h2>
+            brandeis meal match
+          </h2>
           <p style={heroTextStyle}>
             {isSignupEnabled 
               ? "answer a few questions, and we'll match you with someone new." 
@@ -1018,11 +1062,11 @@ export default function Home() {
             fontWeight: 'bold'
           }}>
             🚀 pilot launch 2: now open for march 17-19th meals!
-        </p>
-        {isSignupEnabled ? (
-        <button
-          onClick={openModal}
-          style={{
+          </p>
+          {isSignupEnabled ? (
+            <button
+              onClick={openModal}
+              style={{
                 ...btnStyle,
                 padding: '0.8rem 2.5rem',
                 fontSize: isMobile ? '1rem' : '1.1rem',
@@ -1030,85 +1074,85 @@ export default function Home() {
                 position: 'relative',
                 zIndex: 2,
                 boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
-          }}
-        >
-          sign up
-        </button>
-        ) : (
-          <div>
-            <div style={{...btnStyle, cursor: 'default'}}>
-              back soon!
-            </div>
-            <div style={{
-              marginTop: '20px',
-              maxWidth: '500px',
-              textAlign: 'center'
-            }}>
-              {!feedbackSubmitted ? (
-                <>
-                  <textarea
-                    value={feedbackText}
-                    onChange={(e) => {
-                      // Limit to 200 characters
-                      if (e.target.value.length <= 200) {
-                        setFeedbackText(e.target.value);
-                      }
-                    }}
-                    placeholder="Have feedback? Let us know! (200 character limit)"
-          style={{
-                      width: '100%',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      border: '1px solid #ccc',
-                      fontFamily: 'inherit',
-                      marginBottom: '10px',
-                      resize: 'vertical',
-                      minHeight: '80px'
-                    }}
-                  />
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div style={{
-                      fontSize: '0.8rem',
-                      color: '#666'
-                    }}>
-                      {feedbackText.length}/200
-                    </div>
-                    <button
-                      onClick={submitFeedback}
-                      disabled={isSubmitting || !feedbackText.trim()}
-            style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#003865',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '20px',
-                        cursor: feedbackText.trim() ? 'pointer' : 'not-allowed',
-                        opacity: feedbackText.trim() ? 1 : 0.6,
-                        fontFamily: 'inherit'
+              }}
+            >
+              sign up
+            </button>
+          ) : (
+            <div>
+              <div style={{...btnStyle, cursor: 'default'}}>
+                back soon!
+              </div>
+              <div style={{
+                marginTop: '20px',
+                maxWidth: '500px',
+                textAlign: 'center'
+              }}>
+                {!feedbackSubmitted ? (
+                  <>
+                    <textarea
+                      value={feedbackText}
+                      onChange={(e) => {
+                        // Limit to 200 characters
+                        if (e.target.value.length <= 200) {
+                          setFeedbackText(e.target.value);
+                        }
                       }}
-                    >
-                      {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                    </button>
-        </div>
-                </>
-              ) : (
-                <div style={{
-                  backgroundColor: '#e6f7eb',
-                  padding: '15px',
-                  borderRadius: '8px',
-                  color: '#2e7d32',
-                  textAlign: 'center'
-                }}>
-                  Thanks for your feedback! We'll see you when sign-ups reopen.
-                </div>
-              )}
+                      placeholder="Have feedback? Let us know! (200 character limit)"
+                      style={{
+                        width: '100%',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid #ccc',
+                        fontFamily: 'inherit',
+                        marginBottom: '10px',
+                        resize: 'vertical',
+                        minHeight: '80px'
+                      }}
+                    />
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div style={{
+                        fontSize: '0.8rem',
+                        color: '#666'
+                      }}>
+                        {feedbackText.length}/200
+                      </div>
+                      <button
+                        onClick={submitFeedback}
+                        disabled={isSubmitting || !feedbackText.trim()}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: '#003865',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '20px',
+                          cursor: feedbackText.trim() ? 'pointer' : 'not-allowed',
+                          opacity: feedbackText.trim() ? 1 : 0.6,
+                          fontFamily: 'inherit'
+                        }}
+                      >
+                        {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{
+                    backgroundColor: '#e6f7eb',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    color: '#2e7d32',
+                    textAlign: 'center'
+                  }}>
+                    Thanks for your feedback! We'll see you when sign-ups reopen.
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
           
           {/* How It Works section integrated into hero */}
           <div style={howItWorksContainerStyle}>
@@ -1159,13 +1203,13 @@ export default function Home() {
             position: 'fixed',
             top: 0,
             left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
             display: 'flex',
             justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000
+            alignItems: 'center',
+            zIndex: 1000
         }}>
           <div 
             ref={modalContentRef}
@@ -1255,6 +1299,26 @@ export default function Home() {
                       marginBottom: '1rem',
                       fontFamily: '"Courier New", Courier, monospace'
                     }}
+                    required
+                  />
+                </div>
+                {/* Add phone number field */}
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>phone number:</label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem',
+                      fontSize: '1rem',
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      marginBottom: '1rem',
+                      fontFamily: '"Courier New", Courier, monospace'
+                    }}
+                    placeholder="(123) 456-7890"
                     required
                   />
                 </div>
@@ -2195,6 +2259,33 @@ export default function Home() {
               </div>
             )}
           </div>
+        </div>
+      )}
+      
+      {/* Add lock overlay when site is locked */}
+      {!isSignupEnabled && !modalOpen && (
+        <div style={lockOverlayStyle} onClick={() => document.body.style.overflow = 'auto'}>
+          <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Signups Temporarily Closed</h2>
+          <p style={{ fontSize: '1.2rem', maxWidth: '600px', lineHeight: '1.6' }}>
+            Our meal matching service is currently preparing for the next round. 
+            Please check back soon to sign up!
+          </p>
+          <button 
+            onClick={() => document.body.style.overflow = 'auto'}
+            style={{
+              marginTop: '2rem',
+              padding: '0.8rem 2rem',
+              backgroundColor: 'white',
+              color: '#003865',
+              border: 'none',
+              borderRadius: '30px',
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+              fontFamily: '"Courier New", Courier, monospace'
+            }}
+          >
+            Close
+          </button>
         </div>
       )}
       
