@@ -5,5 +5,11 @@
     { "src": "/manifest.json", "dest": "/manifest.json" },
     { "src": "/robots.txt", "dest": "/robots.txt" },
     { "src": "/(.*)", "dest": "/index.html" }
-  ]
+  ],
+  "build": {
+    "env": {
+      "NPM_FLAGS": "--force"
+    }
+  },
+  "installCommand": "npm install --force"
 } 

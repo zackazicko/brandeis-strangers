@@ -443,6 +443,7 @@ GRANT ALL ON public.feedback TO service_role;`);
       result = result.filter(profile => 
         profile.name?.toLowerCase().includes(query) ||
         profile.email?.toLowerCase().includes(query) ||
+        (profile.phone && profile.phone.includes(query)) ||
         profile.majors?.some(major => major.toLowerCase().includes(query)) ||
         profile.interests?.some(interest => interest.toLowerCase().includes(query))
       );
@@ -860,6 +861,9 @@ GRANT ALL ON public.feedback TO service_role;`);
                 <th className="sortable" onClick={() => requestSort('email')}>
                   Email {sortConfig.key === 'email' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
+                <th className="sortable" onClick={() => requestSort('phone')}>
+                  Phone {sortConfig.key === 'phone' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
                 <th className="sortable" onClick={() => requestSort('class_level')}>
                   Class {sortConfig.key === 'class_level' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
@@ -886,20 +890,21 @@ GRANT ALL ON public.feedback TO service_role;`);
                       />
                     </td>
                     <td>{profile.name || 'Not specified'}</td>
-                  <td>{profile.email}</td>
-                  <td>
+                    <td>{profile.email}</td>
+                    <td>{profile.phone || 'Not specified'}</td>
+                    <td>
                       <span 
                         className="filterable-value"
                         onClick={() => setFilter('class_level', profile.class_level)}
                       >
                         {profile.class_level || 'Not specified'}
                       </span>
-                  </td>
+                    </td>
                     <td>{formatArrayField(profile.majors)}</td>
                     <td>{formatArrayField(profile.interests)}</td>
-                  <td>
+                    <td>
                       {formatArrayField(profile.dining_locations)}
-                  </td>
+                    </td>
                     <td>{formatDate(profile.created_at)}</td>
                     <td>
                       <button 
@@ -908,7 +913,7 @@ GRANT ALL ON public.feedback TO service_role;`);
                       >
                         {expandedRow === profile.id ? 'Collapse' : 'Details'}
                       </button>
-                  </td>
+                    </td>
                   </tr>
                   
                   {/* Expanded row with details */}
@@ -919,6 +924,10 @@ GRANT ALL ON public.feedback TO service_role;`);
                           <div className="detail-section">
                             <h3>Personal</h3>
                             <div className="detail-grid">
+                              <div className="detail-item">
+                                <label>Phone:</label>
+                                <span>{profile.phone || 'Not specified'}</span>
+                              </div>
                               <div className="detail-item">
                                 <label>Personality Type:</label>
                                 <span>{profile.personality_type || 'Not specified'}</span>
@@ -981,8 +990,8 @@ GRANT ALL ON public.feedback TO service_role;`);
                             </div>
                           </div>
                         </div>
-                  </td>
-                </tr>
+                      </td>
+                    </tr>
                   )}
                 </React.Fragment>
               ))}
