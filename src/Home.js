@@ -516,6 +516,12 @@ export default function Home() {
   const [plannerType, setPlannerType] = useState('');
   const [hpHouse, setHpHouse] = useState('');
   const [matchPreference, setMatchPreference] = useState('');
+  
+  // Add state variables for housing questions
+  const [housingStep, setHousingStep] = useState(false);
+  const [housingStatus, setHousingStatus] = useState('');
+  const [roommateGenderPreference, setRoommateGenderPreference] = useState('');
+  const [cleanlinessLevel, setCleanlinessLevel] = useState('');
 
   // Add state for major search
   const [majorSearch, setMajorSearch] = useState('');
@@ -663,8 +669,24 @@ export default function Home() {
   }
   
   function goToMealPreferencesStep() {
+    if (!housingStatus) {
+      alert('Please select your housing situation.');
+      return;
+    }
+    
+    if (housingStatus === 'looking for roommates' && !roommateGenderPreference) {
+      alert('Please select your roommate gender preference.');
+      return;
+    }
+    
+    if (!cleanlinessLevel) {
+      alert('Please select your cleanliness level.');
+      return;
+    }
+    
     setCurrentStep(5);
     setPersonalityStep(false);
+    setHousingStep(false);
   }
 
   function goBackToStep3() {
@@ -674,6 +696,19 @@ export default function Home() {
   function goBackToPersonalityStep() {
     setCurrentStep(4);
     setPersonalityStep(true);
+    setHousingStep(false);
+  }
+  
+  function goToHousingStep() {
+    setCurrentStep(4);
+    setPersonalityStep(false);
+    setHousingStep(true);
+  }
+  
+  function goBackToHousingStep() {
+    setCurrentStep(4);
+    setPersonalityStep(false);
+    setHousingStep(true);
   }
 
   // ---------------------------
@@ -749,7 +784,10 @@ export default function Home() {
         conversation_type: conversationType,
         planner_type: plannerType,
         hp_house: hpHouse,
-        match_preference: matchPreference
+        match_preference: matchPreference,
+        housing_status: housingStatus,
+        roommate_gender_preference: roommateGenderPreference,
+        cleanliness_level: cleanlinessLevel
       };
       
       console.log('Submitting data to main table:', userData);
@@ -1061,7 +1099,7 @@ export default function Home() {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            🚀 pilot launch 2: now open for march 17-19th meals!
+            🏠 new pilot: find meal partners & potential roommates for housing lottery!
           </p>
           {isSignupEnabled ? (
         <button
@@ -1690,7 +1728,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>dark humor or wholesome laughs?</label>
                   <div style={bubbleContainerStyle}>
@@ -1726,7 +1764,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>planner or procrastinator?</label>
                   <div style={bubbleContainerStyle}>
@@ -1744,7 +1782,7 @@ export default function Home() {
                     ))}
                   </div>
                 </div>
-
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>which harry potter house are you in?</label>
                   <div style={bubbleContainerStyle}>
@@ -1785,6 +1823,84 @@ export default function Home() {
                   <button onClick={goBackToStep3} style={backBtnStyle}>
                     back
                   </button>
+                  <button onClick={goToHousingStep} style={nextBtnStyle}>
+                    next
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* HOUSING STEP */}
+            {currentStep === 4 && housingStep && (
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  housing questions
+                </h3>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>how would you describe your housing situation?</label>
+                  <div style={bubbleContainerStyle}>
+                    {['all set!', 'looking for roommates'].map((status) => (
+                      <div
+                        key={status}
+                        style={{
+                          ...bubbleStyle,
+                          ...(housingStatus === status ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setHousingStatus(status)}
+                      >
+                        {status}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {housingStatus === 'looking for roommates' && (
+                  <div style={{ marginBottom: '1.2rem' }}>
+                    <label style={labelStyle}>gender preference for roommate?</label>
+                    <div style={bubbleContainerStyle}>
+                      {['male', 'female', 'no preference'].map((pref) => (
+                        <div
+                          key={pref}
+                          style={{
+                            ...bubbleStyle,
+                            ...(roommateGenderPreference === pref ? bubbleSelectedStyle : {}),
+                          }}
+                          onClick={() => setRoommateGenderPreference(pref)}
+                        >
+                          {pref}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>what's your cleanliness level?</label>
+                  <div style={bubbleContainerStyle}>
+                    {['very neat', 'somewhat neat', 'somewhat messy', 'messy'].map((level) => (
+                      <div
+                        key={level}
+                        style={{
+                          ...bubbleStyle,
+                          ...(cleanlinessLevel === level ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setCleanlinessLevel(level)}
+                      >
+                        {level}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToPersonalityStep} style={backBtnStyle}>
+                    back
+                  </button>
                   <button onClick={goToMealPreferencesStep} style={nextBtnStyle}>
                     next
                   </button>
@@ -1793,7 +1909,7 @@ export default function Home() {
             )}
 
             {/* STEP 5 */}
-            {currentStep === 5 && !personalityStep && !signUpSuccess && (
+            {currentStep === 5 && !personalityStep && !housingStep && !signUpSuccess && (
               <div style={{ animation: 'fadeIn 0.8s forwards' }}>
                 <h3 style={{ 
                   marginBottom: '1.2rem', 
@@ -2220,7 +2336,7 @@ export default function Home() {
                 </div>
                 
                 <div style={buttonsRowStyle}>
-                  <button onClick={goBackToPersonalityStep} style={backBtnStyle}>
+                  <button onClick={goBackToHousingStep} style={backBtnStyle}>
                     back
                   </button>
                   <button

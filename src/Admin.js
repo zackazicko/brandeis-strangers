@@ -225,7 +225,10 @@ CREATE TABLE public.main (
     conversation_type TEXT,
     planner_type TEXT,
     hp_house TEXT,
-    match_preference TEXT
+    match_preference TEXT,
+    housing_status TEXT, /* For housing status: "all set" or "looking for roommates" */
+    roommate_gender_preference TEXT, /* For gender preference: "male", "female", "no preference" */
+    cleanliness_level TEXT /* For cleanliness levels */
 );
 
 -- Enable RLS
@@ -446,7 +449,10 @@ GRANT ALL ON public.feedback TO service_role;`);
         profile.email?.toLowerCase().includes(query) ||
         (profile.phone && profile.phone.includes(query)) ||
         profile.majors?.some(major => major.toLowerCase().includes(query)) ||
-        profile.interests?.some(interest => interest.toLowerCase().includes(query))
+        profile.interests?.some(interest => interest.toLowerCase().includes(query)) ||
+        profile.housing_status?.toLowerCase().includes(query) ||
+        profile.roommate_gender_preference?.toLowerCase().includes(query) ||
+        profile.cleanliness_level?.toLowerCase().includes(query)
       );
     }
     
@@ -868,6 +874,9 @@ GRANT ALL ON public.feedback TO service_role;`);
                 <th className="sortable" onClick={() => requestSort('class_level')}>
                   Class {sortConfig.key === 'class_level' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
+                <th className="sortable" onClick={() => requestSort('housing_status')}>
+                  Housing {sortConfig.key === 'housing_status' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
                 <th>Majors</th>
                 <th>Interests</th>
                 <th className="sortable" onClick={() => requestSort('dining_locations')}>
@@ -901,6 +910,14 @@ GRANT ALL ON public.feedback TO service_role;`);
                         {profile.class_level || 'Not specified'}
                       </span>
                   </td>
+                    <td>
+                      <span 
+                        className="filterable-value"
+                        onClick={() => setFilter('housing_status', profile.housing_status)}
+                      >
+                        {profile.housing_status || 'Not specified'}
+                      </span>
+                    </td>
                     <td>{formatArrayField(profile.majors)}</td>
                     <td>{formatArrayField(profile.interests)}</td>
                   <td>
@@ -920,7 +937,7 @@ GRANT ALL ON public.feedback TO service_role;`);
                   {/* Expanded row with details */}
                   {expandedRow === profile.id && (
                     <tr className="expanded-row">
-                      <td colSpan={9}>
+                      <td colSpan={10}>
                         <div className="expanded-content">
                           <div className="detail-section">
                             <h3>Personal</h3>
@@ -948,6 +965,26 @@ GRANT ALL ON public.feedback TO service_role;`);
                               <div className="detail-item">
                                 <label>HP House:</label>
                                 <span>{profile.hp_house || 'Not specified'}</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="detail-section">
+                            <h3>Housing Information</h3>
+                            <div className="detail-grid">
+                              <div className="detail-item">
+                                <label>Housing Status:</label>
+                                <span>{profile.housing_status || 'Not specified'}</span>
+                              </div>
+                              {profile.housing_status === 'looking for roommates' && (
+                                <div className="detail-item">
+                                  <label>Roommate Gender Preference:</label>
+                                  <span>{profile.roommate_gender_preference || 'No preference'}</span>
+                                </div>
+                              )}
+                              <div className="detail-item">
+                                <label>Cleanliness Level:</label>
+                                <span>{profile.cleanliness_level || 'Not specified'}</span>
                               </div>
                             </div>
                           </div>
