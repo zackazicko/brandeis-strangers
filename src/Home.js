@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import supabase from './supabaseClient';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
@@ -315,7 +315,11 @@ const lockOverlayStyle = {
   backdropFilter: 'blur(5px)'
 };
 
-export default function Home() {
+// Export the Home component with forwardRef to allow ref access from parent components
+export default forwardRef(function Home(props, ref) {
+  // Extract props with defaults
+  const { forceSignupEnabled = false, onClose = null } = props;
+  
   // ---------------------------
   // TYPED TEXT EFFECT (HERO)
   // ---------------------------
@@ -450,20 +454,36 @@ export default function Home() {
   // MODAL STATE
   // ---------------------------
   const [modalOpen, setModalOpen] = useState(false);
+  // Use forceSignupEnabled from props if provided, otherwise use CONFIG
+  const [isSignupEnabled, setIsSignupEnabled] = useState(forceSignupEnabled || CONFIG.SIGNUP_ENABLED);
+  
+  // Expose methods via ref for parent components to call
+  useImperativeHandle(ref, () => ({
+    openModalForTesting: () => {
+      // This method is called by the Admin component to open the signup modal
+      setModalOpen(true);
+      document.body.style.overflow = 'hidden';
+    }
+  }));
   
   function openModal() {
-    if (isSignupEnabled) {
-    setModalOpen(true);
-    document.body.style.overflow = 'hidden';
+    if (forceSignupEnabled || isSignupEnabled) {
+      setModalOpen(true);
+      document.body.style.overflow = 'hidden';
     } else {
       // If signups are disabled, don't open the modal
       alert('Signups are currently closed. Please check back later!');
-  }
+    }
   }
   
   function closeModal() {
     setModalOpen(false);
     document.body.style.overflow = 'auto';
+    
+    // If onClose prop was provided, call it
+    if (onClose && typeof onClose === 'function') {
+      onClose();
+    }
   }
 
   // Fix invalid href in navigation links
@@ -658,7 +678,7 @@ export default function Home() {
   function goBackToStep2() {
     setCurrentStep(2);
   }
-  
+
   function goToPersonalityStep() {
     if (!classLevel || selectedMajors.length === 0) {
       alert('Please select your class level and at least one major.');
@@ -673,7 +693,7 @@ export default function Home() {
       alert('Please select your housing situation.');
       return;
     }
-    
+
     if (housingStatus === 'looking for roommates' && !roommateGenderPreference) {
       alert('Please select your roommate gender preference.');
       return;
@@ -1003,7 +1023,6 @@ export default function Home() {
   }, [currentStep, personalityStep]); // Trigger on step changes
 
   // Add signup toggle state - set to false to disable signups
-  const [isSignupEnabled, setIsSignupEnabled] = useState(CONFIG.SIGNUP_ENABLED);
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -2533,4 +2552,4 @@ export default function Home() {
       }, [])}
     </div>
   );
-}
+});

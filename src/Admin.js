@@ -3,6 +3,7 @@ import supabase, { supabaseAdmin } from './supabaseClient';
 import { createClient } from '@supabase/supabase-js';
 import config from './config'; // Import secure configuration
 import './Admin.css'; // import the CSS file for styles
+import Home from './Home'; // Import Home component for sign-up functionality
 
 const Admin = () => {
   // Authentication state
@@ -25,6 +26,28 @@ const Admin = () => {
   const [filterConfig, setFilterConfig] = useState({});
   const [viewMode, setViewMode] = useState('all'); // 'all', 'new', 'filtered', 'feedback'
   const [expandedRow, setExpandedRow] = useState(null);
+  
+  // State for sign-up modal
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
+  
+  // Reference to Home component
+  const homeRef = React.useRef(null);
+
+  // Function to open sign-up modal through Home component
+  const testSignUp = () => {
+    // If we have a reference to the Home component
+    if (homeRef.current && typeof homeRef.current.openModalForTesting === 'function') {
+      homeRef.current.openModalForTesting();
+    } else {
+      // Create a temporary Home instance for testing
+      setShowSignUpModal(true);
+    }
+  };
+  
+  // Close sign-up modal
+  const closeSignUpModal = () => {
+    setShowSignUpModal(false);
+  };
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
@@ -699,6 +722,13 @@ GRANT ALL ON public.feedback TO service_role;`);
           >
             Debug Connection
           </button>
+          <button 
+            onClick={testSignUp} 
+            className="sync-button"
+            style={{ backgroundColor: '#28a745', marginLeft: '10px' }}
+          >
+            Test Sign Up
+          </button>
           {lastSyncTime && (
             <span className="last-sync">
               Last synced: {formatDate(lastSyncTime)}
@@ -1035,6 +1065,13 @@ GRANT ALL ON public.feedback TO service_role;`);
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+      
+      {/* Render the Home component in a hidden div to access its methods */}
+      {showSignUpModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000 }}>
+          <Home forceSignupEnabled={true} onClose={closeSignUpModal} />
         </div>
       )}
     </div>
