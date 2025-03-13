@@ -2264,30 +2264,124 @@ export default function Home() {
       
       {/* Add lock overlay when site is locked */}
       {!isSignupEnabled && !modalOpen && (
-        <div style={lockOverlayStyle} onClick={() => document.body.style.overflow = 'auto'}>
-          <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Signups Temporarily Closed</h2>
-          <p style={{ fontSize: '1.2rem', maxWidth: '600px', lineHeight: '1.6' }}>
-            Our meal matching service is currently preparing for the next round. 
-            Please check back soon to sign up!
-          </p>
-          <button 
-            onClick={() => document.body.style.overflow = 'auto'}
-            style={{
-              marginTop: '2rem',
-              padding: '0.8rem 2rem',
-              backgroundColor: 'white',
-              color: '#003865',
-              border: 'none',
-              borderRadius: '30px',
-              fontSize: '1.1rem',
-              cursor: 'pointer',
-              fontFamily: '"Courier New", Courier, monospace'
-            }}
-          >
-            Close
-          </button>
+        <div 
+          style={lockOverlayStyle} 
+          onClick={() => document.body.style.overflow = 'auto'}
+          className="lock-overlay"
+        >
+          <div className="lock-content" style={{
+            opacity: 0,
+            animation: 'fadeIn 1s forwards 0.3s',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            width: '100%',
+            maxWidth: '600px'
+          }}>
+            <div style={{
+              fontSize: '3rem',
+              marginBottom: '2rem',
+              fontWeight: 'bold',
+              color: 'white',
+              animation: 'floatText 3s ease-in-out infinite',
+              opacity: 0,
+              transform: 'translateY(20px)',
+              animationDelay: '0.5s',
+              animationFillMode: 'forwards'
+            }}>
+              strangers.
+            </div>
+            
+            <h2 style={{ 
+              fontSize: '1.8rem', 
+              marginBottom: '1.5rem',
+              opacity: 0,
+              transform: 'translateY(20px)',
+              animation: 'fadeSlideUp 0.8s forwards 0.7s',
+              textTransform: 'lowercase'
+            }}>
+              signups temporarily closed
+            </h2>
+            
+            <p style={{ 
+              fontSize: '1.2rem', 
+              maxWidth: '600px', 
+              lineHeight: '1.6',
+              opacity: 0,
+              transform: 'translateY(20px)',
+              animation: 'fadeSlideUp 0.8s forwards 0.9s',
+              textTransform: 'lowercase'
+            }}>
+              our meal matching service is currently preparing for the next round. 
+              please check back soon to sign up!
+            </p>
+            
+            <button 
+              onClick={() => document.body.style.overflow = 'auto'}
+              style={{
+                marginTop: '2rem',
+                padding: '0.8rem 2rem',
+                backgroundColor: 'white',
+                color: '#003865',
+                border: 'none',
+                borderRadius: '30px',
+                fontSize: '1.1rem',
+                cursor: 'pointer',
+                fontFamily: '"Courier New", Courier, monospace',
+                opacity: 0,
+                transform: 'translateY(20px)',
+                animation: 'fadeSlideUp 0.8s forwards 1.1s',
+                textTransform: 'lowercase'
+              }}
+            >
+              close
+            </button>
+          </div>
         </div>
       )}
+
+      {/* Add animation styles for lock screen */}
+      {useEffect(() => {
+        const style = document.createElement('style');
+        style.textContent = `
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          
+          @keyframes fadeSlideUp {
+            from { 
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to { 
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes floatText {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+          }
+          
+          .lock-overlay {
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.5s ease-in-out;
+          }
+          
+          .lock-content {
+            transition: all 0.3s ease;
+          }
+        `;
+        document.head.appendChild(style);
+        
+        return () => {
+          document.head.removeChild(style);
+        };
+      }, [])}
       
       {/* Resubmission logic */}
       {useEffect(() => {
