@@ -4,7 +4,7 @@ import supabase from './supabaseClient';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -1085,7 +1085,7 @@ export default function Home() {
         </h2>
           <p style={heroTextStyle}>
             {isSignupEnabled 
-              ? "answer a few questions, and we'll match you with someone new." 
+              ? "connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need." 
               : "our sign-ups are temporarily closed while we prepare for our next round."}
           </p>
           <p style={{
@@ -1099,7 +1099,7 @@ export default function Home() {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            🏠 new pilot: find meal partners & potential roommates for housing lottery!
+            🏠 pilot 2: find meal partners & potential roommates to finalize housing!
           </p>
           {isSignupEnabled ? (
         <button
