@@ -551,19 +551,19 @@ GRANT ALL ON public.feedback TO service_role;`);
     return (
       <div className="admin-login-container">
         <div className="admin-login-card">
-          <h2>Admin Login</h2>
+        <h2>Admin Login</h2>
           <form onSubmit={handlePasswordSubmit} className="admin-login-form">
-            <input
-              type="password"
-              value={adminPassword}
-              onChange={(e) => setAdminPassword(e.target.value)}
-              placeholder="Enter admin password"
+          <input
+            type="password"
+            value={adminPassword}
+            onChange={(e) => setAdminPassword(e.target.value)}
+            placeholder="Enter admin password"
               className="admin-password-input"
-            />
+          />
             <button type="submit" className="admin-submit-button">
               Log In
-            </button>
-          </form>
+          </button>
+        </form>
           
           {/* Add a way to set the service key if missing */}
           <div style={{ marginTop: '20px', textAlign: 'center' }}>

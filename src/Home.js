@@ -557,122 +557,6 @@ export default function Home() {
     };
   }, [showMajorDropdown]);
 
-  // Add signup toggle state - set to false to disable signups
-  const [isSignupEnabled, setIsSignupEnabled] = useState(true);
-  const [feedbackText, setFeedbackText] = useState('');
-  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Add password protection state and password - set to true to enable password protection
-  const [isPasswordProtected, setIsPasswordProtected] = useState(true);
-  const [password, setPassword] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const correctPassword = 'brandeis2024';
-  const [isPasswordAttempted, setIsPasswordAttempted] = useState(false);
-
-  // Function to check password
-  const checkPassword = (e) => {
-    e.preventDefault();
-    setIsPasswordAttempted(true);
-    
-    if (password === correctPassword) {
-      setIsPasswordProtected(false);
-      setPasswordError('');
-      // Apply a page transition effect
-      document.body.classList.add('fade-in');
-    } else {
-      setPasswordError('Incorrect password. Please try again.');
-      // Add a shake animation to the password box
-      document.getElementById('password-box').classList.add('shake');
-      setTimeout(() => {
-        document.getElementById('password-box').classList.remove('shake');
-      }, 500);
-    }
-  };
-
-  // Add password screen styles
-  const passwordScreenStyle = {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    background: 'linear-gradient(135deg, #e6f2ff 0%, #c0d8f0 100%)',
-    zIndex: 9999,
-    overflow: 'hidden'
-  };
-  
-  const passwordBoxStyle = {
-    width: isMobile ? '90%' : '400px',
-    backgroundColor: 'white',
-    borderRadius: '16px',
-    padding: '2rem',
-    boxShadow: '0 10px 25px rgba(0, 56, 101, 0.15)',
-    textAlign: 'center',
-    position: 'relative',
-    zIndex: 10,
-    animation: 'floating 3s ease-in-out infinite'
-  };
-  
-  const passwordInputStyle = {
-    width: '100%',
-    padding: '1rem',
-    fontSize: '1rem',
-    border: '2px solid #e1e1e1',
-    borderRadius: '8px',
-    marginTop: '1.5rem',
-    marginBottom: '1rem',
-    transition: 'border-color 0.3s',
-    outline: 'none',
-    fontFamily: '"Courier New", Courier, monospace',
-  };
-  
-  const passwordSubmitStyle = {
-    padding: '0.8rem 2rem',
-    backgroundColor: '#003865',
-    color: 'white',
-    border: 'none',
-    borderRadius: '30px',
-    fontSize: '1rem',
-    cursor: 'pointer',
-    transition: 'transform 0.2s, background-color 0.3s',
-    fontFamily: '"Courier New", Courier, monospace',
-    textTransform: 'lowercase',
-    marginTop: '0.5rem'
-  };
-
-  // Add function to handle feedback submission
-  async function submitFeedback() {
-    if (!feedbackText.trim()) return;
-    
-    setIsSubmitting(true);
-    try {
-      // Submit feedback to the database
-      const { error } = await supabase
-        .from('feedback')
-        .insert([
-          { 
-            text: feedbackText,
-            created_at: new Date().toISOString()
-          }
-        ]);
-        
-      if (error) throw error;
-      
-      setFeedbackSubmitted(true);
-      setFeedbackText('');
-    } catch (error) {
-      console.error('Error submitting feedback:', error);
-      alert('Failed to submit feedback. Please try again later.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   // ---------------------------
   // HELPER: Toggle bubble selection
   // ---------------------------
@@ -764,9 +648,9 @@ export default function Home() {
       
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
       
       // Basic validation - check if at least one meal time is selected across all days
       const hasSelectedMealTime = 
@@ -779,9 +663,9 @@ export default function Home() {
       
       if (!name || !emailInput || !hasSelectedMealTime) {
         alert('Please fill in all required fields and select at least one time slot.');
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
@@ -847,7 +731,7 @@ export default function Home() {
           console.log('Direct fetch submission successful!');
           // Show success message
           setSignUpSuccess(true);
-          setLoading(false);
+      setLoading(false);
           return; // Exit early on success
         } else {
           const errorText = await response.text();
@@ -912,7 +796,7 @@ export default function Home() {
       console.log('Insert successful!', data);
       
       // Show success message
-      setSignUpSuccess(true);
+    setSignUpSuccess(true);
       
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -936,7 +820,7 @@ export default function Home() {
         alert(`Error: ${error.message}. Please try again later or contact support.`);
       }
     } finally {
-      setLoading(false);
+    setLoading(false);
     }
   }
 
@@ -1011,121 +895,64 @@ export default function Home() {
         0% { background-position: 0% 0%; }
         100% { background-position: 100% 100%; }
       }
-      
-      @keyframes floating {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-        100% { transform: translateY(0px); }
-      }
-      
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      
-      @keyframes shake {
-        0% { transform: translateX(0); }
-        25% { transform: translateX(-10px); }
-        50% { transform: translateX(10px); }
-        75% { transform: translateX(-10px); }
-        100% { transform: translateX(0); }
-      }
-      
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
-      }
-      
-      @keyframes floatingBubble {
-        0% { transform: translateY(0) rotate(0deg); }
-        33% { transform: translateY(-8px) rotate(2deg); }
-        66% { transform: translateY(4px) rotate(-2deg); }
-        100% { transform: translateY(0) rotate(0deg); }
-      }
-      
-      .shake {
-        animation: shake 0.5s ease-in-out;
-      }
-      
-      .pulse {
-        animation: pulse 2s infinite;
-      }
-      
-      .floating-bubble {
-        animation: floatingBubble 6s infinite ease-in-out;
-      }
-      
-      .floating-slow {
-        animation: floating 6s infinite ease-in-out;
-      }
-      
-      .floating-fast {
-        animation: floating 4s infinite ease-in-out;
-      }
-      
-      .fade-in {
-        animation: fadeIn 1s forwards;
-      }
-      
-      .particles {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        overflow: hidden;
-        z-index: 0;
-      }
-      
-      .particle {
-        position: absolute;
-        border-radius: 50%;
-        background-color: rgba(0, 56, 101, 0.1);
-        pointer-events: none;
-      }
     `;
     document.head.appendChild(style);
     
-    // Generate particles for background animation
-    if (isPasswordProtected) {
-      const particles = document.createElement('div');
-      particles.className = 'particles';
-      
-      for (let i = 0; i < 30; i++) {
-        const size = Math.random() * 20 + 5;
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.width = `${size}px`;
-        particle.style.height = `${size}px`;
-        particle.style.left = `${Math.random() * 100}%`;
-        particle.style.top = `${Math.random() * 100}%`;
-        particle.style.opacity = `${Math.random() * 0.5 + 0.1}`;
-        particle.style.animation = `floating ${Math.random() * 6 + 4}s infinite ease-in-out ${Math.random() * 5}s`;
-        
-        particles.appendChild(particle);
-      }
-      
-      // Add to document only if it doesn't exist yet
-      if (!document.querySelector('.particles')) {
-        document.body.appendChild(particles);
-      }
-    } else {
-      // Clean up particles if password protection is disabled
-      const particles = document.querySelector('.particles');
-      if (particles) {
-        particles.remove();
-      }
-    }
-    
     return () => {
       document.head.removeChild(style);
-      const particles = document.querySelector('.particles');
-      if (particles) {
-        particles.remove();
-      }
     };
-  }, [isPasswordProtected]);
+  }, []);
+
+  // Inside your component, add:
+  const submitBtnStyle = createSubmitBtnStyle(isMobile, loading);
+
+  // Add a ref for the modal content
+  const modalContentRef = useRef(null);
+  
+  // Add an effect that scrolls to top when step changes
+  useEffect(() => {
+    if (modalContentRef.current) {
+      // Smooth scroll animation
+      modalContentRef.current.scrollTo({
+          top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentStep, personalityStep]); // Trigger on step changes
+
+  // Add signup toggle state - set to false to disable signups
+  const [isSignupEnabled, setIsSignupEnabled] = useState(true);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Add function to handle feedback submission
+  async function submitFeedback() {
+    if (!feedbackText.trim()) return;
+    
+    setIsSubmitting(true);
+    try {
+      // Submit feedback to the database
+      const { error } = await supabase
+        .from('feedback')
+        .insert([
+          { 
+            text: feedbackText,
+            created_at: new Date().toISOString()
+          }
+        ]);
+        
+      if (error) throw error;
+      
+      setFeedbackSubmitted(true);
+      setFeedbackText('');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('Failed to submit feedback. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   // ---------------------------
   // RENDER
@@ -1136,474 +963,361 @@ export default function Home() {
       maxWidth: '100vw',
       overflow: 'hidden'
     }}>
-      {/* Password Protection Screen */}
-      {isPasswordProtected && (
-        <div style={passwordScreenStyle}>
-          <div className="floating-bubble" style={{
-            position: 'absolute',
-            top: '15%',
-            left: '10%',
-            width: '80px',
-            height: '80px',
-            backgroundColor: 'rgba(0, 56, 101, 0.1)',
-            borderRadius: '50%',
-            zIndex: 1
-          }}></div>
-          <div className="floating-slow" style={{
-            position: 'absolute',
-            bottom: '25%',
-            right: '15%',
-            width: '120px',
-            height: '120px',
-            backgroundColor: 'rgba(0, 56, 101, 0.08)',
-            borderRadius: '50%',
-            zIndex: 1
-          }}></div>
-          <div className="floating-fast" style={{
-            position: 'absolute',
-            top: '40%',
-            right: '25%',
-            width: '50px',
-            height: '50px',
-            backgroundColor: 'rgba(0, 56, 101, 0.12)',
-            borderRadius: '50%',
-            zIndex: 1
-          }}></div>
-          
-          {/* Text Animation (reusing the typed text effect) */}
-          <h1 style={{
-            fontSize: isMobile ? '3rem' : '5rem',
-            color: '#003865',
-            marginBottom: '2rem',
-            textAlign: 'center',
-            fontWeight: 'bold',
-            position: 'relative',
-            zIndex: 10
-          }}>
-            {typedText}
-          </h1>
-          
-          <div id="password-box" style={passwordBoxStyle}>
-            <h2 style={{ 
-              fontSize: '1.8rem',
-              color: '#003865',
-              marginBottom: '1rem'
-            }}>
-              coming soon
-            </h2>
-            <p style={{ 
-              fontSize: '1rem',
-              color: '#555',
-              marginBottom: '1rem'
-            }}>
-              enter password to access the site
-            </p>
-            
-            <form onSubmit={checkPassword}>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  ...passwordInputStyle,
-                  borderColor: passwordError ? '#ff5252' : '#e1e1e1',
-                }}
-                placeholder="enter password"
-                autoFocus
-              />
-              
-              {passwordError && (
-                <p style={{ 
-                  color: '#ff5252', 
-                  fontSize: '0.9rem',
-                  marginTop: '-0.5rem',
-                  marginBottom: '1rem'
-                }}>
-                  {passwordError}
-                </p>
-              )}
-              
-              <button 
-                type="submit"
-                style={passwordSubmitStyle}
-                className={isPasswordAttempted && !passwordError ? 'pulse' : ''}
-              >
-                unlock
-              </button>
-            </form>
-          </div>
-          
-          <p style={{ 
-            color: 'rgba(0, 56, 101, 0.7)', 
-            fontSize: '0.8rem',
-            marginTop: '2rem',
-            textAlign: 'center',
-            position: 'relative',
-            zIndex: 10
-          }}>
-            © 2024 brandeis strangers. all rights reserved.
-          </p>
-        </div>
-      )}
-      
-      {/* Rest of the app content - only shown if not password protected */}
-      {!isPasswordProtected && (
-        <>
-          {/* Sticky Header */}
-          <header style={headerStyle}>
-            <div style={logoStyle}>strangers.</div>
-            
-            {/* Only show full navigation on desktop */}
-            {!isMobile ? (
-              <nav style={{ display: 'flex', gap: '2rem' }}>
-                <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>
-              </nav>
-            ) : (
-              <button 
-                onClick={openModal}
-                style={{
-                  ...btnStyle,
-                  padding: '0.5rem 1.2rem',
-                  fontSize: '0.85rem',
-                  marginLeft: 0
-                }}
-              >
-                sign up
-              </button>
-            )}
-          </header>
+      {/* Sticky Header */}
+      <header style={headerStyle}>
+        <div style={logoStyle}>strangers.</div>
+        
+        {/* Only show full navigation on desktop */}
+        {!isMobile ? (
+          <nav style={{ display: 'flex', gap: '2rem' }}>
+            <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>
+          </nav>
+        ) : (
+          <button 
+            onClick={openModal}
+        style={{
+              ...btnStyle,
+              padding: '0.5rem 1.2rem',
+              fontSize: '0.85rem',
+              marginLeft: 0
+            }}
+          >
+            sign up
+          </button>
+        )}
+      </header>
 
-          {/* Hero section with integrated "How It Works" */}
-          <section id="signup" style={heroSectionStyle} className="cloud-bg">
-            {/* Cloud background overlay */}
-            <div style={cloudOverlayStyle}></div>
-            
-            {/* Content layer above clouds */}
-            <div style={heroContentStyle}>
-              {/* Hero content */}
-              <h1 style={heroTitleStyle}>
-                {typedText}
-              </h1>
-              <h2 style={heroSubtitleStyle}>
-                brandeis meal match
-              </h2>
-              <p style={heroTextStyle}>
-                {isSignupEnabled 
-                  ? "answer a few questions, and we'll match you with someone new." 
-                  : "our sign-ups are temporarily closed while we prepare for our next round."}
-              </p>
-              <p style={{
-                fontSize: isMobile ? '0.9rem' : '1rem',
-                color: '#003865',
-                backgroundColor: 'rgba(255, 255, 255, 0.7)',
-                padding: '0.5rem 1rem',
-                borderRadius: '8px',
-                marginBottom: '1.5rem',
-                maxWidth: '100%',
-                textAlign: 'center',
-                fontWeight: 'bold'
-              }}>
-                🚀 pilot launch 2: now open for march 17-19th meals!
-              </p>
-              {isSignupEnabled ? (
-                <button
-                  onClick={openModal}
-                  style={{
-                    ...btnStyle,
-                    padding: '0.8rem 2.5rem',
-                    fontSize: isMobile ? '1rem' : '1.1rem',
-                    marginLeft: 0,
-                    position: 'relative',
-                    zIndex: 2,
-                    boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
-                  }}
-                >
-                  sign up
-                </button>
-              ) : (
-                <div>
-                  <div style={{...btnStyle, cursor: 'default'}}>
-                    back soon!
-                  </div>
+      {/* Hero section with integrated "How It Works" */}
+      <section id="signup" style={heroSectionStyle} className="cloud-bg">
+        {/* Cloud background overlay */}
+        <div style={cloudOverlayStyle}></div>
+        
+        {/* Content layer above clouds */}
+        <div style={heroContentStyle}>
+          {/* Hero content */}
+          <h1 style={heroTitleStyle}>
+          {typedText}
+        </h1>
+          <h2 style={heroSubtitleStyle}>
+          brandeis meal match
+        </h2>
+          <p style={heroTextStyle}>
+            {isSignupEnabled 
+              ? "answer a few questions, and we'll match you with someone new." 
+              : "our sign-ups are temporarily closed while we prepare for our next round."}
+          </p>
+          <p style={{
+            fontSize: isMobile ? '0.9rem' : '1rem',
+            color: '#003865',
+            backgroundColor: 'rgba(255, 255, 255, 0.7)',
+            padding: '0.5rem 1rem',
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            maxWidth: '100%',
+            textAlign: 'center',
+            fontWeight: 'bold'
+          }}>
+            🚀 pilot launch 2: now open for march 17-19th meals!
+        </p>
+        {isSignupEnabled ? (
+        <button
+          onClick={openModal}
+          style={{
+                ...btnStyle,
+                padding: '0.8rem 2.5rem',
+                fontSize: isMobile ? '1rem' : '1.1rem',
+                marginLeft: 0,
+                position: 'relative',
+                zIndex: 2,
+                boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
+          }}
+        >
+          sign up
+        </button>
+        ) : (
+          <div>
+            <div style={{...btnStyle, cursor: 'default'}}>
+              back soon!
+            </div>
+            <div style={{
+              marginTop: '20px',
+              maxWidth: '500px',
+              textAlign: 'center'
+            }}>
+              {!feedbackSubmitted ? (
+                <>
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => {
+                      // Limit to 200 characters
+                      if (e.target.value.length <= 200) {
+                        setFeedbackText(e.target.value);
+                      }
+                    }}
+                    placeholder="Have feedback? Let us know! (200 character limit)"
+          style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '8px',
+                      border: '1px solid #ccc',
+                      fontFamily: 'inherit',
+                      marginBottom: '10px',
+                      resize: 'vertical',
+                      minHeight: '80px'
+                    }}
+                  />
                   <div style={{
-                    marginTop: '20px',
-                    maxWidth: '500px',
-                    textAlign: 'center'
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}>
-                    {!feedbackSubmitted ? (
-                      <>
-                        <textarea
-                          value={feedbackText}
-                          onChange={(e) => {
-                            // Limit to 200 characters
-                            if (e.target.value.length <= 200) {
-                              setFeedbackText(e.target.value);
-                            }
-                          }}
-                          placeholder="Have feedback? Let us know! (200 character limit)"
-                          style={{
-                            width: '100%',
-                            padding: '10px',
-                            borderRadius: '8px',
-                            border: '1px solid #ccc',
-                            fontFamily: 'inherit',
-                            marginBottom: '10px',
-                            resize: 'vertical',
-                            minHeight: '80px'
-                          }}
-                        />
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}>
-                          <div style={{
-                            fontSize: '0.8rem',
-                            color: '#666'
-                          }}>
-                            {feedbackText.length}/200
-                          </div>
-                          <button
-                            onClick={submitFeedback}
-                            disabled={isSubmitting || !feedbackText.trim()}
-                            style={{
-                              padding: '8px 16px',
-                              backgroundColor: '#003865',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '20px',
-                              cursor: feedbackText.trim() ? 'pointer' : 'not-allowed',
-                              opacity: feedbackText.trim() ? 1 : 0.6,
-                              fontFamily: 'inherit'
-                            }}
-                          >
-                            {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <div style={{
-                        backgroundColor: '#e6f7eb',
-                        padding: '15px',
-                        borderRadius: '8px',
-                        color: '#2e7d32',
-                        textAlign: 'center'
-                      }}>
-                        Thanks for your feedback! We'll see you when sign-ups reopen.
-                      </div>
-                    )}
-                  </div>
+                    <div style={{
+                      fontSize: '0.8rem',
+                      color: '#666'
+                    }}>
+                      {feedbackText.length}/200
+                    </div>
+                    <button
+                      onClick={submitFeedback}
+                      disabled={isSubmitting || !feedbackText.trim()}
+            style={{
+                        padding: '8px 16px',
+                        backgroundColor: '#003865',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '20px',
+                        cursor: feedbackText.trim() ? 'pointer' : 'not-allowed',
+                        opacity: feedbackText.trim() ? 1 : 0.6,
+                        fontFamily: 'inherit'
+                      }}
+                    >
+                      {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
+                    </button>
+        </div>
+                </>
+              ) : (
+                <div style={{
+                  backgroundColor: '#e6f7eb',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  color: '#2e7d32',
+                  textAlign: 'center'
+                }}>
+                  Thanks for your feedback! We'll see you when sign-ups reopen.
                 </div>
               )}
+            </div>
+          </div>
+        )}
+          
+          {/* How It Works section integrated into hero */}
+          <div style={howItWorksContainerStyle}>
+            <h2 style={howItWorksTitleStyle}>how it works</h2>
+            
+            <p style={problemStatementStyle}>
+              being on campus can be lonely. schedules rarely align, and it's tough finding new friends beyond your classes or clubs.
+            </p>
+            
+            <div style={stepsContainerStyle}>
+              <div style={stepStyle}>
+                <div style={stepNumberStyle}>1</div>
+                <div style={stepContentStyle}>
+                  <div style={stepTitleStyle}>quick sign up</div>
+                  <div style={stepDescriptionStyle}>
+                    sign up with your brandeis email, tell us your availability and meal preferences
+          </div>
+          </div>
+              </div>
               
-              {/* How It Works section integrated into hero */}
-              <div style={howItWorksContainerStyle}>
-                <h2 style={howItWorksTitleStyle}>how it works</h2>
-                
-                <p style={problemStatementStyle}>
-                  being on campus can be lonely. schedules rarely align, and it's tough finding new friends beyond your classes or clubs.
-                </p>
-                
-                <div style={stepsContainerStyle}>
-                  <div style={stepStyle}>
-                    <div style={stepNumberStyle}>1</div>
-                    <div style={stepContentStyle}>
-                      <div style={stepTitleStyle}>quick sign up</div>
-                      <div style={stepDescriptionStyle}>
-                        sign up with your brandeis email, tell us your availability and meal preferences
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style={stepStyle}>
-                    <div style={stepNumberStyle}>2</div>
-                    <div style={stepContentStyle}>
-                      <div style={stepTitleStyle}>get matched</div>
-                      <div style={stepDescriptionStyle}>
-                        we match you with someone new based on your compatible meal times and preferences
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div style={stepStyle}>
-                    <div style={stepNumberStyle}>3</div>
-                    <div style={stepContentStyle}>
-                      <div style={stepTitleStyle}>meet for a meal</div>
-                      <div style={stepDescriptionStyle}>
-                        show the matching color on your phone to find each other and enjoy your meal together
-                      </div>
-                    </div>
+              <div style={stepStyle}>
+                <div style={stepNumberStyle}>2</div>
+                <div style={stepContentStyle}>
+                  <div style={stepTitleStyle}>get matched</div>
+                  <div style={stepDescriptionStyle}>
+                    we match you with someone new based on your compatible meal times and preferences
+          </div>
+          </div>
+              </div>
+              
+              <div style={stepStyle}>
+                <div style={stepNumberStyle}>3</div>
+                <div style={stepContentStyle}>
+                  <div style={stepTitleStyle}>meet for a meal</div>
+                  <div style={stepDescriptionStyle}>
+                    show the matching color on your phone to find each other and enjoy your meal together
                   </div>
                 </div>
               </div>
             </div>
-          </section>
+          </div>
+        </div>
+      </section>
 
-          {/* Modal */}
-          {modalOpen && (
-            <div onClick={closeModal} style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                display: 'flex',
-                justifyContent: 'center',
-              alignItems: 'center',
-              zIndex: 1000
-            }}>
-              <div 
-                ref={modalContentRef}
-                onClick={(e) => e.stopPropagation()} 
-                style={{
-                  backgroundColor: '#fff',
-                  borderRadius: '1rem',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-                  width: isMobile ? '90%' : '500px',
-                  maxWidth: '95vw',
-                  maxHeight: '90vh',
-                  overflowY: 'auto',
-                  padding: '2rem',
-                  position: 'relative',
-                  textTransform: 'lowercase',
-                  animation: 'fadeIn 0.5s'
-                }}
-                className="modal-content"
-              >
-                <button
-                  className="close-button"
-                  onClick={closeModal}
-                  style={{
-                    position: 'absolute',
-                    top: '1rem',
-                    right: '1rem',
-                    background: 'none',
-                    border: 'none',
-                    fontSize: '1.5rem',
-                    color: '#003865',
-                    cursor: 'pointer',
-                  }}
-                >
-                  &times;
-                </button>
-                <div
-                  style={{
-                    textAlign: 'center',
-                    marginBottom: '2rem',
-                    fontSize: '1.5rem',
-                  }}
-                >
-                  sign up
+      {/* Modal */}
+      {modalOpen && (
+        <div onClick={closeModal} style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div 
+            ref={modalContentRef}
+            onClick={(e) => e.stopPropagation()} 
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: '1rem',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+              width: isMobile ? '90%' : '500px',
+              maxWidth: '95vw',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              padding: '2rem',
+              position: 'relative',
+              textTransform: 'lowercase',
+              animation: 'fadeIn 0.5s'
+            }}
+            className="modal-content"
+          >
+            <button
+              className="close-button"
+              onClick={closeModal}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'none',
+                border: 'none',
+                fontSize: '1.5rem',
+                color: '#003865',
+                cursor: 'pointer',
+              }}
+            >
+              &times;
+            </button>
+            <div
+              style={{
+                textAlign: 'center',
+                marginBottom: '2rem',
+                fontSize: '1.5rem',
+              }}
+            >
+              sign up
+            </div>
+
+            {/* STEP 1 */}
+            {currentStep === 1 && (
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  basic info
+                </h3>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>first name:</label>
+                  <input
+                    type="text"
+                    style={inputStyle}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
                 </div>
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>last name:</label>
+                  <input
+                    type="text"
+                    style={inputStyle}
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </div>
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>brandeis email:</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.8rem',
+                      fontSize: '1rem',
+                      border: '1px solid #ccc',
+                      borderRadius: '8px',
+                      marginBottom: '1rem',
+                      fontFamily: '"Courier New", Courier, monospace'
+                    }}
+                    required
+                  />
+                </div>
+                <div style={buttonsRowStyle}>
+                  <div style={{ flex: isMobile ? 1 : 'none', visibility: 'hidden' }}></div>
+                  <button onClick={goToStep2} style={nextBtnStyle}>
+                    next
+                  </button>
+                </div>
+              </div>
+            )}
 
-                {/* STEP 1 */}
-                {currentStep === 1 && (
-                  <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                    <h3 style={{ 
-                      marginBottom: '1.2rem', 
-                      fontSize: '1.1rem',
-                      textAlign: 'center'
-                    }}>
-                      basic info
-                    </h3>
+            {/* STEP 2 */}
+            {currentStep === 2 && (
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  academic info
+                </h3>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>choose your major(s):</label>
+                  <div className="major-search-container" style={{ position: 'relative' }}>
+                  <input
+                      type="text"
+                      style={{
+                        ...inputStyle,
+                        marginBottom: '0.5rem'
+                      }}
+                      value={majorSearch}
+                      onChange={(e) => {
+                        setMajorSearch(e.target.value);
+                        setShowMajorDropdown(true);
+                      }}
+                      onFocus={() => setShowMajorDropdown(true)}
+                      placeholder="Search for majors..."
+                    />
                     
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>first name:</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>last name:</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                      />
-                    </div>
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>brandeis email:</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                    {showMajorDropdown && (
+                      <div 
                         style={{
-                          width: '100%',
-                          padding: '0.8rem',
-                          fontSize: '1rem',
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          maxHeight: '200px',
+                          overflowY: 'auto',
                           border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          marginBottom: '1rem',
-                          fontFamily: '"Courier New", Courier, monospace'
+                          borderRadius: '4px',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
+                          zIndex: 10,
+                          background: 'white'
                         }}
-                        required
-                      />
-                    </div>
-                    <div style={buttonsRowStyle}>
-                      <div style={{ flex: isMobile ? 1 : 'none', visibility: 'hidden' }}></div>
-                      <button onClick={goToStep2} style={nextBtnStyle}>
-                        next
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* STEP 2 */}
-                {currentStep === 2 && (
-                  <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                    <h3 style={{ 
-                      marginBottom: '1.2rem', 
-                      fontSize: '1.1rem',
-                      textAlign: 'center'
-                    }}>
-                      academic info
-                    </h3>
-                    
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>choose your major(s):</label>
-                      <div className="major-search-container" style={{ position: 'relative' }}>
-                      <input
-                          type="text"
-                          style={{
-                            ...inputStyle,
-                            marginBottom: '0.5rem'
-                          }}
-                          value={majorSearch}
-                          onChange={(e) => {
-                            setMajorSearch(e.target.value);
-                            setShowMajorDropdown(true);
-                          }}
-                          onFocus={() => setShowMajorDropdown(true)}
-                          placeholder="Search for majors..."
-                        />
-                        
-                        {showMajorDropdown && (
-                          <div 
-                            style={{
-                              position: 'absolute',
-                              top: '100%',
-                              left: 0,
-                              right: 0,
-                              maxHeight: '200px',
-                              overflowY: 'auto',
-                              border: '1px solid #ccc',
-                              borderRadius: '4px',
-                              boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                              zIndex: 10,
-                              background: 'white'
-                            }}
-                          >
-                            {filteredMajors.length === 0 ? (
-                              <div style={{ padding: '0.5rem', color: '#999', textAlign: 'center' }}>
-                                No matching majors found
+                      >
+                        {filteredMajors.length === 0 ? (
+                          <div style={{ padding: '0.5rem', color: '#999', textAlign: 'center' }}>
+                            No matching majors found
                 </div>
-                            ) : (
-                              filteredMajors.map(major => (
+                        ) : (
+                          filteredMajors.map(major => (
                 <div
                               key={major}
                   style={{
@@ -1620,355 +1334,355 @@ export default function Home() {
                             >
                               {major}
                 </div>
-                              ))
-                            )}
+                          ))
+                        )}
+              </div>
+            )}
                   </div>
-                )}
+                  
+                  {/* Display selected majors as bubbles */}
+                  <div style={bubbleContainerStyle}>
+                    {selectedMajors.map((major) => (
+                      <div
+                        key={major}
+                        style={{
+                          ...bubbleStyle,
+                          ...bubbleSelectedStyle,
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                      >
+                        {major}
+                        <span 
+                          style={{ marginLeft: '5px', cursor: 'pointer' }}
+                          onClick={() => setSelectedMajors(selectedMajors.filter(m => m !== major))}
+                        >
+                          ×
+                        </span>
                       </div>
-                      
-                      {/* Display selected majors as bubbles */}
-                      <div style={bubbleContainerStyle}>
-                        {selectedMajors.map((major) => (
-                          <div
-                            key={major}
-                            style={{
-                              ...bubbleStyle,
-                              ...bubbleSelectedStyle,
-                              display: 'flex',
-                              alignItems: 'center'
-                            }}
-                          >
-                            {major}
-                            <span 
-                              style={{ marginLeft: '5px', cursor: 'pointer' }}
-                              onClick={() => setSelectedMajors(selectedMajors.filter(m => m !== major))}
-                            >
-                              ×
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>class level:</label>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'freshman',
-                          'sophomore',
-                          'junior',
-                          'senior',
-                          'graduate',
-                        ].map((level) => (
-                          <div
-                            key={level}
-                            style={{
-                              ...bubbleStyle,
-                              ...(classLevel === level ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => setClassLevel(level)}
-                          >
-                            {level}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={buttonsRowStyle}>
-                      <button onClick={goBackToStep1} style={backBtnStyle}>
-                        back
-                      </button>
-                      <button onClick={goToStep3} style={nextBtnStyle}>
-                        next
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                )}
-
-                {/* STEP 3 */}
-                {currentStep === 3 && (
-                  <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                    <h3 style={{ 
-                      marginBottom: '1.2rem', 
-                      fontSize: '1.1rem',
-                      textAlign: 'center'
-                    }}>
-                      interests
-                    </h3>
-                    
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>select your interests - as many as you want! </label>
-                      
-                      {/* Entertainment & Media */}
-                      <p style={categoryHeaderStyle}>
-                        Entertainment & Media
-                      </p>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'anime & manga',
-                          'k-pop & k-dramas',
-                          'taylor swift',
-                          'marvel & dc',
-                          'reality tv',
-                          'tiktok'
-                        ].map((interest) => (
-                          <div
-                            key={interest}
-                            style={{
-                              ...bubbleStyle,
-                              ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                          >
-                            {interest}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Activities */}
-                      <p style={categoryHeaderStyle}>
-                        Activities
-                      </p>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'thrifting',
-                          'foodie adventures',
-                          'gym & fitness',
-                          'coffee shop hopping',
-                          'boston exploring'
-                        ].map((interest) => (
-                          <div
-                            key={interest}
-                            style={{
-                              ...bubbleStyle,
-                              ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                          >
-                            {interest}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Arts & Culture */}
-                      <p style={categoryHeaderStyle}>
-                        Arts & Culture
-                      </p>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'photography',
-                          'music production',
-                          'fashion',
-                          'creative writing',
-                          'theater & improv'
-                        ].map((interest) => (
-                          <div
-                            key={interest}
-                            style={{
-                              ...bubbleStyle,
-                              ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                          >
-                            {interest}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Academic & Intellectual */}
-                      <p style={categoryHeaderStyle}>
-                        Academic & Intellectual
-                      </p>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'social justice',
-                          'entrepreneurship',
-                          'climate activism',
-                          'research',
-                          'debate & politics'
-                        ].map((interest) => (
-                          <div
-                            key={interest}
-                            style={{
-                              ...bubbleStyle,
-                              ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                          >
-                            {interest}
                 </div>
-                        ))}
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>class level:</label>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'freshman',
+                      'sophomore',
+                      'junior',
+                      'senior',
+                      'graduate',
+                    ].map((level) => (
+                      <div
+                        key={level}
+                        style={{
+                          ...bubbleStyle,
+                          ...(classLevel === level ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setClassLevel(level)}
+                      >
+                        {level}
                       </div>
-                      
-                      {/* Social & Campus Life */}
-                      <p style={categoryHeaderStyle}>
-                        Social & Campus Life
-                      </p>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'cultural clubs',
-                          'greek life',
-                          'club sports',
-                          'student government',
-                          'volunteering'
-                        ].map((interest) => (
-                          <div
-                            key={interest}
-                            style={{
-                              ...bubbleStyle,
-                              ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                          >
-                            {interest}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Tech & Gaming */}
-                      <p style={categoryHeaderStyle}>
-                        Tech & Gaming
-                      </p>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'video games',
-                          'coding & tech',
-                          'crypto & nfts',
-                          'ai & chatgpt'
-                        ].map((interest) => (
-                          <div
-                            key={interest}
-                            style={{
-                              ...bubbleStyle,
-                              ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                          >
-                            {interest}
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Lifestyle */}
-                      <p style={categoryHeaderStyle}>
-                        Lifestyle
-                      </p>
-                      <div style={bubbleContainerStyle}>
-                        {[
-                          'plant parent',
-                          'cooking & baking',
-                          'mental health',
-                          'spirituality',
-                          'sustainability'
-                        ].map((interest) => (
-                          <div
-                            key={interest}
-                            style={{
-                              ...bubbleStyle,
-                              ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                          >
-                            {interest}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div style={buttonsRowStyle}>
-                      <button onClick={goBackToStep2} style={backBtnStyle}>
-                        back
-                      </button>
-                      <button onClick={goToPersonalityStep} style={nextBtnStyle}>
-                        next
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                )}
+                </div>
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToStep1} style={backBtnStyle}>
+                    back
+                  </button>
+                  <button onClick={goToStep3} style={nextBtnStyle}>
+                    next
+                  </button>
+                </div>
+              </div>
+            )}
 
-                {/* STEP 4 */}
-                {currentStep === 4 && personalityStep && (
-                  <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                    <h3 style={{ 
-                      marginBottom: '1.2rem', 
-                      fontSize: '1.1rem',
-                      textAlign: 'center'
-                    }}>
-                      personality questions
-                    </h3>
-                    
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>are you an introvert or an extrovert?</label>
-                      <div style={bubbleContainerStyle}>
-                        {['introvert', 'extrovert'].map((type) => (
-                          <div
-                            key={type}
-                            style={{
-                              ...bubbleStyle,
-                              ...(personalityType === type ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => setPersonalityType(type)}
-                          >
-                            {type}
-                          </div>
-                        ))}
+            {/* STEP 3 */}
+            {currentStep === 3 && (
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  interests
+                </h3>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>select your interests - as many as you want! </label>
+                  
+                  {/* Entertainment & Media */}
+                  <p style={categoryHeaderStyle}>
+                    Entertainment & Media
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'anime & manga',
+                      'k-pop & k-dramas',
+                      'taylor swift',
+                      'marvel & dc',
+                      'reality tv',
+                      'tiktok'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                      >
+                        {interest}
                       </div>
-                    </div>
-
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>dark humor or wholesome laughs?</label>
-                      <div style={bubbleContainerStyle}>
-                        {['dark humor', 'wholesome laughs'].map((type) => (
-                          <div
-                            key={type}
-                            style={{
-                              ...bubbleStyle,
-                              ...(humorType === type ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => setHumorType(type)}
-                          >
-                            {type}
-                          </div>
-                        ))}
+                    ))}
+                  </div>
+                  
+                  {/* Activities */}
+                  <p style={categoryHeaderStyle}>
+                    Activities
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'thrifting',
+                      'foodie adventures',
+                      'gym & fitness',
+                      'coffee shop hopping',
+                      'boston exploring'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                      >
+                        {interest}
                       </div>
-                    </div>
-
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>small talk or tackling big problems?</label>
-                      <div style={bubbleContainerStyle}>
-                        {['small talk', 'tackling big problems'].map((type) => (
-                          <div
-                            key={type}
-                            style={{
-                              ...bubbleStyle,
-                              ...(conversationType === type ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => setConversationType(type)}
-                          >
-                            {type}
-                          </div>
-                        ))}
+                    ))}
+                  </div>
+                  
+                  {/* Arts & Culture */}
+                  <p style={categoryHeaderStyle}>
+                    Arts & Culture
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'photography',
+                      'music production',
+                      'fashion',
+                      'creative writing',
+                      'theater & improv'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                      >
+                        {interest}
                       </div>
-                    </div>
-
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>planner or procrastinator?</label>
-                      <div style={bubbleContainerStyle}>
-                        {['planner', 'procrastinator'].map((type) => (
-                          <div
-                            key={type}
-                            style={{
-                              ...bubbleStyle,
-                              ...(plannerType === type ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => setPlannerType(type)}
-                          >
-                            {type}
-                          </div>
-                        ))}
+                    ))}
+                  </div>
+                  
+                  {/* Academic & Intellectual */}
+                  <p style={categoryHeaderStyle}>
+                    Academic & Intellectual
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'social justice',
+                      'entrepreneurship',
+                      'climate activism',
+                      'research',
+                      'debate & politics'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                      >
+                        {interest}
+                </div>
+                    ))}
+                  </div>
+                  
+                  {/* Social & Campus Life */}
+                  <p style={categoryHeaderStyle}>
+                    Social & Campus Life
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'cultural clubs',
+                      'greek life',
+                      'club sports',
+                      'student government',
+                      'volunteering'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                      >
+                        {interest}
                       </div>
-                    </div>
+                    ))}
+                  </div>
+                  
+                  {/* Tech & Gaming */}
+                  <p style={categoryHeaderStyle}>
+                    Tech & Gaming
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'video games',
+                      'coding & tech',
+                      'crypto & nfts',
+                      'ai & chatgpt'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Lifestyle */}
+                  <p style={categoryHeaderStyle}>
+                    Lifestyle
+                  </p>
+                  <div style={bubbleContainerStyle}>
+                    {[
+                      'plant parent',
+                      'cooking & baking',
+                      'mental health',
+                      'spirituality',
+                      'sustainability'
+                    ].map((interest) => (
+                      <div
+                        key={interest}
+                        style={{
+                          ...bubbleStyle,
+                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                      >
+                        {interest}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div style={buttonsRowStyle}>
+                  <button onClick={goBackToStep2} style={backBtnStyle}>
+                    back
+                  </button>
+                  <button onClick={goToPersonalityStep} style={nextBtnStyle}>
+                    next
+                  </button>
+                </div>
+              </div>
+            )}
 
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>which harry potter house are you in?</label>
+            {/* STEP 4 */}
+            {currentStep === 4 && personalityStep && (
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  personality questions
+                </h3>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>are you an introvert or an extrovert?</label>
+                  <div style={bubbleContainerStyle}>
+                    {['introvert', 'extrovert'].map((type) => (
+                      <div
+                        key={type}
+                        style={{
+                          ...bubbleStyle,
+                          ...(personalityType === type ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setPersonalityType(type)}
+                      >
+                        {type}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>dark humor or wholesome laughs?</label>
+                  <div style={bubbleContainerStyle}>
+                    {['dark humor', 'wholesome laughs'].map((type) => (
+                      <div
+                        key={type}
+                        style={{
+                          ...bubbleStyle,
+                          ...(humorType === type ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setHumorType(type)}
+                      >
+                        {type}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>small talk or tackling big problems?</label>
+                  <div style={bubbleContainerStyle}>
+                    {['small talk', 'tackling big problems'].map((type) => (
+                      <div
+                        key={type}
+                        style={{
+                          ...bubbleStyle,
+                          ...(conversationType === type ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setConversationType(type)}
+                      >
+                        {type}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>planner or procrastinator?</label>
+                  <div style={bubbleContainerStyle}>
+                    {['planner', 'procrastinator'].map((type) => (
+                      <div
+                        key={type}
+                        style={{
+                          ...bubbleStyle,
+                          ...(plannerType === type ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setPlannerType(type)}
+                      >
+                        {type}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>which harry potter house are you in?</label>
                   <div style={bubbleContainerStyle}>
                     {['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin', "haven't watched"].map((house) => (
                       <div
@@ -2134,8 +1848,8 @@ export default function Home() {
                           return (
                             <div
                               key={timeKey}
-                              style={{
-                                ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
@@ -2166,10 +1880,10 @@ export default function Home() {
                               }}
                             >
                               {timeSlot}
-                            </div>
+                      </div>
                           );
                         })}
-                      </div>
+                  </div>
                       
                       {/* Dinner times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
@@ -2181,7 +1895,7 @@ export default function Home() {
                           return (
                             <div
                               key={timeKey}
-                              style={{
+                      style={{
                                 ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
@@ -2221,15 +1935,15 @@ export default function Home() {
                     
                     {/* Tuesday */}
                     <div
-                      style={{
+                          style={{
                         position: 'relative',
                         margin: '0.5rem',
                         padding: '0.5rem 1rem',
                         borderRadius: '20px',
                         backgroundColor: '#f0f0f0',
-                        display: 'flex',
+                            display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center',
+                            alignItems: 'center',
                       }}
                     >
                       <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday, march 18th</div>
@@ -2244,7 +1958,7 @@ export default function Home() {
                           return (
                             <div
                               key={timeKey}
-                              style={{
+                            style={{
                                 ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
@@ -2288,7 +2002,7 @@ export default function Home() {
                           const timeKey = `tuesday-dinner-${timeSlot}`;
                           const isSelected = mealTimes.tuesday?.dinner?.includes(timeSlot) || false;
                           
-                          return (
+                                return (
                             <div
                               key={timeKey}
                               style={{
@@ -2351,7 +2065,7 @@ export default function Home() {
                           const timeKey = `wednesday-lunch-${timeSlot}`;
                           const isSelected = mealTimes.wednesday?.lunch?.includes(timeSlot) || false;
                           
-                          return (
+                                return (
                             <div
                               key={timeKey}
                               style={{
@@ -2401,14 +2115,14 @@ export default function Home() {
                           return (
                             <div
                               key={timeKey}
-                              style={{
-                                ...bubbleStyle,
+                                style={{
+                                  ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
                                 padding: '0.4rem 0.8rem',
-                              }}
-                              onClick={() => {
+                                }}
+                                onClick={() => {
                                 // Create a deep copy of mealTimes
                                 const updatedMealTimes = { ...mealTimes };
                                 
@@ -2433,12 +2147,12 @@ export default function Home() {
                               }}
                             >
                               {timeSlot}
-                            </div>
+                              </div>
                           );
                         })}
-                      </div>
+                        </div>
                     </div>
-                  </div>
+                </div>
                 </div>
                 
                 <div style={buttonsRowStyle}>
