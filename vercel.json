@@ -8,8 +8,9 @@
   ],
   "build": {
     "env": {
-      "NPM_FLAGS": "--force"
+      "NPM_FLAGS": "--legacy-peer-deps --force",
+      "NODE_OPTIONS": "--max_old_space_size=4096"
     }
   },
-  "installCommand": "npm install --force"
+  "installCommand": "npm install --legacy-peer-deps --force"
 } 

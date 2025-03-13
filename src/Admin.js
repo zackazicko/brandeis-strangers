@@ -211,6 +211,7 @@ CREATE TABLE public.main (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
     name TEXT,
     email TEXT,
+    phone TEXT, /* Phone number stored as text */
     majors TEXT[] DEFAULT '{}'::TEXT[],
     class_level TEXT,
     interests TEXT[] DEFAULT '{}'::TEXT[],
@@ -890,7 +891,7 @@ GRANT ALL ON public.feedback TO service_role;`);
                       />
                     </td>
                     <td>{profile.name || 'Not specified'}</td>
-                    <td>{profile.email}</td>
+                  <td>{profile.email}</td>
                     <td>{profile.phone || 'Not specified'}</td>
                     <td>
                       <span 
@@ -899,12 +900,12 @@ GRANT ALL ON public.feedback TO service_role;`);
                       >
                         {profile.class_level || 'Not specified'}
                       </span>
-                    </td>
+                  </td>
                     <td>{formatArrayField(profile.majors)}</td>
                     <td>{formatArrayField(profile.interests)}</td>
-                    <td>
+                  <td>
                       {formatArrayField(profile.dining_locations)}
-                    </td>
+                  </td>
                     <td>{formatDate(profile.created_at)}</td>
                     <td>
                       <button 
@@ -913,7 +914,7 @@ GRANT ALL ON public.feedback TO service_role;`);
                       >
                         {expandedRow === profile.id ? 'Collapse' : 'Details'}
                       </button>
-                    </td>
+                  </td>
                   </tr>
                   
                   {/* Expanded row with details */}
@@ -990,8 +991,8 @@ GRANT ALL ON public.feedback TO service_role;`);
                             </div>
                           </div>
                         </div>
-                      </td>
-                    </tr>
+                  </td>
+                </tr>
                   )}
                 </React.Fragment>
               ))}

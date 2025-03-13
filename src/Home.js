@@ -453,12 +453,12 @@ export default function Home() {
   
   function openModal() {
     if (isSignupEnabled) {
-      setModalOpen(true);
-      document.body.style.overflow = 'hidden';
+    setModalOpen(true);
+    document.body.style.overflow = 'hidden';
     } else {
       // If signups are disabled, don't open the modal
       alert('Signups are currently closed. Please check back later!');
-    }
+  }
   }
   
   function closeModal() {
@@ -691,9 +691,9 @@ export default function Home() {
       
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
       
       // Basic validation - check if at least one meal time is selected across all days
       const hasSelectedMealTime = 
@@ -706,9 +706,9 @@ export default function Home() {
       
       if (!name || !emailInput || !phone || !hasSelectedMealTime) {
         alert('Please fill in all required fields and select at least one time slot.');
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
@@ -1019,7 +1019,7 @@ export default function Home() {
         ) : (
           <button 
             onClick={openModal}
-            style={{
+        style={{
               ...btnStyle,
               padding: '0.5rem 1.2rem',
               fontSize: '0.85rem',
@@ -1040,11 +1040,11 @@ export default function Home() {
         <div style={heroContentStyle}>
           {/* Hero content */}
           <h1 style={heroTitleStyle}>
-            {typedText}
-          </h1>
+          {typedText}
+        </h1>
           <h2 style={heroSubtitleStyle}>
-            brandeis meal match
-          </h2>
+          brandeis meal match
+        </h2>
           <p style={heroTextStyle}>
             {isSignupEnabled 
               ? "answer a few questions, and we'll match you with someone new." 
@@ -1064,9 +1064,9 @@ export default function Home() {
             🚀 pilot launch 2: now open for march 17-19th meals!
           </p>
           {isSignupEnabled ? (
-            <button
-              onClick={openModal}
-              style={{
+        <button
+          onClick={openModal}
+          style={{
                 ...btnStyle,
                 padding: '0.8rem 2.5rem',
                 fontSize: isMobile ? '1rem' : '1.1rem',
@@ -1074,10 +1074,10 @@ export default function Home() {
                 position: 'relative',
                 zIndex: 2,
                 boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
-              }}
-            >
-              sign up
-            </button>
+          }}
+        >
+          sign up
+        </button>
           ) : (
             <div>
               <div style={{...btnStyle, cursor: 'default'}}>
@@ -1099,7 +1099,7 @@ export default function Home() {
                         }
                       }}
                       placeholder="Have feedback? Let us know! (200 character limit)"
-                      style={{
+          style={{
                         width: '100%',
                         padding: '10px',
                         borderRadius: '8px',
@@ -1124,7 +1124,7 @@ export default function Home() {
                       <button
                         onClick={submitFeedback}
                         disabled={isSubmitting || !feedbackText.trim()}
-                        style={{
+            style={{
                           padding: '8px 16px',
                           backgroundColor: '#003865',
                           color: 'white',
@@ -1137,7 +1137,7 @@ export default function Home() {
                       >
                         {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                       </button>
-                    </div>
+        </div>
                   </>
                 ) : (
                   <div style={{
@@ -2275,14 +2275,14 @@ export default function Home() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            textAlign: 'center',
+  textAlign: 'center',
             width: '100%',
             maxWidth: '600px'
           }}>
             <div style={{
               fontSize: '3rem',
               marginBottom: '2rem',
-              fontWeight: 'bold',
+  fontWeight: 'bold',
               color: 'white',
               animation: 'floatText 3s ease-in-out infinite',
               opacity: 0,
@@ -2323,12 +2323,12 @@ export default function Home() {
                 marginTop: '2rem',
                 padding: '0.8rem 2rem',
                 backgroundColor: 'white',
-                color: '#003865',
-                border: 'none',
+  color: '#003865',
+  border: 'none',
                 borderRadius: '30px',
                 fontSize: '1.1rem',
-                cursor: 'pointer',
-                fontFamily: '"Courier New", Courier, monospace',
+  cursor: 'pointer',
+  fontFamily: '"Courier New", Courier, monospace',
                 opacity: 0,
                 transform: 'translateY(20px)',
                 animation: 'fadeSlideUp 0.8s forwards 1.1s',
