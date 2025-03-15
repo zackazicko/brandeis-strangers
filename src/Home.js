@@ -4,7 +4,7 @@ import supabase from './supabaseClient';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: true // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: false // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -696,19 +696,22 @@ export default forwardRef(function Home(props, ref) {
       return;
     }
     
-    if (!housingTimePeriod) {
-      alert('Please select what housing group you are looking for.');
-      return;
-    }
+    // Only require these fields if the user needs housing
+    if (housingStatus !== 'all set!') {
+      if (!housingTimePeriod) {
+        alert('Please select what housing group you are looking for.');
+        return;
+      }
 
-    if ((housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && !roommateGenderPreference) {
-      alert('Please select your roommate gender preference.');
-      return;
-    }
-    
-    if (!cleanlinessLevel) {
-      alert('Please select your cleanliness level.');
-      return;
+      if ((housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && !roommateGenderPreference) {
+        alert('Please select your roommate gender preference.');
+        return;
+      }
+      
+      if (!cleanlinessLevel) {
+        alert('Please select your cleanliness level.');
+        return;
+      }
     }
     
     setCurrentStep(5);
@@ -1028,14 +1031,14 @@ export default forwardRef(function Home(props, ref) {
         @keyframes checkmark {
           0% { 
             opacity: 0;
-            transform: translate(-50%, -70%) rotate(45deg) scale(0.5);
+            transform: translate(-50%, -70%) rotate(135deg) scale(0.5);
           }
           50% {
             opacity: 1;
           }
           100% { 
             opacity: 1;
-            transform: translate(-50%, -70%) rotate(45deg) scale(1);
+            transform: translate(-50%, -70%) rotate(135deg) scale(1);
           }
         }
       `;
@@ -1403,7 +1406,7 @@ export default forwardRef(function Home(props, ref) {
                 </div>
                 {/* Add phone number field */}
                 <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>phone number:</label>
+                  <label style={labelStyle}>phone number: (to find your match)</label>
                   <input
                     type="tel"
                     value={phone}
@@ -1903,24 +1906,6 @@ export default forwardRef(function Home(props, ref) {
                 </h3>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>what housing group are you looking for?</label>
-                  <div style={bubbleContainerStyle}>
-                    {['fall only', 'spring only', 'full year'].map((period) => (
-                      <div
-                        key={period}
-                        style={{
-                          ...bubbleStyle,
-                          ...(housingTimePeriod === period ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => setHousingTimePeriod(period)}
-                      >
-                        {period}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>how would you describe your housing situation?</label>
                   <div style={bubbleContainerStyle}>
                     {['looking to pull a roommate', 'need to be pulled into a group', 'all set!'].map((status) => (
@@ -1938,54 +1923,77 @@ export default forwardRef(function Home(props, ref) {
                   </div>
                 </div>
                 
-                {(housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && (
-                  <div style={{ marginBottom: '1.2rem' }}>
-                    <label style={labelStyle}>gender preference for roommate?</label>
-                    <div style={bubbleContainerStyle}>
-                      {['male', 'female', 'no preference'].map((pref) => (
-                        <div
-                          key={pref}
-                          style={{
-                            ...bubbleStyle,
-                            ...(roommateGenderPreference === pref ? bubbleSelectedStyle : {}),
-                          }}
-                          onClick={() => setRoommateGenderPreference(pref)}
-                        >
-                          {pref}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>what's your cleanliness level?</label>
-                  <div style={bubbleContainerStyle}>
-                    {['very neat', 'somewhat neat', 'somewhat messy', 'messy'].map((level) => (
-                      <div
-                        key={level}
-                        style={{
-                          ...bubbleStyle,
-                          ...(cleanlinessLevel === level ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => setCleanlinessLevel(level)}
-                      >
-                        {level}
+                {/* Only show additional housing questions if not "all set!" */}
+                {housingStatus && housingStatus !== 'all set!' && (
+                  <>
+                    <div style={{ marginBottom: '1.2rem' }}>
+                      <label style={labelStyle}>what housing group are you looking for?</label>
+                      <div style={bubbleContainerStyle}>
+                        {['fall only', 'spring only', 'full year'].map((period) => (
+                          <div
+                            key={period}
+                            style={{
+                              ...bubbleStyle,
+                              ...(housingTimePeriod === period ? bubbleSelectedStyle : {}),
+                            }}
+                            onClick={() => setHousingTimePeriod(period)}
+                          >
+                            {period}
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>what is your housing number? (optional)</label>
-                  <input
-                    type="text"
-                    value={housingNumber}
-                    onChange={(e) => setHousingNumber(e.target.value)}
-                    placeholder="Enter your housing number"
-                    style={inputStyle}
-                  />
-                </div>
+                    </div>
+                    
+                    {(housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && (
+                      <div style={{ marginBottom: '1.2rem' }}>
+                        <label style={labelStyle}>gender preference for roommate?</label>
+                        <div style={bubbleContainerStyle}>
+                          {['male', 'female', 'no preference'].map((pref) => (
+                            <div
+                              key={pref}
+                              style={{
+                                ...bubbleStyle,
+                                ...(roommateGenderPreference === pref ? bubbleSelectedStyle : {}),
+                              }}
+                              onClick={() => setRoommateGenderPreference(pref)}
+                            >
+                              {pref}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div style={{ marginBottom: '1.2rem' }}>
+                      <label style={labelStyle}>what's your cleanliness level?</label>
+                      <div style={bubbleContainerStyle}>
+                        {['very neat', 'somewhat neat', 'somewhat messy', 'messy'].map((level) => (
+                          <div
+                            key={level}
+                            style={{
+                              ...bubbleStyle,
+                              ...(cleanlinessLevel === level ? bubbleSelectedStyle : {}),
+                            }}
+                            onClick={() => setCleanlinessLevel(level)}
+                          >
+                            {level}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div style={{ marginBottom: '1.2rem' }}>
+                      <label style={labelStyle}>what is your housing number? (optional)</label>
+                      <input
+                        type="text"
+                        value={housingNumber}
+                        onChange={(e) => setHousingNumber(e.target.value)}
+                        placeholder="Enter your housing number"
+                        style={inputStyle}
+                      />
+                    </div>
+                  </>
+                )}
 
                 <div style={buttonsRowStyle}>
                   <button onClick={goBackToPersonalityStep} style={backBtnStyle}>
@@ -2459,7 +2467,7 @@ export default forwardRef(function Home(props, ref) {
                     height: '30px',
                     borderRight: '4px solid #003865',
                     borderBottom: '4px solid #003865',
-                    transform: 'translate(-50%, -70%) rotate(45deg)',
+                    transform: 'translate(-50%, -70%) rotate(135deg)',
                     animation: 'checkmark 0.8s ease-in-out forwards'
                   }}></div>
                 </div>

@@ -581,6 +581,80 @@ GRANT ALL ON public.feedback TO service_role;`);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
   
+  // Convert profiles data to CSV and download it
+  const downloadCSV = () => {
+    // Don't attempt to download if no data
+    if (!profiles || profiles.length === 0) {
+      alert('No data available to download.');
+      return;
+    }
+
+    try {
+      // Get all unique column names from all profile objects
+      const allKeys = new Set();
+      profiles.forEach(profile => {
+        Object.keys(profile).forEach(key => allKeys.add(key));
+      });
+      
+      const columns = Array.from(allKeys);
+      
+      // Create CSV header row
+      let csv = columns.join(',') + '\n';
+      
+      // Add data rows
+      profiles.forEach(profile => {
+        const row = columns.map(column => {
+          // Handle different data types
+          const value = profile[column];
+          
+          if (value === null || value === undefined) {
+            return '';
+          }
+          
+          if (Array.isArray(value)) {
+            // Convert arrays to quoted strings with semicolon separators
+            return `"${value.join(';')}"`;
+          }
+          
+          if (typeof value === 'object') {
+            // Convert objects to JSON strings
+            return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+          }
+          
+          // Handle strings that might contain commas or quotes
+          if (typeof value === 'string') {
+            return `"${value.replace(/"/g, '""')}"`;
+          }
+          
+          // Other primitive values
+          return value;
+        }).join(',');
+        
+        csv += row + '\n';
+      });
+      
+      // Create a download link
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      
+      // Get current date for filename
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      // Create a link element and trigger download
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `strangers sign up data (${dateStr}).csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error creating CSV file:', error);
+      alert('Failed to generate CSV file. Please try again.');
+    }
+  };
+  
   // Login screen if not authorized
   if (!authorized) {
     return (
@@ -732,6 +806,13 @@ GRANT ALL ON public.feedback TO service_role;`);
             style={{ backgroundColor: '#28a745', marginLeft: '10px' }}
           >
             Test Sign Up
+          </button>
+          <button
+            onClick={downloadCSV}
+            className="sync-button"
+            style={{ backgroundColor: '#4a6da7', marginLeft: '10px' }}
+          >
+            Download CSV
           </button>
           {lastSyncTime && (
             <span className="last-sync">
