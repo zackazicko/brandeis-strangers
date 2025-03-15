@@ -315,203 +315,6 @@ const lockOverlayStyle = {
   backdropFilter: 'blur(5px)'
 };
 
-// NEW FUNCTION: Create a reusable toggleMealTime function to replace repetitive code
-function toggleMealTime(day, mealType, timeSlot) {
-  // Create a deep copy of mealTimes
-  const updatedMealTimes = { ...mealTimes };
-  
-  // Initialize day and meal if needed
-  if (!updatedMealTimes[day]) {
-    updatedMealTimes[day] = {};
-  }
-  if (!updatedMealTimes[day][mealType]) {
-    updatedMealTimes[day][mealType] = [];
-  }
-  
-  // Toggle time slot
-  if (updatedMealTimes[day][mealType].includes(timeSlot)) {
-    updatedMealTimes[day][mealType] = updatedMealTimes[day][mealType].filter(
-      time => time !== timeSlot
-    );
-  } else {
-    updatedMealTimes[day][mealType].push(timeSlot);
-  }
-  
-  setMealTimes(updatedMealTimes);
-}
-
-// NEW FUNCTION: Create a single utility function to handle dynamic style injection
-function injectStyleSheet(cssContent, dependencies = [], cleanupCallback = null) {
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = cssContent;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-      if (cleanupCallback) cleanupCallback();
-    };
-  }, dependencies);
-}
-
-// Replace multiple useEffect style injections with the utility function
-injectStyleSheet(`
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  @media (max-width: 768px) {
-    /* Overscroll behavior to prevent page bouncing on iOS */
-    body {
-      overscroll-behavior-y: none;
-    }
-    
-    /* Make form elements larger on mobile */
-    input, select, button {
-      font-size: 16px !important; /* Prevents iOS zoom on focus */
-    }
-    
-    /* Add momentum scrolling for modal on mobile */
-    .modal-content {
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Improve button press effect */
-    button:active {
-      transform: scale(0.98);
-    }
-  }
-`);
-
-injectStyleSheet(`
-  @media (max-width: 768px) {
-    /* Improve touch feedback */
-    button:active {
-      transform: scale(0.98);
-      transition: transform 0.1s;
-    }
-    
-    /* Fix spacing for mobile view */
-    #root {
-      padding-top: 60px; /* Match header height */
-    }
-    
-    /* Improve spacing of modal on mobile */
-    .modal-content {
-      padding-top: 20px;
-    }
-  }
-`);
-
-injectStyleSheet(`
-  .cloud-bg {
-    background-color: #e6f2ff;
-    background-image: 
-      radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 25%),
-      radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 35%),
-      radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 30%),
-      radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 25%);
-    animation: moveClouds 60s infinite alternate ease-in-out;
-  }
-  
-  @keyframes moveClouds {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 100% 100%; }
-  }
-`);
-
-// Replace conditionally created success animation with a simpler approach
-injectStyleSheet(`
-  @keyframes successPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-  }
-`, [signUpSuccess]);
-
-// NEW: Create a reusable BubbleOption component for all selection options
-const BubbleOption = ({ label, isSelected, onClick, style }) => (
-  <div
-    style={{
-      ...bubbleStyle,
-      ...(isSelected ? bubbleSelectedStyle : {}),
-      ...style
-    }}
-    onClick={onClick}
-  >
-    {label}
-  </div>
-);
-
-// NEW: Create a DaySchedule component for displaying meal times
-const DaySchedule = ({ day, dayLabel }) => (
-  <div
-    style={{
-      position: 'relative',
-      margin: '0.5rem',
-      padding: '0.5rem 1rem',
-      borderRadius: '20px',
-      backgroundColor: '#f0f0f0',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-    }}
-  >
-    <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>{dayLabel}</div>
-    
-    {/* Lunch times */}
-    <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
-    <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-      {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
-        const timeKey = `${day}-lunch-${timeSlot}`;
-        const isSelected = mealTimes[day]?.lunch?.includes(timeSlot) || false;
-        
-        return (
-          <div
-            key={timeKey}
-            style={{
-              ...bubbleStyle,
-              backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-              color: isSelected ? 'white' : '#333',
-              fontSize: '0.85rem',
-              padding: '0.4rem 0.8rem',
-            }}
-            onClick={() => toggleMealTime(day, 'lunch', timeSlot)}
-          >
-            {timeSlot}
-          </div>
-        );
-      })}
-    </div>
-    
-    {/* Dinner times */}
-    <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
-    <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-      {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
-        const timeKey = `${day}-dinner-${timeSlot}`;
-        const isSelected = mealTimes[day]?.dinner?.includes(timeSlot) || false;
-        
-        return (
-          <div
-            key={timeKey}
-            style={{
-              ...bubbleStyle,
-              backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-              color: isSelected ? 'white' : '#333',
-              fontSize: '0.85rem',
-              padding: '0.4rem 0.8rem',
-            }}
-            onClick={() => toggleMealTime(day, 'dinner', timeSlot)}
-          >
-            {timeSlot}
-          </div>
-        );
-      })}
-    </div>
-  </div>
-);
-
 // Export the Home component with forwardRef to allow ref access from parent components
 export default forwardRef(function Home(props, ref) {
   // Extract props with defaults
@@ -847,143 +650,73 @@ export default forwardRef(function Home(props, ref) {
     return digitsOnly.length >= 10;
   }
 
-  // NEW: Create a form validation utility function to centralize validation logic
-  function validateFormStep(step, data) {
-    switch(step) {
-      case 1: // Basic info step
-        if (!data.firstName.trim() || !data.lastName.trim()) {
-          return { valid: false, message: 'Please provide both first and last name.' };
-        }
-        if (!isValidBrandeisEmail(data.email)) {
-          return { valid: false, message: 'please use your brandeis.edu email address.' };
-        }
-        if (!isValidPhoneNumber(data.phone)) {
-          return { valid: false, message: 'Please provide a valid phone number (at least 10 digits).' };
-        }
-        return { valid: true };
-        
-      case 2: // Academic info step
-        if (!data.classLevel || data.selectedMajors.length === 0) {
-          return { valid: false, message: 'Please select your class level and at least one major.' };
-        }
-        return { valid: true };
-        
-      case 3: // Interests step
-        // Interests are optional
-        return { valid: true };
-        
-      case 4: // Personality/Housing step
-        if (data.housingStep) {
-          if (!data.housingStatus) {
-            return { valid: false, message: 'Please select your housing situation.' };
-          }
-          
-          // Only require these fields if the user needs housing
-          if (data.housingStatus !== 'all set!') {
-            if (!data.housingTimePeriod) {
-              return { valid: false, message: 'Please select what housing group you are looking for.' };
-            }
-
-            if ((data.housingStatus === 'looking to pull a roommate' || data.housingStatus === 'need to be pulled into a group') && !data.roommateGenderPreference) {
-              return { valid: false, message: 'Please select your roommate gender preference.' };
-            }
-            
-            if (!data.cleanlinessLevel) {
-              return { valid: false, message: 'Please select your cleanliness level.' };
-            }
-          }
-        }
-        return { valid: true };
-        
-      case 5: // Meal preferences step
-        const hasSelectedMealTime = 
-          (data.mealTimes.tuesday?.lunch?.length > 0 || 
-           data.mealTimes.tuesday?.dinner?.length > 0 ||
-           data.mealTimes.wednesday?.lunch?.length > 0 || 
-           data.mealTimes.wednesday?.dinner?.length > 0 ||
-           data.mealTimes.thursday?.lunch?.length > 0 || 
-           data.mealTimes.thursday?.dinner?.length > 0);
-         
-        if (!hasSelectedMealTime) {
-          return { valid: false, message: 'Please select at least one time slot.' };
-        }
-        return { valid: true };
-        
-      default:
-        return { valid: true };
-    }
-  }
-
-  // Modify the existing navigation functions to use the validation utility
   function goToStep2() {
-    const validationResult = validateFormStep(1, {
-      firstName,
-      lastName,
-      email,
-      phone
-    });
+    if (!isValidBrandeisEmail(email)) {
+      alert('please use your brandeis.edu email address.');
+      return;
+    }
     
-    if (!validationResult.valid) {
-      alert(validationResult.message);
+    if (!firstName.trim() || !lastName.trim()) {
+      alert('Please provide both first and last name.');
+      return;
+    }
+    
+    if (!isValidPhoneNumber(phone)) {
+      alert('Please provide a valid phone number (at least 10 digits).');
       return;
     }
     
     setCurrentStep(2);
   }
-
+  
+  function goBackToStep1() {
+    setCurrentStep(1);
+  }
+  
   function goToStep3() {
-    const validationResult = validateFormStep(2, {
-      classLevel,
-      selectedMajors
-    });
-    
-    if (!validationResult.valid) {
-      alert(validationResult.message);
-      return;
-    }
-    
     setCurrentStep(3);
+  }
+  
+  function goBackToStep2() {
+    setCurrentStep(2);
   }
 
   function goToPersonalityStep() {
-    const validationResult = validateFormStep(3, {
-      selectedInterests
-    });
-    
-    if (!validationResult.valid) {
-      alert(validationResult.message);
+    if (!classLevel || selectedMajors.length === 0) {
+      alert('Please select your class level and at least one major.');
       return;
     }
-    
     setCurrentStep(4);
     setPersonalityStep(true);
   }
-
+  
   function goToMealPreferencesStep() {
-    const validationResult = validateFormStep(4, {
-      housingStep,
-      housingStatus,
-      housingTimePeriod,
-      roommateGenderPreference,
-      cleanlinessLevel
-    });
-    
-    if (!validationResult.valid) {
-      alert(validationResult.message);
+    if (!housingStatus) {
+      alert('Please select your housing situation.');
       return;
+    }
+
+    // Only require these fields if the user needs housing
+    if (housingStatus !== 'all set!') {
+      if (!housingTimePeriod) {
+        alert('Please select what housing group you are looking for.');
+        return;
+      }
+
+      if ((housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && !roommateGenderPreference) {
+        alert('Please select your roommate gender preference.');
+        return;
+      }
+      
+      if (!cleanlinessLevel) {
+        alert('Please select your cleanliness level.');
+        return;
+      }
     }
     
     setCurrentStep(5);
     setPersonalityStep(false);
     setHousingStep(false);
-  }
-
-  function goBackToStep1() {
-    setCurrentStep(1);
-  }
-  
-  function goBackToStep2() {
-    setCurrentStep(2);
   }
 
   function goBackToStep3() {
@@ -2032,16 +1765,16 @@ export default forwardRef(function Home(props, ref) {
                   <label style={labelStyle}>are you an introvert or an extrovert?</label>
                   <div style={bubbleContainerStyle}>
                     {['introvert', 'extrovert'].map((type) => (
-                    <div
+                      <div
                         key={type}
-                      style={{
-                        ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                           ...(personalityType === type ? bubbleSelectedStyle : {}),
-                      }}
+                        }}
                         onClick={() => setPersonalityType(type)}
-                    >
+                      >
                         {type}
-                    </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -2052,21 +1785,21 @@ export default forwardRef(function Home(props, ref) {
                     {['dark humor', 'wholesome laughs'].map((type) => (
                       <div
                         key={type}
-                      style={{
-                        ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                           ...(humorType === type ? bubbleSelectedStyle : {}),
-                      }}
+                        }}
                         onClick={() => setHumorType(type)}
-                    >
+                      >
                         {type}
-                    </div>
+                      </div>
                     ))}
                   </div>
                 </div>
 
-                  <div style={{ marginBottom: '1.2rem' }}>
+                <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>small talk or tackling big problems?</label>
-                    <div style={bubbleContainerStyle}>
+                  <div style={bubbleContainerStyle}>
                     {['small talk', 'tackling big problems'].map((type) => (
                       <div
                         key={type}
@@ -2143,9 +1876,9 @@ export default forwardRef(function Home(props, ref) {
                   <button onClick={goToHousingStep} style={nextBtnStyle}>
                     next
                   </button>
-                    </div>
-                  </div>
-                )}
+                </div>
+              </div>
+            )}
             
             {/* HOUSING STEP */}
             {currentStep === 4 && housingStep && (
@@ -2179,13 +1912,13 @@ export default forwardRef(function Home(props, ref) {
                 {/* Only show additional housing questions if not "all set!" */}
                 {housingStatus && housingStatus !== 'all set!' && (
                   <>
-                <div style={{ marginBottom: '1.2rem' }}>
+                    <div style={{ marginBottom: '1.2rem' }}>
                       <label style={labelStyle}>what housing group are you looking for?</label>
                       <div style={bubbleContainerStyle}>
                         {['fall only', 'spring only', 'full year'].map((period) => (
                           <div
                             key={period}
-                    style={{
+                            style={{
                               ...bubbleStyle,
                               ...(housingTimePeriod === period ? bubbleSelectedStyle : {}),
                             }}
@@ -2204,16 +1937,16 @@ export default forwardRef(function Home(props, ref) {
                           {['male', 'female', 'no preference'].map((pref) => (
                             <div
                               key={pref}
-                        style={{
-                          ...bubbleStyle,
+                              style={{
+                                ...bubbleStyle,
                                 ...(roommateGenderPreference === pref ? bubbleSelectedStyle : {}),
-                        }}
+                              }}
                               onClick={() => setRoommateGenderPreference(pref)}
-                      >
+                            >
                               {pref}
-                      </div>
-                    ))}
-                  </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                     
@@ -2223,7 +1956,7 @@ export default forwardRef(function Home(props, ref) {
                         {['very neat', 'somewhat neat', 'somewhat messy', 'messy'].map((level) => (
                           <div
                             key={level}
-                      style={{
+                            style={{
                               ...bubbleStyle,
                               ...(cleanlinessLevel === level ? bubbleSelectedStyle : {}),
                             }}
@@ -2274,7 +2007,7 @@ export default forwardRef(function Home(props, ref) {
                   <label style={labelStyle}>do you have a meal plan?</label>
                   <div style={bubbleContainerStyle}>
                     <div
-                          style={{
+                      style={{
                         ...bubbleStyle,
                         ...(mealPlan ? bubbleSelectedStyle : {}),
                       }}
@@ -2283,7 +2016,7 @@ export default forwardRef(function Home(props, ref) {
                       yes
                     </div>
                     <div
-                            style={{
+                      style={{
                         ...bubbleStyle,
                         ...(!mealPlan ? bubbleSelectedStyle : {}),
                       }}
@@ -2301,8 +2034,8 @@ export default forwardRef(function Home(props, ref) {
                     </label>
                     <div style={bubbleContainerStyle}>
                       <div
-                                style={{
-                                  ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                           ...(guestSwipe ? bubbleSelectedStyle : {}),
                         }}
                         onClick={() => setGuestSwipe(true)}
@@ -2317,10 +2050,10 @@ export default forwardRef(function Home(props, ref) {
                         onClick={() => setGuestSwipe(false)}
                       >
                         no
-                              </div>
-                        </div>
+                      </div>
                     </div>
-                  )}
+                  </div>
+                )}
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>dining location:</label>
@@ -2333,7 +2066,7 @@ export default forwardRef(function Home(props, ref) {
                       }}
                     >
                       sherman
-                </div>
+                      </div>
                   </div>
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666' }}>
                     for our pilot, we're starting with sherman dining hall only.
@@ -2355,13 +2088,334 @@ export default forwardRef(function Home(props, ref) {
                     }}
                   >
                     {/* Tuesday */}
-                    <DaySchedule day="tuesday" dayLabel="tuesday" />
-
+                    <div
+                      style={{
+                        position: 'relative',
+                        margin: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        backgroundColor: '#f0f0f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday</div>
+                      
+                      {/* Lunch times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
+                          const timeKey = `tuesday-lunch-${timeSlot}`;
+                          const isSelected = mealTimes.tuesday?.lunch?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                        style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.tuesday) {
+                                  updatedMealTimes.tuesday = {};
+                                }
+                                if (!updatedMealTimes.tuesday.lunch) {
+                                  updatedMealTimes.tuesday.lunch = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.tuesday.lunch.includes(timeSlot)) {
+                                  updatedMealTimes.tuesday.lunch = updatedMealTimes.tuesday.lunch.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.tuesday.lunch.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                      </div>
+                          );
+                        })}
+                  </div>
+                      
+                      {/* Dinner times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
+                          const timeKey = `tuesday-dinner-${timeSlot}`;
+                          const isSelected = mealTimes.tuesday?.dinner?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                      style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.tuesday) {
+                                  updatedMealTimes.tuesday = {};
+                                }
+                                if (!updatedMealTimes.tuesday.dinner) {
+                                  updatedMealTimes.tuesday.dinner = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.tuesday.dinner.includes(timeSlot)) {
+                                  updatedMealTimes.tuesday.dinner = updatedMealTimes.tuesday.dinner.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.tuesday.dinner.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                              </div>
+                          );
+                        })}
+                        </div>
+                    </div>
+                    
                     {/* Wednesday */}
-                    <DaySchedule day="wednesday" dayLabel="wednesday" />
-
+                    <div
+                          style={{
+                        position: 'relative',
+                        margin: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        backgroundColor: '#f0f0f0',
+                            display: 'flex',
+                        flexDirection: 'column',
+                            alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday</div>
+                      
+                      {/* Lunch times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
+                          const timeKey = `wednesday-lunch-${timeSlot}`;
+                          const isSelected = mealTimes.wednesday?.lunch?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                            style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.wednesday) {
+                                  updatedMealTimes.wednesday = {};
+                                }
+                                if (!updatedMealTimes.wednesday.lunch) {
+                                  updatedMealTimes.wednesday.lunch = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.wednesday.lunch.includes(timeSlot)) {
+                                  updatedMealTimes.wednesday.lunch = updatedMealTimes.wednesday.lunch.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.wednesday.lunch.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                      </div>
+                          );
+                        })}
+                  </div>
+                      
+                      {/* Dinner times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
+                          const timeKey = `wednesday-dinner-${timeSlot}`;
+                          const isSelected = mealTimes.wednesday?.dinner?.includes(timeSlot) || false;
+                          
+                                return (
+                            <div
+                              key={timeKey}
+                        style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.wednesday) {
+                                  updatedMealTimes.wednesday = {};
+                                }
+                                if (!updatedMealTimes.wednesday.dinner) {
+                                  updatedMealTimes.wednesday.dinner = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.wednesday.dinner.includes(timeSlot)) {
+                                  updatedMealTimes.wednesday.dinner = updatedMealTimes.wednesday.dinner.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.wednesday.dinner.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                              </div>
+                          );
+                        })}
+                        </div>
+                    </div>
+                    
                     {/* Thursday */}
-                    <DaySchedule day="thursday" dayLabel="thursday" />
+                    <div
+                      style={{
+                        position: 'relative',
+                        margin: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        backgroundColor: '#f0f0f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>thursday</div>
+                      
+                      {/* Lunch times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
+                          const timeKey = `thursday-lunch-${timeSlot}`;
+                          const isSelected = mealTimes.thursday?.lunch?.includes(timeSlot) || false;
+                          
+                                return (
+                            <div
+                              key={timeKey}
+                        style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.thursday) {
+                                  updatedMealTimes.thursday = {};
+                                }
+                                if (!updatedMealTimes.thursday.lunch) {
+                                  updatedMealTimes.thursday.lunch = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.thursday.lunch.includes(timeSlot)) {
+                                  updatedMealTimes.thursday.lunch = updatedMealTimes.thursday.lunch.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.thursday.lunch.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                      </div>
+                          );
+                        })}
+                  </div>
+                      
+                      {/* Dinner times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
+                          const timeKey = `thursday-dinner-${timeSlot}`;
+                          const isSelected = mealTimes.thursday?.dinner?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                                style={{
+                                  ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                                }}
+                                onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.thursday) {
+                                  updatedMealTimes.thursday = {};
+                                }
+                                if (!updatedMealTimes.thursday.dinner) {
+                                  updatedMealTimes.thursday.dinner = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.thursday.dinner.includes(timeSlot)) {
+                                  updatedMealTimes.thursday.dinner = updatedMealTimes.thursday.dinner.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.thursday.dinner.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                              </div>
+                          );
+                        })}
+                        </div>
+                    </div>
                 </div>
                 </div>
                 
