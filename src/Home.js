@@ -4,7 +4,7 @@ import supabase from './supabaseClient';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -520,9 +520,9 @@ export default forwardRef(function Home(props, ref) {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
   const [mealTimes, setMealTimes] = useState({
-    monday: { lunch: [], dinner: [] },
     tuesday: { lunch: [], dinner: [] },
-    wednesday: { lunch: [], dinner: [] }
+    wednesday: { lunch: [], dinner: [] },
+    thursday: { lunch: [], dinner: [] }
   });
 
   // Final: show success message
@@ -542,6 +542,8 @@ export default forwardRef(function Home(props, ref) {
   const [housingStatus, setHousingStatus] = useState('');
   const [roommateGenderPreference, setRoommateGenderPreference] = useState('');
   const [cleanlinessLevel, setCleanlinessLevel] = useState('');
+  const [housingTimePeriod, setHousingTimePeriod] = useState('');
+  const [housingNumber, setHousingNumber] = useState('');
 
   // Add state for major search
   const [majorSearch, setMajorSearch] = useState('');
@@ -693,8 +695,13 @@ export default forwardRef(function Home(props, ref) {
       alert('Please select your housing situation.');
       return;
     }
+    
+    if (!housingTimePeriod) {
+      alert('Please select what housing group you are looking for.');
+      return;
+    }
 
-    if (housingStatus === 'looking for roommates' && !roommateGenderPreference) {
+    if ((housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && !roommateGenderPreference) {
       alert('Please select your roommate gender preference.');
       return;
     }
@@ -752,12 +759,12 @@ export default forwardRef(function Home(props, ref) {
       
       // Basic validation - check if at least one meal time is selected across all days
       const hasSelectedMealTime = 
-        (mealTimes.monday?.lunch?.length > 0 || 
-         mealTimes.monday?.dinner?.length > 0 ||
-         mealTimes.tuesday?.lunch?.length > 0 || 
+        (mealTimes.tuesday?.lunch?.length > 0 || 
          mealTimes.tuesday?.dinner?.length > 0 ||
          mealTimes.wednesday?.lunch?.length > 0 || 
-         mealTimes.wednesday?.dinner?.length > 0);
+         mealTimes.wednesday?.dinner?.length > 0 ||
+         mealTimes.thursday?.lunch?.length > 0 || 
+         mealTimes.thursday?.dinner?.length > 0);
       
       if (!name || !emailInput || !phone || !hasSelectedMealTime) {
         alert('Please fill in all required fields and select at least one time slot.');
@@ -767,12 +774,6 @@ export default forwardRef(function Home(props, ref) {
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
-      
-      // Monday slots
-      flattenedMealTimes.monday_lunch_1200_1230 = mealTimes.monday?.lunch?.includes('12:00-12:30 pm') || false;
-      flattenedMealTimes.monday_lunch_1230_100 = mealTimes.monday?.lunch?.includes('12:30-1:00 pm') || false;
-      flattenedMealTimes.monday_dinner_600_630 = mealTimes.monday?.dinner?.includes('6:00-6:30 pm') || false;
-      flattenedMealTimes.monday_dinner_630_700 = mealTimes.monday?.dinner?.includes('6:30-7:00 pm') || false;
       
       // Tuesday slots
       flattenedMealTimes.tuesday_lunch_1200_1230 = mealTimes.tuesday?.lunch?.includes('12:00-12:30 pm') || false;
@@ -785,6 +786,12 @@ export default forwardRef(function Home(props, ref) {
       flattenedMealTimes.wednesday_lunch_1230_100 = mealTimes.wednesday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.wednesday_dinner_600_630 = mealTimes.wednesday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.wednesday_dinner_630_700 = mealTimes.wednesday?.dinner?.includes('6:30-7:00 pm') || false;
+      
+      // Thursday slots
+      flattenedMealTimes.thursday_lunch_1200_1230 = mealTimes.thursday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.thursday_lunch_1230_100 = mealTimes.thursday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.thursday_dinner_630_700 = mealTimes.thursday?.dinner?.includes('6:30-7:00 pm') || false;
       
       // Force Sherman as the only location for the pilot
       userData = {
@@ -807,7 +814,9 @@ export default forwardRef(function Home(props, ref) {
         match_preference: matchPreference,
         housing_status: housingStatus,
         roommate_gender_preference: roommateGenderPreference,
-        cleanliness_level: cleanlinessLevel
+        cleanliness_level: cleanlinessLevel,
+        housing_time_period: housingTimePeriod,
+        housing_number: housingNumber
       };
       
       console.log('Submitting data to main table:', userData);
@@ -1861,9 +1870,27 @@ export default forwardRef(function Home(props, ref) {
                 </h3>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>what housing group are you looking for?</label>
+                  <div style={bubbleContainerStyle}>
+                    {['fall only', 'spring only', 'full year'].map((period) => (
+                      <div
+                        key={period}
+                        style={{
+                          ...bubbleStyle,
+                          ...(housingTimePeriod === period ? bubbleSelectedStyle : {}),
+                        }}
+                        onClick={() => setHousingTimePeriod(period)}
+                      >
+                        {period}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>how would you describe your housing situation?</label>
                   <div style={bubbleContainerStyle}>
-                    {['all set!', 'looking for roommates'].map((status) => (
+                    {['looking to pull a roommate', 'need to be pulled into a group', 'all set!'].map((status) => (
                       <div
                         key={status}
                         style={{
@@ -1878,7 +1905,7 @@ export default forwardRef(function Home(props, ref) {
                   </div>
                 </div>
                 
-                {housingStatus === 'looking for roommates' && (
+                {(housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && (
                   <div style={{ marginBottom: '1.2rem' }}>
                     <label style={labelStyle}>gender preference for roommate?</label>
                     <div style={bubbleContainerStyle}>
@@ -1914,6 +1941,17 @@ export default forwardRef(function Home(props, ref) {
                       </div>
                     ))}
                   </div>
+                </div>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>what is your housing number? (optional)</label>
+                  <input
+                    type="text"
+                    value={housingNumber}
+                    onChange={(e) => setHousingNumber(e.target.value)}
+                    placeholder="Enter your housing number"
+                    style={inputStyle}
+                  />
                 </div>
 
                 <div style={buttonsRowStyle}>
@@ -2011,7 +2049,7 @@ export default forwardRef(function Home(props, ref) {
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>select meal times</label>
                   <p style={{ fontSize: '0.85rem', marginTop: '-0.5rem' }}>
-                    select any time slots you are available for the week of march 17th
+                    select any time slots you are available
                   </p>
                   <div
                     style={{
@@ -2022,7 +2060,7 @@ export default forwardRef(function Home(props, ref) {
                       gap: '1rem'
                     }}
                   >
-                    {/* Monday */}
+                    {/* Tuesday */}
                     <div
                       style={{
                         position: 'relative',
@@ -2035,117 +2073,7 @@ export default forwardRef(function Home(props, ref) {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>monday, march 17th</div>
-                      
-                      {/* Lunch times */}
-                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
-                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
-                          const timeKey = `monday-lunch-${timeSlot}`;
-                          const isSelected = mealTimes.monday?.lunch?.includes(timeSlot) || false;
-                          
-                          return (
-                            <div
-                              key={timeKey}
-                        style={{
-                          ...bubbleStyle,
-                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-                                color: isSelected ? 'white' : '#333',
-                                fontSize: '0.85rem',
-                                padding: '0.4rem 0.8rem',
-                              }}
-                              onClick={() => {
-                                // Create a deep copy of mealTimes
-                                const updatedMealTimes = { ...mealTimes };
-                                
-                                // Initialize day and meal if needed
-                                if (!updatedMealTimes.monday) {
-                                  updatedMealTimes.monday = {};
-                                }
-                                if (!updatedMealTimes.monday.lunch) {
-                                  updatedMealTimes.monday.lunch = [];
-                                }
-                                
-                                // Toggle time slot
-                                if (updatedMealTimes.monday.lunch.includes(timeSlot)) {
-                                  updatedMealTimes.monday.lunch = updatedMealTimes.monday.lunch.filter(
-                                    time => time !== timeSlot
-                                  );
-                                } else {
-                                  updatedMealTimes.monday.lunch.push(timeSlot);
-                                }
-                                
-                                setMealTimes(updatedMealTimes);
-                              }}
-                            >
-                              {timeSlot}
-                      </div>
-                          );
-                        })}
-                  </div>
-                      
-                      {/* Dinner times */}
-                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
-                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
-                          const timeKey = `monday-dinner-${timeSlot}`;
-                          const isSelected = mealTimes.monday?.dinner?.includes(timeSlot) || false;
-                          
-                          return (
-                            <div
-                              key={timeKey}
-                      style={{
-                                ...bubbleStyle,
-                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-                                color: isSelected ? 'white' : '#333',
-                                fontSize: '0.85rem',
-                                padding: '0.4rem 0.8rem',
-                              }}
-                              onClick={() => {
-                                // Create a deep copy of mealTimes
-                                const updatedMealTimes = { ...mealTimes };
-                                
-                                // Initialize day and meal if needed
-                                if (!updatedMealTimes.monday) {
-                                  updatedMealTimes.monday = {};
-                                }
-                                if (!updatedMealTimes.monday.dinner) {
-                                  updatedMealTimes.monday.dinner = [];
-                                }
-                                
-                                // Toggle time slot
-                                if (updatedMealTimes.monday.dinner.includes(timeSlot)) {
-                                  updatedMealTimes.monday.dinner = updatedMealTimes.monday.dinner.filter(
-                                    time => time !== timeSlot
-                                  );
-                                } else {
-                                  updatedMealTimes.monday.dinner.push(timeSlot);
-                                }
-                                
-                                setMealTimes(updatedMealTimes);
-                              }}
-                            >
-                              {timeSlot}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    
-                    {/* Tuesday */}
-                    <div
-                          style={{
-                        position: 'relative',
-                        margin: '0.5rem',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '20px',
-                        backgroundColor: '#f0f0f0',
-                            display: 'flex',
-                        flexDirection: 'column',
-                            alignItems: 'center',
-                      }}
-                    >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday, march 18th</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
@@ -2157,8 +2085,8 @@ export default forwardRef(function Home(props, ref) {
                           return (
                             <div
                               key={timeKey}
-                            style={{
-                                ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
@@ -2189,10 +2117,10 @@ export default forwardRef(function Home(props, ref) {
                               }}
                             >
                               {timeSlot}
-                            </div>
+                      </div>
                           );
                         })}
-                      </div>
+                  </div>
                       
                       {/* Dinner times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
@@ -2201,11 +2129,11 @@ export default forwardRef(function Home(props, ref) {
                           const timeKey = `tuesday-dinner-${timeSlot}`;
                           const isSelected = mealTimes.tuesday?.dinner?.includes(timeSlot) || false;
                           
-                                return (
+                          return (
                             <div
                               key={timeKey}
-                              style={{
-                                ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
@@ -2236,10 +2164,10 @@ export default forwardRef(function Home(props, ref) {
                               }}
                             >
                               {timeSlot}
-                            </div>
+                              </div>
                           );
                         })}
-                      </div>
+                        </div>
                     </div>
                     
                     {/* Wednesday */}
@@ -2255,7 +2183,7 @@ export default forwardRef(function Home(props, ref) {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday, march 19th</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
@@ -2264,11 +2192,11 @@ export default forwardRef(function Home(props, ref) {
                           const timeKey = `wednesday-lunch-${timeSlot}`;
                           const isSelected = mealTimes.wednesday?.lunch?.includes(timeSlot) || false;
                           
-                                return (
+                          return (
                             <div
                               key={timeKey}
-                              style={{
-                                ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
@@ -2299,10 +2227,10 @@ export default forwardRef(function Home(props, ref) {
                               }}
                             >
                               {timeSlot}
-                            </div>
+                      </div>
                           );
                         })}
-                      </div>
+                  </div>
                       
                       {/* Dinner times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
@@ -2314,14 +2242,14 @@ export default forwardRef(function Home(props, ref) {
                           return (
                             <div
                               key={timeKey}
-                                style={{
-                                  ...bubbleStyle,
+                        style={{
+                          ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
                                 padding: '0.4rem 0.8rem',
-                                }}
-                                onClick={() => {
+                              }}
+                              onClick={() => {
                                 // Create a deep copy of mealTimes
                                 const updatedMealTimes = { ...mealTimes };
                                 
@@ -2340,6 +2268,116 @@ export default forwardRef(function Home(props, ref) {
                                   );
                                 } else {
                                   updatedMealTimes.wednesday.dinner.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                              </div>
+                          );
+                        })}
+                        </div>
+                    </div>
+                    
+                    {/* Thursday */}
+                    <div
+                      style={{
+                        position: 'relative',
+                        margin: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        backgroundColor: '#f0f0f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>thursday</div>
+                      
+                      {/* Lunch times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
+                          const timeKey = `thursday-lunch-${timeSlot}`;
+                          const isSelected = mealTimes.thursday?.lunch?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                        style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.thursday) {
+                                  updatedMealTimes.thursday = {};
+                                }
+                                if (!updatedMealTimes.thursday.lunch) {
+                                  updatedMealTimes.thursday.lunch = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.thursday.lunch.includes(timeSlot)) {
+                                  updatedMealTimes.thursday.lunch = updatedMealTimes.thursday.lunch.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.thursday.lunch.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                      </div>
+                          );
+                        })}
+                  </div>
+                      
+                      {/* Dinner times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
+                          const timeKey = `thursday-dinner-${timeSlot}`;
+                          const isSelected = mealTimes.thursday?.dinner?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                        style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.thursday) {
+                                  updatedMealTimes.thursday = {};
+                                }
+                                if (!updatedMealTimes.thursday.dinner) {
+                                  updatedMealTimes.thursday.dinner = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.thursday.dinner.includes(timeSlot)) {
+                                  updatedMealTimes.thursday.dinner = updatedMealTimes.thursday.dinner.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.thursday.dinner.push(timeSlot);
                                 }
                                 
                                 setMealTimes(updatedMealTimes);
@@ -2372,25 +2410,74 @@ export default forwardRef(function Home(props, ref) {
             {/* STEP 5 */}
             {currentStep === 5 && signUpSuccess && (
               <div style={{ textAlign: 'center', animation: 'fadeIn 0.8s forwards' }}>
-                <h2 style={{ fontSize: '1.5rem' }}>success!</h2>
-                <p style={{ marginTop: '1rem' }}>
-                  thank you for signing up. keep an eye on your brandeis email
-                  for your random meal match time, location, and the color to
-                  show!
+                <div style={{ 
+                  width: '100px', 
+                  height: '100px', 
+                  margin: '0 auto 1.5rem',
+                  position: 'relative',
+                  animation: 'successPulse 2s infinite'
+                }}>
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '60px',
+                    height: '30px',
+                    borderRight: '4px solid #003865',
+                    borderBottom: '4px solid #003865',
+                    transform: 'translate(-50%, -70%) rotate(45deg)',
+                    animation: 'checkmark 0.8s ease-in-out forwards'
+                  }}></div>
+                </div>
+                
+                <h2 style={{ fontSize: '1.5rem' }}>you're all set!</h2>
+                <p style={{ marginTop: '1rem', lineHeight: '1.5' }}>
+                  thank you for signing up. keep an eye on your brandeis email 
+                  for your meal match details. we'll email phone numbers 
+                  to both you and your match on the same day so you can 
+                  coordinate meeting up!
                 </p>
-                <div
-                  style={{
-                    marginTop: '1rem',
-                    width: 100,
-                    height: 150,
-                    backgroundColor: '#003865',
-                    margin: '1rem auto',
-                    borderRadius: 10,
-                  }}
-                ></div>
-                <p>
-                  (this box simulates the color you will display on your phone.)
+                
+                <p style={{ 
+                  marginTop: '1.5rem', 
+                  fontSize: '0.9rem', 
+                  color: '#666',
+                  fontStyle: 'italic'
+                }}>
+                  excited to help you meet new people at brandeis!
                 </p>
+                
+                {/* Add animation styles */}
+                {useEffect(() => {
+                  const style = document.createElement('style');
+                  style.textContent = `
+                    @keyframes successPulse {
+                      0% { transform: scale(1); }
+                      50% { transform: scale(1.1); }
+                      100% { transform: scale(1); }
+                    }
+                    
+                    @keyframes checkmark {
+                      0% { 
+                        opacity: 0;
+                        transform: translate(-50%, -70%) rotate(45deg) scale(0.5);
+                      }
+                      50% {
+                        opacity: 1;
+                      }
+                      100% { 
+                        opacity: 1;
+                        transform: translate(-50%, -70%) rotate(45deg) scale(1);
+                      }
+                    }
+                  `;
+                  document.head.appendChild(style);
+                  
+                  return () => {
+                    document.head.removeChild(style);
+                  };
+                }, [])}
               </div>
             )}
           </div>

@@ -249,9 +249,11 @@ CREATE TABLE public.main (
     planner_type TEXT,
     hp_house TEXT,
     match_preference TEXT,
-    housing_status TEXT, /* For housing status: "all set" or "looking for roommates" */
+    housing_status TEXT, /* For housing status: "looking to pull a roommate", "need to be pulled into a group", "all set!" */
     roommate_gender_preference TEXT, /* For gender preference: "male", "female", "no preference" */
-    cleanliness_level TEXT /* For cleanliness levels */
+    cleanliness_level TEXT, /* For cleanliness levels */
+    housing_time_period TEXT, /* For housing time period: "fall only", "spring only", "full year" */
+    housing_number TEXT /* Optional housing number */
 );
 
 -- Enable RLS
@@ -475,7 +477,9 @@ GRANT ALL ON public.feedback TO service_role;`);
         profile.interests?.some(interest => interest.toLowerCase().includes(query)) ||
         profile.housing_status?.toLowerCase().includes(query) ||
         profile.roommate_gender_preference?.toLowerCase().includes(query) ||
-        profile.cleanliness_level?.toLowerCase().includes(query)
+        profile.cleanliness_level?.toLowerCase().includes(query) ||
+        profile.housing_time_period?.toLowerCase().includes(query) ||
+        profile.housing_number?.toLowerCase().includes(query)
       );
     }
     
@@ -1006,7 +1010,11 @@ GRANT ALL ON public.feedback TO service_role;`);
                                 <label>Housing Status:</label>
                                 <span>{profile.housing_status || 'Not specified'}</span>
                               </div>
-                              {profile.housing_status === 'looking for roommates' && (
+                              <div className="detail-item">
+                                <label>Housing Time Period:</label>
+                                <span>{profile.housing_time_period || 'Not specified'}</span>
+                              </div>
+                              {(profile.housing_status === 'looking to pull a roommate' || profile.housing_status === 'need to be pulled into a group') && (
                                 <div className="detail-item">
                                   <label>Roommate Gender Preference:</label>
                                   <span>{profile.roommate_gender_preference || 'No preference'}</span>
@@ -1015,6 +1023,10 @@ GRANT ALL ON public.feedback TO service_role;`);
                               <div className="detail-item">
                                 <label>Cleanliness Level:</label>
                                 <span>{profile.cleanliness_level || 'Not specified'}</span>
+                              </div>
+                              <div className="detail-item">
+                                <label>Housing Number:</label>
+                                <span>{profile.housing_number || 'Not specified'}</span>
                               </div>
                             </div>
                           </div>
