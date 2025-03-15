@@ -1024,34 +1024,8 @@ export default forwardRef(function Home(props, ref) {
       style.textContent = `
         @keyframes successPulse {
           0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
+          50% { transform: scale(1.2); }
           100% { transform: scale(1); }
-        }
-        
-        @keyframes floatIn {
-          0% { 
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          100% { 
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-15px); }
-        }
-        
-        @keyframes plateSpin {
-          0% { transform: rotate(0deg) scale(0.9); }
-          100% { transform: rotate(360deg) scale(1.1); }
-        }
-        
-        @keyframes sparkle {
-          0%, 100% { opacity: 0.2; transform: scale(0.8) rotate(0deg); }
-          50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
         }
       `;
       document.head.appendChild(style);
@@ -2464,86 +2438,26 @@ export default forwardRef(function Home(props, ref) {
             {currentStep === 5 && signUpSuccess && (
               <div style={{ textAlign: 'center', animation: 'fadeIn 0.8s forwards' }}>
                 <div style={{ 
-                  width: '200px', 
-                  height: '120px', 
                   margin: '0 auto 1.5rem',
-                  position: 'relative',
-                  animation: 'successPulse 2s infinite',
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  animation: 'successPulse 2s infinite',
+                  gap: '15px'
                 }}>
-                  {/* Left person emoji */}
-                  <div style={{
-                    position: 'absolute',
-                    left: '30px',
-                    fontSize: '2.5rem',
-                    animation: 'bounce 1.5s ease-in-out infinite',
-                    animationDelay: '0.2s',
-                    zIndex: 2
-                  }}>
+                  {/* Person emoji */}
+                  <div style={{ fontSize: '2.5rem' }}>
                     👱
                   </div>
                   
-                  {/* Right person emoji */}
-                  <div style={{
-                    position: 'absolute',
-                    right: '30px',
-                    fontSize: '2.5rem',
-                    animation: 'bounce 1.5s ease-in-out infinite',
-                    animationDelay: '0.7s',
-                    zIndex: 2
-                  }}>
-                    👩
-                  </div>
-                  
                   {/* Food emoji in the middle */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    fontSize: '2.8rem',
-                    animation: 'floatIn 0.5s ease-out forwards, successPulse 2s infinite',
-                    animationDelay: '0.3s, 1s',
-                    zIndex: 1
-                  }}>
+                  <div style={{ fontSize: '2.8rem' }}>
                     🍽️
                   </div>
                   
-                  {/* Background sparkle elements */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '80px',
-                    fontSize: '1.2rem',
-                    animation: 'sparkle 2s ease-in-out infinite',
-                    animationDelay: '0s',
-                    opacity: 0.7
-                  }}>
-                    ✨
-                  </div>
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '20px',
-                    right: '70px',
-                    fontSize: '1.2rem',
-                    animation: 'sparkle 2s ease-in-out infinite',
-                    animationDelay: '0.5s',
-                    opacity: 0.7
-                  }}>
-                    ✨
-                  </div>
-                  <div style={{
-                    position: 'absolute',
-                    top: '60px',
-                    right: '40px',
-                    fontSize: '1.2rem',
-                    animation: 'sparkle 2s ease-in-out infinite',
-                    animationDelay: '1s',
-                    opacity: 0.7
-                  }}>
-                    ✨
+                  {/* Person emoji */}
+                  <div style={{ fontSize: '2.5rem' }}>
+                    👩
                   </div>
                 </div>
                 
