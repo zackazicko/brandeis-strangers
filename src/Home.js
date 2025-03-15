@@ -2439,26 +2439,9 @@ export default forwardRef(function Home(props, ref) {
               <div style={{ textAlign: 'center', animation: 'fadeIn 0.8s forwards' }}>
                 <div style={{ 
                   margin: '0 auto 1.5rem',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  animation: 'successPulse 2s infinite',
-                  gap: '15px'
+                  fontSize: '3rem'
                 }}>
-                  {/* Person emoji */}
-                  <div style={{ fontSize: '2.5rem' }}>
-                    👱
-                  </div>
-                  
-                  {/* Food emoji in the middle */}
-                  <div style={{ fontSize: '2.8rem' }}>
-                    🍽️
-                  </div>
-                  
-                  {/* Person emoji */}
-                  <div style={{ fontSize: '2.5rem' }}>
-                    👩
-                  </div>
+                  🍽️
                 </div>
                 
                 <h2 style={{ fontSize: '1.5rem' }}>you're all set!</h2>
