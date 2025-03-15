@@ -1014,6 +1014,39 @@ export default forwardRef(function Home(props, ref) {
     };
   }, []);
 
+  // Add an effect for success page animation styles
+  useEffect(() => {
+    if (signUpSuccess) {
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes successPulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+          100% { transform: scale(1); }
+        }
+        
+        @keyframes checkmark {
+          0% { 
+            opacity: 0;
+            transform: translate(-50%, -70%) rotate(45deg) scale(0.5);
+          }
+          50% {
+            opacity: 1;
+          }
+          100% { 
+            opacity: 1;
+            transform: translate(-50%, -70%) rotate(45deg) scale(1);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      return () => {
+        document.head.removeChild(style);
+      };
+    }
+  }, [signUpSuccess]);
+
   // Inside your component, add:
   const submitBtnStyle = createSubmitBtnStyle(isMobile, loading);
 
@@ -2447,37 +2480,6 @@ export default forwardRef(function Home(props, ref) {
                 }}>
                   excited to help you meet new people at brandeis!
                 </p>
-                
-                {/* Add animation styles */}
-                {useEffect(() => {
-                  const style = document.createElement('style');
-                  style.textContent = `
-                    @keyframes successPulse {
-                      0% { transform: scale(1); }
-                      50% { transform: scale(1.1); }
-                      100% { transform: scale(1); }
-                    }
-                    
-                    @keyframes checkmark {
-                      0% { 
-                        opacity: 0;
-                        transform: translate(-50%, -70%) rotate(45deg) scale(0.5);
-                      }
-                      50% {
-                        opacity: 1;
-                      }
-                      100% { 
-                        opacity: 1;
-                        transform: translate(-50%, -70%) rotate(45deg) scale(1);
-                      }
-                    }
-                  `;
-                  document.head.appendChild(style);
-                  
-                  return () => {
-                    document.head.removeChild(style);
-                  };
-                }, [])}
               </div>
             )}
           </div>
