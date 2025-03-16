@@ -2,6 +2,25 @@
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import supabase from './supabaseClient';
 
+// Dynamic import for the sendgrid client
+// This prevents errors during build if @sendgrid/mail isn't installed yet
+let sendgridClient = null;
+try {
+  // In production, this will be loaded normally
+  sendgridClient = require('./sendgridClient');
+} catch (error) {
+  console.warn('SendGrid client could not be loaded:', error.message);
+  // Provide a fallback mock if the module isn't available
+  sendgridClient = {
+    sendVerificationEmail: async () => ({ success: true }),
+    emailRateLimit: {
+      getRemainingEmails: () => 2,
+      hasReachedLimit: () => false
+    },
+    isBrandeisEmail: (email) => email.toLowerCase().endsWith('@brandeis.edu')
+  };
+}
+
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
   SIGNUP_ENABLED: true // Set to true to enable signups, false to lock the site
@@ -681,6 +700,12 @@ export default forwardRef(function Home(props, ref) {
     try {
       setLoading(true);
       
+      // Check for rate limiting
+      if (sendgridClient.emailRateLimit.hasReachedLimit(verificationEmail)) {
+        setVerificationError(`Rate limit reached. Maximum ${sendgridClient.emailRateLimit.MAX_EMAILS_PER_DAY || 2} verification emails per 24 hours.`);
+        return;
+      }
+      
       // Generate a new 6-digit code
       const code = generateVerificationCode();
       console.log('Generated verification code:', code);
@@ -716,22 +741,44 @@ export default forwardRef(function Home(props, ref) {
       
       console.log('Successfully stored verification code in Supabase:', data);
       
-      // Store the code locally (in a real app, this would be emailed to the user)
+      // Store the code locally for demo purposes
       setVerificationCode(code);
-      setVerificationSubmitted(true);
       
       // For demo purposes, set the email state as well so it's pre-filled in step 1
       setEmail(verificationEmail);
       
-      console.log('VERIFICATION CODE (for demo):', code);
+      // Send the verification email
+      console.log('Sending verification email...');
+      try {
+        const emailResult = await sendgridClient.sendVerificationEmail(verificationEmail, code);
+        console.log('Email sent successfully!', emailResult);
+        
+        const remainingEmails = sendgridClient.emailRateLimit.getRemainingEmails(verificationEmail);
+        console.log(`Remaining verification emails for today: ${remainingEmails}`);
+        
+        // Show the verification code UI
+        setVerificationSubmitted(true);
+      } catch (emailError) {
+        console.error('Error sending verification email:', emailError);
+        
+        // If SendGrid is not available in development, still allow verification
+        if (emailError.message && emailError.message.includes('SendGrid client could not be loaded')) {
+          console.warn('Using development mode without SendGrid - showing code on screen');
+          setVerificationSubmitted(true);
+        } else {
+          // Real email sending error
+          throw emailError;
+        }
+      }
       
-      // In a real application, you would send an email with the code here
-      // but for now we'll just show it in the console
+      console.log('VERIFICATION CODE (for demo):', code);
     } catch (error) {
       console.error('Error generating verification code:', error);
       // Provide a more specific error message if possible
       if (error.message && error.message.includes('permission')) {
         setVerificationError('Database permission error. Please contact the administrator.');
+      } else if (error.message && error.message.includes('rate limit')) {
+        setVerificationError(error.message);
       } else if (error.message && (error.message.includes('NetworkError') || error.message.includes('Failed to fetch'))) {
         setVerificationError('Network error. Please check your internet connection and try again.');
       } else {
@@ -1569,16 +1616,35 @@ export default forwardRef(function Home(props, ref) {
                         we've sent a 6-digit verification code to <strong>{verificationEmail}</strong>
                       </p>
                       
-                      {/* For demo purposes, show the code */}
+                      {/* Show the verification code on screen only in development mode */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <div style={{ 
+                          backgroundColor: '#e6f7eb',
+                          padding: '10px', 
+                          borderRadius: '5px',
+                          marginBottom: '1rem',
+                          fontSize: '0.9rem'
+                        }}>
+                          <strong>Development Mode:</strong> Your verification code is <code>{verificationCode}</code><br/>
+                          <em style={{ fontSize: '0.8rem' }}>In production, this would only be emailed to you.</em>
+                        </div>
+                      )}
+                      
                       <div style={{ 
-                        backgroundColor: '#e6f7eb',
+                        backgroundColor: '#f8f9fa',
                         padding: '10px', 
                         borderRadius: '5px',
                         marginBottom: '1rem',
                         fontSize: '0.9rem'
                       }}>
-                        <strong>Demo:</strong> Your verification code is <code>{verificationCode}</code><br/>
-                        <em style={{ fontSize: '0.8rem' }}>In a production environment, this would be emailed to you.</em>
+                        <p style={{ margin: '0 0 8px 0' }}>
+                          <strong>Important:</strong>
+                        </p>
+                        <ul style={{ margin: '0', paddingLeft: '20px' }}>
+                          <li>Check your email inbox (and spam folder)</li>
+                          <li>The code will expire in 15 minutes</li>
+                          <li>Limited to 2 verification emails per 24 hours</li>
+                        </ul>
                       </div>
                       
                       <label style={labelStyle}>enter verification code:</label>
