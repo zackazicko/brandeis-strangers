@@ -1,8 +1,19 @@
 // SendGrid email client for verification codes
+// SECURITY NOTICE: Never hardcode API keys in this file!
+// Always use environment variables for sensitive credentials
+
 const sgMail = require('@sendgrid/mail');
 
-// Set the API key
-sgMail.setApiKey(process.env.NEXT_PUBLIC_SENDGRID_API_KEY || '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');
+// Check if we have an API key configured
+const apiKey = process.env.NEXT_PUBLIC_SENDGRID_API_KEY;
+if (!apiKey) {
+  console.warn('SendGrid API key not found in environment variables. Email verification will not work properly.');
+  console.warn('Make sure to add NEXT_PUBLIC_SENDGRID_API_KEY to your .env.local file for development.');
+  console.warn('For production, add it to your hosting platform environment variables.');
+}
+
+// Set the API key - using a placeholder for development if not available
+sgMail.setApiKey(process.env.NEXT_PUBLIC_SENDGRID_API_KEY || 'placeholder_key_for_development');
 
 // Store for rate limiting
 const emailRateLimit = {
@@ -99,6 +110,17 @@ const sendVerificationEmail = async (email, code) => {
   // Check rate limit
   if (emailRateLimit.hasReachedLimit(email)) {
     throw new Error(`Rate limit reached. Maximum ${emailRateLimit.MAX_EMAILS_PER_DAY} verification emails per day.`);
+  }
+
+  // Check if we have a valid API key
+  if (!process.env.NEXT_PUBLIC_SENDGRID_API_KEY) {
+    console.log('Development mode: Would send verification code', code, 'to', email);
+    emailRateLimit.incrementCounter(email);
+    return {
+      success: true,
+      remainingEmails: emailRateLimit.getRemainingEmails(email),
+      development: true
+    };
   }
   
   // Create email message

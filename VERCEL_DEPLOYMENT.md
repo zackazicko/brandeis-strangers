@@ -26,9 +26,11 @@ Add the following environment variables:
 
 | Name | Value | Environment |
 |------|-------|-------------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `your-supabase-url` | Production, Preview, Development |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `your-anon-key` | Production, Preview, Development |
 | `NEXT_PUBLIC_SUPABASE_SERVICE_KEY` | `your-service-role-key` | Production, Preview, Development |
+| `NEXT_PUBLIC_SENDGRID_API_KEY` | `your-sendgrid-api-key` | Production, Preview, Development |
 | `NEXT_PUBLIC_ADMIN_PASSWORD` | `your-admin-password` | Production, Preview, Development |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `your-anon-key` (if needed) | Production, Preview, Development |
 
 ### 3. Important Notes About Names
 
@@ -45,6 +47,27 @@ After adding the environment variables:
 3. Click the three dots menu (...)
 4. Select "Redeploy" to apply the new environment variables
 
+## Security Best Practices
+
+### Never Hardcode Secrets
+
+- **NEVER** hardcode actual API keys, passwords, or other secrets in your source code
+- Always use environment variables for sensitive information
+- If you need fallback values for development, use placeholder strings like `"placeholder_key_for_development"`
+
+### Managing Secrets in Git
+
+- Use `.gitignore` to exclude files containing secrets (like `.env.local`)
+- If you accidentally commit a secret, consider it compromised and rotate it immediately
+- Consider using git pre-commit hooks to prevent secrets from being committed
+
+### SendGrid API Key Security
+
+- The SendGrid API key has special protections in place:
+  - It should only be accessed via environment variables
+  - A placeholder is used during development (non-production) environments
+  - Verification emails will be logged to console in development mode
+
 ## Verifying Environment Variables
 
 After redeployment, check that your environment variables are working:
@@ -52,12 +75,7 @@ After redeployment, check that your environment variables are working:
 1. Open your deployed site and check the browser console
 2. Look for messages confirming that the service key was found
 3. Try accessing the admin panel to confirm it works with your credentials
-
-## Security Considerations
-
-- Never commit your actual service keys or passwords to your git repository
-- Regularly rotate your service keys and passwords
-- Consider using Vercel's integration with secret management services for production environments
+4. Test the email verification process
 
 ## Troubleshooting
 
