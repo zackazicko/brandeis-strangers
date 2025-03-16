@@ -683,9 +683,11 @@ export default forwardRef(function Home(props, ref) {
       
       // Generate a new 6-digit code
       const code = generateVerificationCode();
+      console.log('Generated verification code:', code);
       
       // Store the code in Supabase
-      const { error } = await supabase
+      console.log('Attempting to store verification code in Supabase...');
+      const { data, error } = await supabase
         .from('email_verifications')
         .insert([
           {
@@ -693,9 +695,26 @@ export default forwardRef(function Home(props, ref) {
             verification_code: code,
             // created_at and expires_at will be set automatically by Supabase
           }
-        ]);
+        ])
+        .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error details:', error);
+        // Log more details about the error
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        console.error('Error details:', error.details);
+        
+        // Check if it's a permissions issue
+        if (error.code === '42501' || error.message.includes('permission') || error.message.includes('access')) {
+          console.error('This appears to be a permissions issue (RLS policy)');
+          throw new Error('Permission error: ' + error.message);
+        }
+        
+        throw error;
+      }
+      
+      console.log('Successfully stored verification code in Supabase:', data);
       
       // Store the code locally (in a real app, this would be emailed to the user)
       setVerificationCode(code);
@@ -710,7 +729,14 @@ export default forwardRef(function Home(props, ref) {
       // but for now we'll just show it in the console
     } catch (error) {
       console.error('Error generating verification code:', error);
-      setVerificationError('Failed to generate verification code. Please try again.');
+      // Provide a more specific error message if possible
+      if (error.message && error.message.includes('permission')) {
+        setVerificationError('Database permission error. Please contact the administrator.');
+      } else if (error.message && (error.message.includes('NetworkError') || error.message.includes('Failed to fetch'))) {
+        setVerificationError('Network error. Please check your internet connection and try again.');
+      } else {
+        setVerificationError('Failed to generate verification code. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -729,6 +755,8 @@ export default forwardRef(function Home(props, ref) {
     try {
       setLoading(true);
       
+      console.log('Verifying code:', enteredCode, 'for email:', verificationEmail);
+      
       // Check if the code matches in Supabase
       const { data, error } = await supabase
         .from('email_verifications')
@@ -737,19 +765,41 @@ export default forwardRef(function Home(props, ref) {
         .eq('verification_code', enteredCode)
         .gt('expires_at', new Date().toISOString()); // Check that the code hasn't expired
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase verification error details:', error);
+        console.error('Error code:', error.code);
+        console.error('Error message:', error.message);
+        
+        if (error.code === '42501' || error.message.includes('permission') || error.message.includes('access')) {
+          console.error('This appears to be a permissions issue (RLS policy)');
+          throw new Error('Permission error: ' + error.message);
+        }
+        
+        throw error;
+      }
+      
+      console.log('Verification query results:', data);
       
       if (data && data.length > 0) {
+        console.log('Verification successful!');
         // Code is valid, proceed
         setEmailVerified(true);
         setCurrentStep(1); // Move to the next step
       } else {
+        console.log('No matching verification record found or code expired');
         // No matching code found or code expired
         setVerificationError('Invalid or expired verification code. Please try again.');
       }
     } catch (error) {
       console.error('Error verifying code:', error);
-      setVerificationError('Failed to verify code. Please try again.');
+      // Provide more specific error messages
+      if (error.message && error.message.includes('permission')) {
+        setVerificationError('Database permission error. Please contact the administrator.');
+      } else if (error.message && (error.message.includes('NetworkError') || error.message.includes('Failed to fetch'))) {
+        setVerificationError('Network error. Please check your internet connection and try again.');
+      } else {
+        setVerificationError('Failed to verify code. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
