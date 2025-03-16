@@ -495,9 +495,17 @@ export default forwardRef(function Home(props, ref) {
   // ---------------------------
   // MULTI-STEP FORM STATES
   // ---------------------------
-  const [currentStep, setCurrentStep] = useState(1);
-
-  // Basic info - name is now properly declared as a state variable
+  const [currentStep, setCurrentStep] = useState(0); // Now starting with step 0 for email verification
+  
+  // Email verification states
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [enteredCode, setEnteredCode] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verificationSubmitted, setVerificationSubmitted] = useState(false);
+  const [verificationError, setVerificationError] = useState('');
+  
+  // Original form states
   const [name, setName] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -650,11 +658,113 @@ export default forwardRef(function Home(props, ref) {
     return digitsOnly.length >= 10;
   }
 
-  function goToStep2() {
-    if (!isValidBrandeisEmail(email)) {
-      alert('please use your brandeis.edu email address.');
+  // ---------------------------
+  // EMAIL VERIFICATION FUNCTIONS
+  // ---------------------------
+  
+  // Generate a random 6-digit verification code
+  function generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+  
+  // Submit email for verification
+  async function submitEmailForVerification() {
+    // Reset any previous errors
+    setVerificationError('');
+    
+    // Validate that it's a Brandeis email
+    if (!isValidBrandeisEmail(verificationEmail)) {
+      setVerificationError('Please use your brandeis.edu email address.');
       return;
     }
+    
+    try {
+      setLoading(true);
+      
+      // Generate a new 6-digit code
+      const code = generateVerificationCode();
+      
+      // Store the code in Supabase
+      const { error } = await supabase
+        .from('email_verifications')
+        .insert([
+          {
+            email: verificationEmail.toLowerCase(),
+            verification_code: code,
+            // created_at and expires_at will be set automatically by Supabase
+          }
+        ]);
+      
+      if (error) throw error;
+      
+      // Store the code locally (in a real app, this would be emailed to the user)
+      setVerificationCode(code);
+      setVerificationSubmitted(true);
+      
+      // For demo purposes, set the email state as well so it's pre-filled in step 1
+      setEmail(verificationEmail);
+      
+      console.log('VERIFICATION CODE (for demo):', code);
+      
+      // In a real application, you would send an email with the code here
+      // but for now we'll just show it in the console
+    } catch (error) {
+      console.error('Error generating verification code:', error);
+      setVerificationError('Failed to generate verification code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+  // Verify the entered code
+  async function verifyCode() {
+    // Reset any previous errors
+    setVerificationError('');
+    
+    if (!enteredCode || enteredCode.length !== 6) {
+      setVerificationError('Please enter the 6-digit verification code.');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // Check if the code matches in Supabase
+      const { data, error } = await supabase
+        .from('email_verifications')
+        .select('*')
+        .eq('email', verificationEmail.toLowerCase())
+        .eq('verification_code', enteredCode)
+        .gt('expires_at', new Date().toISOString()); // Check that the code hasn't expired
+      
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        // Code is valid, proceed
+        setEmailVerified(true);
+        setCurrentStep(1); // Move to the next step
+      } else {
+        // No matching code found or code expired
+        setVerificationError('Invalid or expired verification code. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error verifying code:', error);
+      setVerificationError('Failed to verify code. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+  // Reset verification process
+  function resetVerification() {
+    setVerificationSubmitted(false);
+    setVerificationError('');
+    setVerificationCode('');
+    setEnteredCode('');
+  }
+
+  function goToStep2() {
+    // Email should already be verified at this point
     
     if (!firstName.trim() || !lastName.trim()) {
       alert('Please provide both first and last name.');
@@ -671,6 +781,12 @@ export default forwardRef(function Home(props, ref) {
   
   function goBackToStep1() {
     setCurrentStep(1);
+  }
+  
+  // Add function to go back to email verification step
+  function goBackToEmailVerification() {
+    resetVerification();
+    setCurrentStep(0);
   }
   
   function goToStep3() {
@@ -751,14 +867,15 @@ export default forwardRef(function Home(props, ref) {
     let userData = {}; // Initialize outside try block so it's accessible in catch
     
     try {
+      // Double-check that email was verified
+      if (!emailVerified) {
+        alert('Your email must be verified before submitting.');
+        setLoading(false);
+        return;
+      }
+      
       const emailInput = email.trim();
       const emailLower = emailInput.toLowerCase();
-      
-      if (!isValidBrandeisEmail(email)) {
-        alert('please use your brandeis.edu email address.');
-      setLoading(false);
-      return;
-    }
       
       // Basic validation - check if at least one meal time is selected across all days
       const hasSelectedMealTime = 
@@ -769,11 +886,11 @@ export default forwardRef(function Home(props, ref) {
          mealTimes.thursday?.lunch?.length > 0 || 
          mealTimes.thursday?.dinner?.length > 0);
       
-      if (!name || !emailInput || !phone || !hasSelectedMealTime) {
+      if (!firstName || !lastName || !emailInput || !phone || !hasSelectedMealTime) {
         alert('Please fill in all required fields and select at least one time slot.');
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
@@ -796,9 +913,12 @@ export default forwardRef(function Home(props, ref) {
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.thursday_dinner_630_700 = mealTimes.thursday?.dinner?.includes('6:30-7:00 pm') || false;
       
+      // Create full name from first and last name
+      const fullName = `${firstName} ${lastName}`;
+      
       // Force Sherman as the only location for the pilot
       userData = {
-        name: name,
+        name: fullName,
         email: emailLower, // Always store lowercase email for consistency
         phone: phone, // Add phone to the userData
         majors: selectedMajors,
@@ -845,7 +965,7 @@ export default forwardRef(function Home(props, ref) {
           console.log('Direct fetch submission successful!');
           // Show success message
           setSignUpSuccess(true);
-      setLoading(false);
+          setLoading(false);
           return; // Exit early on success
         } else {
           const errorText = await response.text();
@@ -910,8 +1030,7 @@ export default forwardRef(function Home(props, ref) {
       console.log('Insert successful!', data);
       
       // Show success message
-    setSignUpSuccess(true);
-      
+      setSignUpSuccess(true);
     } catch (error) {
       console.error('Error submitting form:', error);
       
@@ -1342,6 +1461,123 @@ export default forwardRef(function Home(props, ref) {
             >
               sign up
             </div>
+
+            {/* STEP 0: Email Verification */}
+            {currentStep === 0 && (
+              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+                <h3 style={{ 
+                  marginBottom: '1.2rem', 
+                  fontSize: '1.1rem',
+                  textAlign: 'center'
+                }}>
+                  {verificationSubmitted ? 'verify your email' : 'enter your brandeis email'}
+                </h3>
+                
+                {!verificationSubmitted ? (
+                  /* Email Input Form */
+                  <>
+                    <div style={{ marginBottom: '1.2rem' }}>
+                      <label style={labelStyle}>brandeis email:</label>
+                      <input
+                        type="email"
+                        value={verificationEmail}
+                        onChange={(e) => setVerificationEmail(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '0.8rem',
+                          fontSize: '1rem',
+                          border: '1px solid #ccc',
+                          borderRadius: '8px',
+                          marginBottom: '1rem',
+                          fontFamily: '"Courier New", Courier, monospace'
+                        }}
+                        placeholder="youremail@brandeis.edu"
+                        required
+                      />
+                      {verificationError && (
+                        <div style={{ color: 'red', fontSize: '0.9rem', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                          {verificationError}
+                        </div>
+                      )}
+                    </div>
+                    <div style={buttonsRowStyle}>
+                      <div style={{ flex: isMobile ? 1 : 'none', visibility: 'hidden' }}></div>
+                      <button 
+                        onClick={submitEmailForVerification} 
+                        style={nextBtnStyle}
+                        disabled={loading}
+                      >
+                        {loading ? 'sending...' : 'send verification code'}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  /* Verification Code Input Form */
+                  <>
+                    <div style={{ marginBottom: '1.2rem' }}>
+                      <p style={{ fontSize: '0.9rem', marginBottom: '1rem', lineHeight: '1.5' }}>
+                        we've sent a 6-digit verification code to <strong>{verificationEmail}</strong>
+                      </p>
+                      
+                      {/* For demo purposes, show the code */}
+                      <div style={{ 
+                        backgroundColor: '#e6f7eb',
+                        padding: '10px', 
+                        borderRadius: '5px',
+                        marginBottom: '1rem',
+                        fontSize: '0.9rem'
+                      }}>
+                        <strong>Demo:</strong> Your verification code is <code>{verificationCode}</code><br/>
+                        <em style={{ fontSize: '0.8rem' }}>In a production environment, this would be emailed to you.</em>
+                      </div>
+                      
+                      <label style={labelStyle}>enter verification code:</label>
+                      <input
+                        type="text"
+                        value={enteredCode}
+                        onChange={(e) => {
+                          // Only allow digits and limit to 6 characters
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setEnteredCode(value);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '0.8rem',
+                          fontSize: '1rem',
+                          border: '1px solid #ccc',
+                          borderRadius: '8px',
+                          marginBottom: '1rem',
+                          fontFamily: '"Courier New", Courier, monospace',
+                          letterSpacing: '0.5rem'
+                        }}
+                        placeholder="123456"
+                        required
+                      />
+                      {verificationError && (
+                        <div style={{ color: 'red', fontSize: '0.9rem', marginTop: '-0.5rem', marginBottom: '1rem' }}>
+                          {verificationError}
+                        </div>
+                      )}
+                    </div>
+                    <div style={buttonsRowStyle}>
+                      <button 
+                        onClick={resetVerification} 
+                        style={createBackBtnStyle(isMobile)}
+                      >
+                        change email
+                      </button>
+                      <button 
+                        onClick={verifyCode} 
+                        style={nextBtnStyle}
+                        disabled={loading || enteredCode.length !== 6}
+                      >
+                        {loading ? 'verifying...' : 'verify code'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* STEP 1 */}
             {currentStep === 1 && (
