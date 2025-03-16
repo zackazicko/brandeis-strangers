@@ -11,9 +11,23 @@ This application is optimized for deployment on Vercel. For detailed deployment 
 When deploying to Vercel, you need to set the following environment variables in the Vercel dashboard:
 
 ```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_SUPABASE_SERVICE_KEY=your_service_role_key_here
+NEXT_PUBLIC_SENDGRID_API_KEY=your_sendgrid_api_key
 NEXT_PUBLIC_ADMIN_PASSWORD=your_admin_password_here
 ```
+
+### Environment Variables and Security
+
+This project uses environment variables to store sensitive information such as API keys and passwords. To set up your local environment:
+
+1. Copy `.env.example` to `.env.local`
+2. Replace placeholder values with your actual credentials
+3. Never commit `.env.local` or any file containing real credentials to version control
+4. Always use environment variables instead of hardcoding secrets in the codebase
+
+For production, set these environment variables in your hosting platform (Vercel, Netlify, etc.) rather than in files.
 
 ## Available Scripts
 
