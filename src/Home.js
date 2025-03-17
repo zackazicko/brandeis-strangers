@@ -4,7 +4,7 @@ import supabase from './supabaseClient';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: true // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: false // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -1102,20 +1102,22 @@ export default forwardRef(function Home(props, ref) {
         {/* Only show full navigation on desktop */}
         {!isMobile ? (
           <nav style={{ display: 'flex', gap: '2rem' }}>
-            <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>
+            {isSignupEnabled && <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>}
           </nav>
         ) : (
-          <button 
-            onClick={openModal}
-        style={{
-              ...btnStyle,
-              padding: '0.5rem 1.2rem',
-              fontSize: '0.85rem',
-              marginLeft: 0
-            }}
-          >
-            sign up
-          </button>
+          isSignupEnabled && (
+            <button 
+              onClick={openModal}
+              style={{
+                ...btnStyle,
+                padding: '0.5rem 1.2rem',
+                fontSize: '0.85rem',
+                marginLeft: 0
+              }}
+            >
+              sign up
+            </button>
+          )
         )}
       </header>
 
@@ -1167,78 +1169,8 @@ export default forwardRef(function Home(props, ref) {
           sign up
         </button>
           ) : (
-            <div>
-              <div style={{...btnStyle, cursor: 'default'}}>
-                back soon!
-              </div>
-              <div style={{
-                marginTop: '20px',
-                maxWidth: '500px',
-                textAlign: 'center'
-              }}>
-                {!feedbackSubmitted ? (
-                  <>
-                    <textarea
-                      value={feedbackText}
-                      onChange={(e) => {
-                        // Limit to 200 characters
-                        if (e.target.value.length <= 200) {
-                          setFeedbackText(e.target.value);
-                        }
-                      }}
-                      placeholder="Have feedback? Let us know! (200 character limit)"
-          style={{
-                        width: '100%',
-                        padding: '10px',
-                        borderRadius: '8px',
-                        border: '1px solid #ccc',
-                        fontFamily: 'inherit',
-                        marginBottom: '10px',
-                        resize: 'vertical',
-                        minHeight: '80px'
-                      }}
-                    />
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}>
-                      <div style={{
-                        fontSize: '0.8rem',
-                        color: '#666'
-                      }}>
-                        {feedbackText.length}/200
-                      </div>
-                      <button
-                        onClick={submitFeedback}
-                        disabled={isSubmitting || !feedbackText.trim()}
-            style={{
-                          padding: '8px 16px',
-                          backgroundColor: '#003865',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '20px',
-                          cursor: feedbackText.trim() ? 'pointer' : 'not-allowed',
-                          opacity: feedbackText.trim() ? 1 : 0.6,
-                          fontFamily: 'inherit'
-                        }}
-                      >
-                        {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
-                      </button>
-        </div>
-                  </>
-                ) : (
-                  <div style={{
-                    backgroundColor: '#e6f7eb',
-                    padding: '15px',
-                    borderRadius: '8px',
-                    color: '#2e7d32',
-                    textAlign: 'center'
-                  }}>
-                    Thanks for your feedback! We'll see you when sign-ups reopen.
-                  </div>
-                )}
-              </div>
+            <div style={{...btnStyle, cursor: 'default'}}>
+              back soon!
             </div>
           )}
           
