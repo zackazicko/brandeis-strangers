@@ -1,25 +1,7 @@
 // eslint-disable-next-line
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import supabase from './supabaseClient';
-
-// Dynamic import for the sendgrid client
-// This prevents errors during build if @sendgrid/mail isn't installed yet
-let sendgridClient = null;
-try {
-  // In production, this will be loaded normally
-  sendgridClient = require('./sendgridClient');
-} catch (error) {
-  console.warn('SendGrid client could not be loaded:', error.message);
-  // Provide a fallback mock if the module isn't available
-  sendgridClient = {
-    sendVerificationEmail: async () => ({ success: true }),
-    emailRateLimit: {
-      getRemainingEmails: () => 2,
-      hasReachedLimit: () => false
-    },
-    isBrandeisEmail: (email) => email.toLowerCase().endsWith('@brandeis.edu')
-  };
-}
+import { sendEmailVerification } from './sendgridClient';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
@@ -665,8 +647,8 @@ export default forwardRef(function Home(props, ref) {
     return emailInput.endsWith('@brandeis.edu') || 
            emailInput.endsWith('@Brandeis.edu') || 
            emailInput.endsWith('@BRANDEIS.edu') || 
-           emailInput.endsWith('@BRANDEIS.EDU') || 
-           emailInput.endsWith('@Brandeis.EDU') || 
+           emailInput.endsWith('@BRANDEIS.EDU') ||
+            emailInput.endsWith('@Brandeis.EDU') ||
            emailInput.toLowerCase().endsWith('@brandeis.edu'); // Catch-all
   }
 
@@ -690,91 +672,52 @@ export default forwardRef(function Home(props, ref) {
   async function submitEmailForVerification() {
     // Reset any previous errors
     setVerificationError('');
-    
+
     // Validate that it's a Brandeis email
     if (!isValidBrandeisEmail(verificationEmail)) {
       setVerificationError('Please use your brandeis.edu email address.');
       return;
     }
-    
+
     try {
       setLoading(true);
-      
-      // Check for rate limiting
-      if (sendgridClient.emailRateLimit.hasReachedLimit(verificationEmail)) {
-        setVerificationError(`Rate limit reached. Maximum ${sendgridClient.emailRateLimit.MAX_EMAILS_PER_DAY || 2} verification emails per 24 hours.`);
-        return;
-      }
-      
+
       // Generate a new 6-digit code
       const code = generateVerificationCode();
       console.log('Generated verification code:', code);
-      
+
       // Store the code in Supabase
-      console.log('Attempting to store verification code in Supabase...');
       const { data, error } = await supabase
-        .from('email_verifications')
-        .insert([
-          {
-            email: verificationEmail.toLowerCase(),
-            verification_code: code,
-            // created_at and expires_at will be set automatically by Supabase
-          }
-        ])
-        .select();
-      
+          .from('email_verifications')
+          .insert([
+            {
+              email: verificationEmail.toLowerCase(),
+              verification_code: code,
+              // created_at and expires_at will be set automatically by Supabase
+            }
+          ])
+          .select();
+
       if (error) {
         console.error('Supabase insert error details:', error);
-        // Log more details about the error
-        console.error('Error code:', error.code);
-        console.error('Error message:', error.message);
-        console.error('Error details:', error.details);
-        
-        // Check if it's a permissions issue
-        if (error.code === '42501' || error.message.includes('permission') || error.message.includes('access')) {
-          console.error('This appears to be a permissions issue (RLS policy)');
-          throw new Error('Permission error: ' + error.message);
-        }
-        
         throw error;
       }
-      
+
       console.log('Successfully stored verification code in Supabase:', data);
-      
-      // Store the code locally for demo purposes
+
+      // Store the code locally (for demo purposes)
       setVerificationCode(code);
-      
-      // For demo purposes, set the email state as well so it's pre-filled in step 1
       setEmail(verificationEmail);
-      
-      // Send the verification email
-      console.log('Sending verification email...');
-      try {
-        const emailResult = await sendgridClient.sendVerificationEmail(verificationEmail, code);
-        console.log('Email sent successfully!', emailResult);
-        
-        const remainingEmails = sendgridClient.emailRateLimit.getRemainingEmails(verificationEmail);
-        console.log(`Remaining verification emails for today: ${remainingEmails}`);
-        
-        // Show the verification code UI
-        setVerificationSubmitted(true);
-      } catch (emailError) {
-        console.error('Error sending verification email:', emailError);
-        
-        // If SendGrid is not available in development, still allow verification
-        if (emailError.message && emailError.message.includes('SendGrid client could not be loaded')) {
-          console.warn('Using development mode without SendGrid - showing code on screen');
-          setVerificationSubmitted(true);
-        } else {
-          // Real email sending error
-          throw emailError;
-        }
-      }
-      
+
+      // Use the client-side sendEmailVerification function to send the email
+      const emailResult = await sendEmailVerification(verificationEmail, code);
+      console.log('Email sent successfully!', emailResult);
+
+      // Show the verification code UI
+      setVerificationSubmitted(true);
       console.log('VERIFICATION CODE (for demo):', code);
     } catch (error) {
       console.error('Error generating verification code:', error);
-      // Provide a more specific error message if possible
       if (error.message && error.message.includes('permission')) {
         setVerificationError('Database permission error. Please contact the administrator.');
       } else if (error.message && error.message.includes('rate limit')) {
@@ -788,7 +731,9 @@ export default forwardRef(function Home(props, ref) {
       setLoading(false);
     }
   }
-  
+
+
+
   // Verify the entered code
   async function verifyCode() {
     // Reset any previous errors
@@ -798,12 +743,12 @@ export default forwardRef(function Home(props, ref) {
       setVerificationError('Please enter the 6-digit verification code.');
       return;
     }
-    
+
     try {
       setLoading(true);
-      
+
       console.log('Verifying code:', enteredCode, 'for email:', verificationEmail);
-      
+
       // Check if the code matches in Supabase
       const { data, error } = await supabase
         .from('email_verifications')
@@ -811,22 +756,22 @@ export default forwardRef(function Home(props, ref) {
         .eq('email', verificationEmail.toLowerCase())
         .eq('verification_code', enteredCode)
         .gt('expires_at', new Date().toISOString()); // Check that the code hasn't expired
-      
+
       if (error) {
         console.error('Supabase verification error details:', error);
         console.error('Error code:', error.code);
         console.error('Error message:', error.message);
-        
+
         if (error.code === '42501' || error.message.includes('permission') || error.message.includes('access')) {
           console.error('This appears to be a permissions issue (RLS policy)');
           throw new Error('Permission error: ' + error.message);
         }
-        
+
         throw error;
       }
-      
+
       console.log('Verification query results:', data);
-      
+
       if (data && data.length > 0) {
         console.log('Verification successful!');
         // Code is valid, proceed
