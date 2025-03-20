@@ -524,6 +524,8 @@ export default forwardRef(function Home(props, ref) {
     wednesday: { lunch: [], dinner: [] },
     thursday: { lunch: [], dinner: [] }
   });
+  // New state for time preferences text field
+  const [timePreferences, setTimePreferences] = useState('');
 
   // Final: show success message
   const [signUpSuccess, setSignUpSuccess] = useState(false);
@@ -691,29 +693,7 @@ export default forwardRef(function Home(props, ref) {
   }
   
   function goToMealPreferencesStep() {
-    if (!housingStatus) {
-      alert('Please select your housing situation.');
-      return;
-    }
-
-    // Only require these fields if the user needs housing
-    if (housingStatus !== 'all set!') {
-      if (!housingTimePeriod) {
-        alert('Please select what housing group you are looking for.');
-        return;
-      }
-
-      if ((housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && !roommateGenderPreference) {
-        alert('Please select your roommate gender preference.');
-        return;
-      }
-      
-      if (!cleanlinessLevel) {
-        alert('Please select your cleanliness level.');
-        return;
-      }
-    }
-    
+    // No longer need housing validation since we're skipping that step
     setCurrentStep(5);
     setPersonalityStep(false);
     setHousingStep(false);
@@ -783,18 +763,21 @@ export default forwardRef(function Home(props, ref) {
       flattenedMealTimes.tuesday_lunch_1230_100 = mealTimes.tuesday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.tuesday_dinner_600_630 = mealTimes.tuesday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.tuesday_dinner_630_700 = mealTimes.tuesday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.tuesday_dinner_700_730 = mealTimes.tuesday?.dinner?.includes('7:00-7:30 pm') || false;
       
       // Wednesday slots
       flattenedMealTimes.wednesday_lunch_1200_1230 = mealTimes.wednesday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.wednesday_lunch_1230_100 = mealTimes.wednesday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.wednesday_dinner_600_630 = mealTimes.wednesday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.wednesday_dinner_630_700 = mealTimes.wednesday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.wednesday_dinner_700_730 = mealTimes.wednesday?.dinner?.includes('7:00-7:30 pm') || false;
       
       // Thursday slots
       flattenedMealTimes.thursday_lunch_1200_1230 = mealTimes.thursday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.thursday_lunch_1230_100 = mealTimes.thursday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.thursday_dinner_630_700 = mealTimes.thursday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.thursday_dinner_700_730 = mealTimes.thursday?.dinner?.includes('7:00-7:30 pm') || false;
       
       // Force Sherman as the only location for the pilot
       userData = {
@@ -815,6 +798,7 @@ export default forwardRef(function Home(props, ref) {
         planner_type: plannerType,
         hp_house: hpHouse,
         match_preference: matchPreference,
+        time_preferences: timePreferences, // Add the new field for time preferences
         housing_status: housingStatus,
         roommate_gender_preference: roommateGenderPreference,
         cleanliness_level: cleanlinessLevel,
@@ -1151,7 +1135,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            🏠 pilot 2: find meal partners & potential roommates to finalize housing!
+            👥 pilot 3: meal match groups! connect with 3 new people at each meal
           </p>
           {isSignupEnabled ? (
         <button
@@ -1805,118 +1789,6 @@ export default forwardRef(function Home(props, ref) {
                   <button onClick={goBackToStep3} style={backBtnStyle}>
                     back
                   </button>
-                  <button onClick={goToHousingStep} style={nextBtnStyle}>
-                    next
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* HOUSING STEP */}
-            {currentStep === 4 && housingStep && (
-              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <h3 style={{ 
-                  marginBottom: '1.2rem', 
-                  fontSize: '1.1rem',
-                  textAlign: 'center'
-                }}>
-                  housing questions
-                </h3>
-                
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>how would you describe your housing situation?</label>
-                  <div style={bubbleContainerStyle}>
-                    {['looking to pull a roommate', 'need to be pulled into a group', 'all set!'].map((status) => (
-                      <div
-                        key={status}
-                        style={{
-                          ...bubbleStyle,
-                          ...(housingStatus === status ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => setHousingStatus(status)}
-                      >
-                        {status}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Only show additional housing questions if not "all set!" */}
-                {housingStatus && housingStatus !== 'all set!' && (
-                  <>
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>what housing group are you looking for?</label>
-                      <div style={bubbleContainerStyle}>
-                        {['fall only', 'spring only', 'full year'].map((period) => (
-                          <div
-                            key={period}
-                            style={{
-                              ...bubbleStyle,
-                              ...(housingTimePeriod === period ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => setHousingTimePeriod(period)}
-                          >
-                            {period}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {(housingStatus === 'looking to pull a roommate' || housingStatus === 'need to be pulled into a group') && (
-                      <div style={{ marginBottom: '1.2rem' }}>
-                        <label style={labelStyle}>gender preference for roommate?</label>
-                        <div style={bubbleContainerStyle}>
-                          {['male', 'female', 'no preference'].map((pref) => (
-                            <div
-                              key={pref}
-                              style={{
-                                ...bubbleStyle,
-                                ...(roommateGenderPreference === pref ? bubbleSelectedStyle : {}),
-                              }}
-                              onClick={() => setRoommateGenderPreference(pref)}
-                            >
-                              {pref}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>what's your cleanliness level?</label>
-                      <div style={bubbleContainerStyle}>
-                        {['very neat', 'somewhat neat', 'somewhat messy', 'messy'].map((level) => (
-                          <div
-                            key={level}
-                            style={{
-                              ...bubbleStyle,
-                              ...(cleanlinessLevel === level ? bubbleSelectedStyle : {}),
-                            }}
-                            onClick={() => setCleanlinessLevel(level)}
-                          >
-                            {level}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div style={{ marginBottom: '1.2rem' }}>
-                      <label style={labelStyle}>what is your housing number? (optional)</label>
-                      <input
-                        type="text"
-                        value={housingNumber}
-                        onChange={(e) => setHousingNumber(e.target.value)}
-                        placeholder="Enter your housing number"
-                        style={inputStyle}
-                      />
-                    </div>
-                  </>
-                )}
-
-                <div style={buttonsRowStyle}>
-                  <button onClick={goBackToPersonalityStep} style={backBtnStyle}>
-                    back
-                  </button>
                   <button onClick={goToMealPreferencesStep} style={nextBtnStyle}>
                     next
                   </button>
@@ -2084,7 +1956,7 @@ export default forwardRef(function Home(props, ref) {
                       {/* Dinner times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
                       <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
+                        {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].map((timeSlot) => {
                           const timeKey = `tuesday-dinner-${timeSlot}`;
                           const isSelected = mealTimes.tuesday?.dinner?.includes(timeSlot) || false;
                           
@@ -2194,7 +2066,7 @@ export default forwardRef(function Home(props, ref) {
                       {/* Dinner times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
                       <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
+                        {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].map((timeSlot) => {
                           const timeKey = `wednesday-dinner-${timeSlot}`;
                           const isSelected = mealTimes.wednesday?.dinner?.includes(timeSlot) || false;
                           
@@ -2304,7 +2176,7 @@ export default forwardRef(function Home(props, ref) {
                       {/* Dinner times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
                       <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                        {['6:00-6:30 pm', '6:30-7:00 pm'].map((timeSlot) => {
+                        {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].map((timeSlot) => {
                           const timeKey = `thursday-dinner-${timeSlot}`;
                           const isSelected = mealTimes.thursday?.dinner?.includes(timeSlot) || false;
                           
@@ -2351,8 +2223,27 @@ export default forwardRef(function Home(props, ref) {
                 </div>
                 </div>
                 
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>any other time preferences? (max 100 chars)</label>
+                  <textarea
+                    style={{
+                      ...inputStyle,
+                      resize: 'vertical',
+                      minHeight: '60px',
+                      fontFamily: '"Courier New", Courier, monospace',
+                    }}
+                    placeholder="e.g., 'I prefer lunch meetings' or 'I'm flexible on weekends'"
+                    maxLength={100}
+                    value={timePreferences}
+                    onChange={(e) => setTimePreferences(e.target.value)}
+                  />
+                  <div style={{ fontSize: '0.8rem', color: '#666', textAlign: 'right' }}>
+                    {timePreferences.length}/100
+                  </div>
+                </div>
+                
                 <div style={buttonsRowStyle}>
-                  <button onClick={goBackToHousingStep} style={backBtnStyle}>
+                  <button onClick={goBackToPersonalityStep} style={backBtnStyle}>
                     back
                   </button>
                   <button
@@ -2379,9 +2270,9 @@ export default forwardRef(function Home(props, ref) {
                 <h2 style={{ fontSize: '1.5rem' }}>you're all set!</h2>
                 <p style={{ marginTop: '1rem', lineHeight: '1.5' }}>
                   thank you for signing up. keep an eye on your brandeis email
-                  for your meal match details. we'll email phone numbers 
-                  to both you and your match on the same day so you can 
-                  coordinate meeting up!
+                  for your meal match details. we'll connect you with a group of 
+                  three other students and provide contact information so your 
+                  group can coordinate meeting up together!
                 </p>
                 
                 <p style={{ 
