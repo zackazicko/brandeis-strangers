@@ -24,14 +24,59 @@ const Admin = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
   const [filterConfig, setFilterConfig] = useState({});
-  const [viewMode, setViewMode] = useState('all'); // 'all', 'new', 'filtered', 'feedback'
+  const [viewMode, setViewMode] = useState('all'); // 'all', 'new', 'filtered', 'feedback', 'analytics'
   const [expandedRow, setExpandedRow] = useState(null);
+  
+  // State for analytics view
+  const [selectedAnalytic, setSelectedAnalytic] = useState('overview'); // 'overview', 'signups', 'mealTimes'
   
   // State for sign-up modal
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   
   // Reference to Home component
   const homeRef = React.useRef(null);
+  
+  // Initialize tree view functionality
+  useEffect(() => {
+    if (viewMode === 'analytics' && selectedAnalytic === 'mealTimes') {
+      // Initialize all tree nodes to be closed by default except days
+      const dayContents = document.querySelectorAll('.day-content');
+      dayContents.forEach(element => {
+        element.style.display = 'block'; // Show day content by default
+      });
+      
+      const mealContents = document.querySelectorAll('.meal-content');
+      mealContents.forEach(element => {
+        element.style.display = 'none'; // Hide meal content by default
+      });
+      
+      const timeSlotContents = document.querySelectorAll('.time-slot-content');
+      timeSlotContents.forEach(element => {
+        element.style.display = 'none'; // Hide time slot content by default
+      });
+      
+      // Add rotation to arrows when expanding/collapsing
+      const toggleHeaders = document.querySelectorAll('.day-header, .meal-header, .time-slot-header');
+      toggleHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+          const arrow = this.querySelector('.expand-icon');
+          
+          // Find the content div that corresponds to this header
+          const contentId = this.nextElementSibling.id;
+          const contentDiv = document.getElementById(contentId);
+          
+          if (contentDiv) {
+            // Toggle display
+            const isHidden = contentDiv.style.display === 'none';
+            contentDiv.style.display = isHidden ? 'block' : 'none';
+            
+            // Rotate arrow
+            arrow.style.transform = isHidden ? 'rotate(90deg)' : 'rotate(0deg)';
+          }
+        });
+      });
+    }
+  }, [viewMode, selectedAnalytic]);
 
   // Function to open sign-up modal through Home component
   const testSignUp = () => {
@@ -442,8 +487,8 @@ GRANT ALL ON public.feedback TO service_role;`);
   
   // Filtered and sorted data for display
   const displayedProfiles = useMemo(() => {
-    // If we're in feedback mode, return an empty array
-    if (viewMode === 'feedback') {
+    // If we're in feedback mode or analytics mode, return an empty array
+    if (viewMode === 'feedback' || viewMode === 'analytics') {
       return [];
     }
     
@@ -582,7 +627,7 @@ GRANT ALL ON public.feedback TO service_role;`);
   };
   
   // Convert profiles data to CSV and download it
-  const downloadCSV = () => {
+  const downloadCSV = async () => {
     // Don't attempt to download if no data
     if (!profiles || profiles.length === 0) {
       alert('No data available to download.');
@@ -653,6 +698,160 @@ GRANT ALL ON public.feedback TO service_role;`);
       console.error('Error creating CSV file:', error);
       alert('Failed to generate CSV file. Please try again.');
     }
+  };
+  
+  // Analytics helper functions
+  
+  // Process data for overview stats
+  const getOverviewStats = () => {
+    if (!profiles || profiles.length === 0) return null;
+    
+    // Total signups
+    const totalSignups = profiles.length;
+    
+    // Signups by class level
+    const signupsByClass = profiles.reduce((acc, profile) => {
+      const classLevel = profile.class_level || 'Not specified';
+      acc[classLevel] = (acc[classLevel] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Has meal plan
+    const hasMealPlan = profiles.filter(p => p.meal_plan).length;
+    
+    // Has guest swipe
+    const hasGuestSwipe = profiles.filter(p => p.guest_swipe).length;
+    
+    // Signups by day/date created
+    const signupsByDate = profiles.reduce((acc, profile) => {
+      if (!profile.created_at) return acc;
+      
+      const date = new Date(profile.created_at).toLocaleDateString();
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {});
+    
+    return {
+      totalSignups,
+      signupsByClass,
+      hasMealPlan,
+      hasGuestSwipe,
+      signupsByDate
+    };
+  };
+  
+  // Process data for meal times visualization
+  const getMealTimesData = () => {
+    if (!profiles || profiles.length === 0) return null;
+    
+    // Compile all meal time selections
+    const days = ['sunday', 'tuesday', 'wednesday', 'thursday'];
+    const meals = ['lunch', 'dinner'];
+    
+    // Structure: days -> meals -> timeSlots -> users
+    const mealTimesTree = {};
+    
+    days.forEach(day => {
+      mealTimesTree[day] = {
+        userCount: 0,
+        meals: {}
+      };
+      
+      meals.forEach(meal => {
+        mealTimesTree[day].meals[meal] = {
+          userCount: 0,
+          timeSlots: {}
+        };
+      });
+    });
+    
+    // Process each profile's meal times
+    profiles.forEach(profile => {
+      if (!profile.meal_times_json) return;
+      
+      // Try to parse the meal times JSON
+      let mealTimesObj;
+      try {
+        mealTimesObj = typeof profile.meal_times_json === 'string' 
+          ? JSON.parse(profile.meal_times_json) 
+          : profile.meal_times_json;
+      } catch (e) {
+        console.error('Error parsing meal_times_json for profile:', profile.id);
+        return;
+      }
+      
+      // For each day and meal, count the user's selections
+      days.forEach(day => {
+        const dayData = mealTimesObj[day];
+        if (!dayData) return;
+        
+        let userCountedForDay = false;
+        
+        meals.forEach(meal => {
+          const mealData = dayData[meal];
+          if (!Array.isArray(mealData) || mealData.length === 0) return;
+          
+          // Count user for this day if not already counted
+          if (!userCountedForDay) {
+            mealTimesTree[day].userCount++;
+            userCountedForDay = true;
+          }
+          
+          // Count user for this meal
+          mealTimesTree[day].meals[meal].userCount++;
+          
+          // Count user for each time slot
+          mealData.forEach(timeSlot => {
+            if (!mealTimesTree[day].meals[meal].timeSlots[timeSlot]) {
+              mealTimesTree[day].meals[meal].timeSlots[timeSlot] = {
+                userCount: 0,
+                users: []
+              };
+            }
+            
+            mealTimesTree[day].meals[meal].timeSlots[timeSlot].userCount++;
+            mealTimesTree[day].meals[meal].timeSlots[timeSlot].users.push({
+              id: profile.id,
+              name: profile.name || 'Anonymous',
+              email: profile.email
+            });
+          });
+        });
+      });
+    });
+    
+    return mealTimesTree;
+  };
+  
+  // Render a simple bar chart using DOM elements
+  const renderBarChart = (data, title, colorClass = 'primary') => {
+    if (!data || Object.keys(data).length === 0) {
+      return <div className="no-data-message">No data available for this chart.</div>;
+    }
+    
+    // Find the maximum value for scaling
+    const maxValue = Math.max(...Object.values(data));
+    
+    return (
+      <div className="chart-container">
+        <h4>{title}</h4>
+        <div className="bar-chart">
+          {Object.entries(data).map(([label, value], index) => (
+            <div key={index} className="bar-container">
+              <div className="bar-label">{label}</div>
+              <div className="bar-wrapper">
+                <div 
+                  className={`bar bar-${colorClass}`} 
+                  style={{ width: `${(value / maxValue) * 100}%` }}
+                >
+                  <span className="bar-value">{value}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
   
   // Login screen if not authorized
@@ -901,6 +1100,12 @@ GRANT ALL ON public.feedback TO service_role;`);
             Feedback
             {newFeedback.length > 0 && <span className="badge">{newFeedback.length}</span>}
           </button>
+          <button 
+            className={`view-button ${viewMode === 'analytics' ? 'active' : ''}`}
+            onClick={() => setViewMode('analytics')}
+          >
+            Analytics
+          </button>
         </div>
         
         <div className="admin-actions">
@@ -929,7 +1134,200 @@ GRANT ALL ON public.feedback TO service_role;`);
       
       {loading && <div className="loading-indicator">Loading data...</div>}
       
-      {!loading && viewMode === 'feedback' ? (
+      {!loading && viewMode === 'analytics' ? (
+        // Analytics view section
+        <div className="analytics-container">
+          <div className="analytics-tabs">
+            <button 
+              className={`analytics-tab ${selectedAnalytic === 'overview' ? 'active' : ''}`}
+              onClick={() => setSelectedAnalytic('overview')}
+            >
+              Overview
+            </button>
+            <button 
+              className={`analytics-tab ${selectedAnalytic === 'signups' ? 'active' : ''}`}
+              onClick={() => setSelectedAnalytic('signups')}
+            >
+              Signups by Date
+            </button>
+            <button 
+              className={`analytics-tab ${selectedAnalytic === 'mealTimes' ? 'active' : ''}`}
+              onClick={() => setSelectedAnalytic('mealTimes')}
+            >
+              Meal Times
+            </button>
+          </div>
+          
+          <div className="analytics-content">
+            {selectedAnalytic === 'overview' && (
+              <div className="overview-analytics">
+                <h3>Overview Statistics</h3>
+                
+                {!profiles || profiles.length === 0 ? (
+                  <div className="no-data-message">No user data available for analytics.</div>
+                ) : (
+                  <>
+                    {/* Stats cards */}
+                    <div className="stats-cards">
+                      <div className="stat-card">
+                        <div className="stat-value">{profiles.length}</div>
+                        <div className="stat-label">Total Signups</div>
+                      </div>
+                      
+                      <div className="stat-card">
+                        <div className="stat-value">
+                          {getOverviewStats()?.hasMealPlan || 0}
+                        </div>
+                        <div className="stat-label">Have Meal Plan</div>
+                      </div>
+                      
+                      <div className="stat-card">
+                        <div className="stat-value">
+                          {getOverviewStats()?.hasGuestSwipe || 0}
+                        </div>
+                        <div className="stat-label">Have Guest Swipes</div>
+                      </div>
+                    </div>
+                    
+                    {/* Class level breakdown */}
+                    {renderBarChart(
+                      getOverviewStats()?.signupsByClass || {}, 
+                      'Signups by Class Level',
+                      'blue'
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+            
+            {selectedAnalytic === 'signups' && (
+              <div className="signups-analytics">
+                <h3>Signups by Date</h3>
+                
+                {!profiles || profiles.length === 0 ? (
+                  <div className="no-data-message">No user data available for analytics.</div>
+                ) : (
+                  <>
+                    {renderBarChart(
+                      getOverviewStats()?.signupsByDate || {}, 
+                      'User Registrations by Date',
+                      'green'
+                    )}
+                    
+                    <div className="analytics-info">
+                      <p>
+                        This chart shows the number of user signups per day.
+                        Days with higher signup rates might indicate increased marketing efforts
+                        or specific events that drove traffic to the application.
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            
+            {selectedAnalytic === 'mealTimes' && (
+              <div className="meal-times-analytics">
+                <h3>Meal Times Analysis</h3>
+                
+                {!profiles || profiles.length === 0 ? (
+                  <div className="no-data-message">No user data available for analytics.</div>
+                ) : (
+                  <div className="meal-times-tree">
+                    {/* Tree visualization for meal times */}
+                    {Object.entries(getMealTimesData() || {}).map(([day, dayData]) => (
+                      <div key={day} className="day-node">
+                        <div className="day-header" onClick={() => {
+                          // Toggle expand/collapse for this day
+                          const dayElement = document.getElementById(`day-content-${day}`);
+                          if (dayElement) {
+                            dayElement.style.display = 
+                              dayElement.style.display === 'none' ? 'block' : 'none';
+                          }
+                        }}>
+                          <span className="expand-icon">▶</span>
+                          <span className="day-name">
+                            {day.charAt(0).toUpperCase() + day.slice(1)}
+                          </span>
+                          <span className="day-count">
+                            {dayData.userCount} {dayData.userCount === 1 ? 'user' : 'users'}
+                          </span>
+                        </div>
+                        
+                        <div id={`day-content-${day}`} className="day-content">
+                          {Object.entries(dayData.meals).map(([meal, mealData]) => (
+                            <div key={`${day}-${meal}`} className="meal-node">
+                              <div className="meal-header" onClick={() => {
+                                // Toggle expand/collapse for this meal
+                                const mealElement = document.getElementById(`meal-content-${day}-${meal}`);
+                                if (mealElement) {
+                                  mealElement.style.display = 
+                                    mealElement.style.display === 'none' ? 'block' : 'none';
+                                }
+                              }}>
+                                <span className="expand-icon">▶</span>
+                                <span className="meal-name">
+                                  {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                                </span>
+                                <span className="meal-count">
+                                  {mealData.userCount} {mealData.userCount === 1 ? 'user' : 'users'}
+                                </span>
+                              </div>
+                              
+                              <div id={`meal-content-${day}-${meal}`} className="meal-content">
+                                {Object.entries(mealData.timeSlots).map(([timeSlot, slotData]) => (
+                                  <div key={`${day}-${meal}-${timeSlot}`} className="time-slot-node">
+                                    <div className="time-slot-header" onClick={() => {
+                                      // Toggle expand/collapse for this time slot
+                                      const slotElement = document.getElementById(`slot-content-${day}-${meal}-${timeSlot.replace(/:/g, '-').replace(/\s/g, '-')}`);
+                                      if (slotElement) {
+                                        slotElement.style.display = 
+                                          slotElement.style.display === 'none' ? 'block' : 'none';
+                                      }
+                                    }}>
+                                      <span className="expand-icon">▶</span>
+                                      <span className="time-slot-name">{timeSlot}</span>
+                                      <span className="time-slot-count">
+                                        {slotData.userCount} {slotData.userCount === 1 ? 'user' : 'users'}
+                                      </span>
+                                    </div>
+                                    
+                                    <div 
+                                      id={`slot-content-${day}-${meal}-${timeSlot.replace(/:/g, '-').replace(/\s/g, '-')}`} 
+                                      className="time-slot-content"
+                                    >
+                                      <table className="users-table">
+                                        <thead>
+                                          <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {slotData.users.map((user, index) => (
+                                            <tr key={`${user.id}-${index}`}>
+                                              <td>{user.name}</td>
+                                              <td>{user.email}</td>
+                                            </tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : !loading && viewMode === 'feedback' ? (
         // Feedback display section
         <div className="data-table-container">
           {displayedFeedback.length === 0 ? (
