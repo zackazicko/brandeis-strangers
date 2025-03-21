@@ -30,16 +30,64 @@ const Admin = () => {
   // State for analytics view
   const [selectedAnalytic, setSelectedAnalytic] = useState('overview'); // 'overview', 'signups', 'mealTimes'
   
+  // State for matching groups
+  const [userMatchingGroups, setUserMatchingGroups] = useState({});
+  const [maxMatchingGroup, setMaxMatchingGroup] = useState(1);
+  
   // State for sign-up modal
   const [showSignUpModal, setShowSignUpModal] = useState(false);
   
   // Reference to Home component
   const homeRef = React.useRef(null);
   
+  // Function to update a user's matching group
+  const updateUserMatchingGroup = (userId, groupNumber) => {
+    // Convert to number, ensuring it's at least 0
+    const numGroup = Math.max(0, parseInt(groupNumber, 10) || 0);
+    
+    // Update the max group number if needed
+    if (numGroup > maxMatchingGroup) {
+      setMaxMatchingGroup(numGroup);
+    }
+    
+    // Update the matching group for this user
+    setUserMatchingGroups(prev => ({
+      ...prev,
+      [userId]: numGroup
+    }));
+  };
+  
+  // Function to get a user's matching group
+  const getUserMatchingGroup = (userId) => {
+    return userMatchingGroups[userId] || 0;
+  };
+  
+  // Function to get color for a matching group
+  const getMatchingGroupColor = (groupNumber) => {
+    if (groupNumber === 0) return 'transparent'; // No group
+    
+    // Define an array of light pastel colors for different groups
+    const colors = [
+      '#E6F7FF', // Light blue
+      '#F6FFED', // Light green
+      '#FFF7E6', // Light yellow
+      '#FCF5FF', // Light purple
+      '#FFF0F6', // Light pink
+      '#E6FFFB', // Light cyan
+      '#FCFFE6', // Light lime
+      '#FFF1F0', // Light red
+      '#F0F5FF', // Light blue-purple
+      '#FFF2E8'  // Light orange
+    ];
+    
+    // Use modulo to cycle through colors if we have more groups than colors
+    return colors[(groupNumber - 1) % colors.length];
+  };
+  
   // Initialize tree view functionality
   useEffect(() => {
     if (viewMode === 'analytics' && selectedAnalytic === 'mealTimes') {
-      // Initialize all tree nodes to be closed by default except days
+      // Initialize all tree nodes
       const dayContents = document.querySelectorAll('.day-content');
       dayContents.forEach(element => {
         element.style.display = 'block'; // Show day content by default
@@ -47,17 +95,23 @@ const Admin = () => {
       
       const mealContents = document.querySelectorAll('.meal-content');
       mealContents.forEach(element => {
-        element.style.display = 'none'; // Hide meal content by default
+        element.style.display = 'block'; // Show meal content by default
       });
       
       const timeSlotContents = document.querySelectorAll('.time-slot-content');
       timeSlotContents.forEach(element => {
-        element.style.display = 'none'; // Hide time slot content by default
+        element.style.display = 'block'; // Show time slot content by default
       });
       
-      // Add rotation to arrows when expanding/collapsing
+      // Update arrow icons to show expanded state
       const toggleHeaders = document.querySelectorAll('.day-header, .meal-header, .time-slot-header');
       toggleHeaders.forEach(header => {
+        const arrow = header.querySelector('.expand-icon');
+        if (arrow) {
+          arrow.style.transform = 'rotate(90deg)';
+        }
+        
+        // Add rotation to arrows when expanding/collapsing
         header.addEventListener('click', function() {
           const arrow = this.querySelector('.expand-icon');
           
@@ -805,15 +859,21 @@ GRANT ALL ON public.feedback TO service_role;`);
             if (!mealTimesTree[day].meals[meal].timeSlots[timeSlot]) {
               mealTimesTree[day].meals[meal].timeSlots[timeSlot] = {
                 userCount: 0,
-                users: []
+                users: [],
+                timeDisplay: timeSlot // Store the original time display for rendering
               };
             }
             
             mealTimesTree[day].meals[meal].timeSlots[timeSlot].userCount++;
+            // Include more user details with a matchingGroup field (default is 0 - no group assigned)
             mealTimesTree[day].meals[meal].timeSlots[timeSlot].users.push({
               id: profile.id,
               name: profile.name || 'Anonymous',
-              email: profile.email
+              email: profile.email,
+              interests: profile.interests || [],
+              majors: profile.majors || [],
+              class_level: profile.class_level || 'Not specified',
+              matchingGroup: profile.matchingGroup || 0 // Default to no group
             });
           });
         });
@@ -1233,95 +1293,169 @@ GRANT ALL ON public.feedback TO service_role;`);
                 {!profiles || profiles.length === 0 ? (
                   <div className="no-data-message">No user data available for analytics.</div>
                 ) : (
-                  <div className="meal-times-tree">
-                    {/* Tree visualization for meal times */}
-                    {Object.entries(getMealTimesData() || {}).map(([day, dayData]) => (
-                      <div key={day} className="day-node">
-                        <div className="day-header" onClick={() => {
-                          // Toggle expand/collapse for this day
-                          const dayElement = document.getElementById(`day-content-${day}`);
-                          if (dayElement) {
-                            dayElement.style.display = 
-                              dayElement.style.display === 'none' ? 'block' : 'none';
+                  <>
+                    <div className="matching-groups-controls">
+                      <h4>Matching Groups</h4>
+                      <p className="matching-instructions">
+                        Assign users to matching groups by entering a group number (1, 2, 3, etc.).
+                        Users with the same group number will be highlighted with the same color for easy matching.
+                      </p>
+                      <button 
+                        className="reset-groups-button"
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to reset all matching groups?')) {
+                            setUserMatchingGroups({});
+                            setMaxMatchingGroup(1);
                           }
-                        }}>
-                          <span className="expand-icon">▶</span>
-                          <span className="day-name">
-                            {day.charAt(0).toUpperCase() + day.slice(1)}
-                          </span>
-                          <span className="day-count">
-                            {dayData.userCount} {dayData.userCount === 1 ? 'user' : 'users'}
-                          </span>
-                        </div>
-                        
-                        <div id={`day-content-${day}`} className="day-content">
-                          {Object.entries(dayData.meals).map(([meal, mealData]) => (
-                            <div key={`${day}-${meal}`} className="meal-node">
-                              <div className="meal-header" onClick={() => {
-                                // Toggle expand/collapse for this meal
-                                const mealElement = document.getElementById(`meal-content-${day}-${meal}`);
-                                if (mealElement) {
-                                  mealElement.style.display = 
-                                    mealElement.style.display === 'none' ? 'block' : 'none';
-                                }
-                              }}>
-                                <span className="expand-icon">▶</span>
-                                <span className="meal-name">
-                                  {meal.charAt(0).toUpperCase() + meal.slice(1)}
-                                </span>
-                                <span className="meal-count">
-                                  {mealData.userCount} {mealData.userCount === 1 ? 'user' : 'users'}
-                                </span>
-                              </div>
-                              
-                              <div id={`meal-content-${day}-${meal}`} className="meal-content">
-                                {Object.entries(mealData.timeSlots).map(([timeSlot, slotData]) => (
-                                  <div key={`${day}-${meal}-${timeSlot}`} className="time-slot-node">
-                                    <div className="time-slot-header" onClick={() => {
-                                      // Toggle expand/collapse for this time slot
-                                      const slotElement = document.getElementById(`slot-content-${day}-${meal}-${timeSlot.replace(/:/g, '-').replace(/\s/g, '-')}`);
-                                      if (slotElement) {
-                                        slotElement.style.display = 
-                                          slotElement.style.display === 'none' ? 'block' : 'none';
-                                      }
-                                    }}>
-                                      <span className="expand-icon">▶</span>
-                                      <span className="time-slot-name">{timeSlot}</span>
-                                      <span className="time-slot-count">
-                                        {slotData.userCount} {slotData.userCount === 1 ? 'user' : 'users'}
-                                      </span>
-                                    </div>
-                                    
-                                    <div 
-                                      id={`slot-content-${day}-${meal}-${timeSlot.replace(/:/g, '-').replace(/\s/g, '-')}`} 
-                                      className="time-slot-content"
-                                    >
-                                      <table className="users-table">
-                                        <thead>
-                                          <tr>
-                                            <th>Name</th>
-                                            <th>Email</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {slotData.users.map((user, index) => (
-                                            <tr key={`${user.id}-${index}`}>
-                                              <td>{user.name}</td>
-                                              <td>{user.email}</td>
+                        }}
+                      >
+                        Reset All Groups
+                      </button>
+                    </div>
+
+                    <div className="meal-times-tree">
+                      {/* Tree visualization for meal times */}
+                      {Object.entries(getMealTimesData() || {}).map(([day, dayData]) => (
+                        <div key={day} className="day-node">
+                          <div className="day-header" onClick={() => {
+                            // Toggle expand/collapse for this day
+                            const dayElement = document.getElementById(`day-content-${day}`);
+                            if (dayElement) {
+                              dayElement.style.display = 
+                                dayElement.style.display === 'none' ? 'block' : 'none';
+                            }
+                          }}>
+                            <span className="expand-icon">▶</span>
+                            <span className="day-name">
+                              {day.charAt(0).toUpperCase() + day.slice(1)}
+                            </span>
+                            <span className="day-count">
+                              {dayData.userCount} {dayData.userCount === 1 ? 'user' : 'users'}
+                            </span>
+                          </div>
+                          
+                          <div id={`day-content-${day}`} className="day-content">
+                            {Object.entries(dayData.meals).map(([meal, mealData]) => (
+                              <div key={`${day}-${meal}`} className="meal-node">
+                                <div className="meal-header" onClick={() => {
+                                  // Toggle expand/collapse for this meal
+                                  const mealElement = document.getElementById(`meal-content-${day}-${meal}`);
+                                  if (mealElement) {
+                                    mealElement.style.display = 
+                                      mealElement.style.display === 'none' ? 'block' : 'none';
+                                  }
+                                }}>
+                                  <span className="expand-icon">▶</span>
+                                  <span className="meal-name">
+                                    {meal.charAt(0).toUpperCase() + meal.slice(1)}
+                                  </span>
+                                  <span className="meal-count">
+                                    {mealData.userCount} {mealData.userCount === 1 ? 'user' : 'users'}
+                                  </span>
+                                </div>
+                                
+                                <div id={`meal-content-${day}-${meal}`} className="meal-content">
+                                  {Object.entries(mealData.timeSlots).map(([timeSlot, slotData]) => (
+                                    <div key={`${day}-${meal}-${timeSlot}`} className="time-slot-node">
+                                      <div className="time-slot-header" onClick={() => {
+                                        // Toggle expand/collapse for this time slot
+                                        const slotElement = document.getElementById(`slot-content-${day}-${meal}-${timeSlot.replace(/:/g, '-').replace(/\s/g, '-')}`);
+                                        if (slotElement) {
+                                          slotElement.style.display = 
+                                            slotElement.style.display === 'none' ? 'block' : 'none';
+                                        }
+                                      }}>
+                                        <span className="expand-icon">▶</span>
+                                        <span className="time-slot-name">{timeSlot}</span>
+                                        <span className="time-slot-count">
+                                          {slotData.userCount} {slotData.userCount === 1 ? 'user' : 'users'}
+                                        </span>
+                                      </div>
+                                      
+                                      <div 
+                                        id={`slot-content-${day}-${meal}-${timeSlot.replace(/:/g, '-').replace(/\s/g, '-')}`} 
+                                        className="time-slot-content"
+                                      >
+                                        <table className="users-matching-table">
+                                          <thead>
+                                            <tr>
+                                              <th>Name</th>
+                                              <th>Email</th>
+                                              <th>Class</th>
+                                              <th width="100">Group</th>
                                             </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
+                                          </thead>
+                                          <tbody>
+                                            {/* Sort users by matching group to keep grouped users together */}
+                                            {[...slotData.users]
+                                              .sort((a, b) => {
+                                                const groupA = getUserMatchingGroup(a.id);
+                                                const groupB = getUserMatchingGroup(b.id);
+                                                
+                                                // First sort by group (0 last)
+                                                if (groupA === 0 && groupB !== 0) return 1;
+                                                if (groupA !== 0 && groupB === 0) return -1;
+                                                if (groupA !== groupB) return groupA - groupB;
+                                                
+                                                // Then by name
+                                                return a.name.localeCompare(b.name);
+                                              })
+                                              .map((user, index) => {
+                                                const matchingGroup = getUserMatchingGroup(user.id);
+                                                const groupColor = getMatchingGroupColor(matchingGroup);
+                                                
+                                                return (
+                                                  <tr 
+                                                    key={`${user.id}-${index}`} 
+                                                    style={{ backgroundColor: groupColor }}
+                                                    className={matchingGroup > 0 ? 'matched-user' : ''}
+                                                  >
+                                                    <td>{user.name}</td>
+                                                    <td>{user.email}</td>
+                                                    <td>{user.class_level}</td>
+                                                    <td className="matching-group-cell">
+                                                      <input 
+                                                        type="number" 
+                                                        min="0" 
+                                                        max="99"
+                                                        className="matching-group-input"
+                                                        value={matchingGroup || ""}
+                                                        onChange={(e) => updateUserMatchingGroup(user.id, e.target.value)}
+                                                        placeholder="Group #"
+                                                      />
+                                                    </td>
+                                                  </tr>
+                                                );
+                                              })
+                                            }
+                                          </tbody>
+                                        </table>
+                                      </div>
                                     </div>
-                                  </div>
-                                ))}
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
+                      ))}
+                    </div>
+                    
+                    <div className="matching-summary">
+                      <h4>Matching Groups Summary</h4>
+                      <div className="matching-groups-legend">
+                        {Array.from({ length: maxMatchingGroup }, (_, i) => i + 1).map(groupNum => (
+                          <div key={groupNum} className="matching-group-item">
+                            <div 
+                              className="color-swatch" 
+                              style={{ backgroundColor: getMatchingGroupColor(groupNum) }}
+                            ></div>
+                            <span>Group {groupNum}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
