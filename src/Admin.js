@@ -1127,6 +1127,10 @@ GRANT ALL ON public.feedback TO service_role;`);
                                 <label>Match Preference:</label>
                                 <span>{profile.match_preference || 'Not specified'}</span>
                               </div>
+                              <div className="detail-item">
+                                <label>Time Preferences:</label>
+                                <span>{profile.time_preferences || 'Not specified'}</span>
+                              </div>
                             </div>
                           </div>
                           
@@ -1177,6 +1181,14 @@ const renderMealTimes = (mealTimes) => {
     return <span className="no-data">No meal times specified</span>;
   }
 
+  // Add date information for each day
+  const dayLabels = {
+    sunday: "Sunday (Mar 23)",
+    tuesday: "Tuesday (Mar 25)",
+    wednesday: "Wednesday (Mar 26)",
+    thursday: "Thursday (Mar 27)"
+  };
+
   return Object.entries(mealTimes).map(([day, meals]) => {
     if (!meals || typeof meals !== 'object') {
       return null;
@@ -1194,7 +1206,7 @@ const renderMealTimes = (mealTimes) => {
     if (validMeals.length > 0) {
       return (
         <div key={day} className="meal-day">
-          <div className="day-label">{day}:</div>
+          <div className="day-label">{dayLabels[day] || day.charAt(0).toUpperCase() + day.slice(1)}:</div>
           <div className="meals-container">{validMeals}</div>
         </div>
       );

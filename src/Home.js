@@ -520,6 +520,7 @@ export default forwardRef(function Home(props, ref) {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
   const [mealTimes, setMealTimes] = useState({
+    sunday: { lunch: [], dinner: [] },
     tuesday: { lunch: [], dinner: [] },
     wednesday: { lunch: [], dinner: [] },
     thursday: { lunch: [], dinner: [] }
@@ -742,7 +743,9 @@ export default forwardRef(function Home(props, ref) {
       
       // Basic validation - check if at least one meal time is selected across all days
       const hasSelectedMealTime = 
-        (mealTimes.tuesday?.lunch?.length > 0 || 
+        (mealTimes.sunday?.lunch?.length > 0 || 
+         mealTimes.sunday?.dinner?.length > 0 ||
+         mealTimes.tuesday?.lunch?.length > 0 || 
          mealTimes.tuesday?.dinner?.length > 0 ||
          mealTimes.wednesday?.lunch?.length > 0 || 
          mealTimes.wednesday?.dinner?.length > 0 ||
@@ -758,21 +761,28 @@ export default forwardRef(function Home(props, ref) {
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Tuesday slots
+      // Sunday slots (March 23)
+      flattenedMealTimes.sunday_lunch_1200_1230 = mealTimes.sunday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.sunday_lunch_1230_100 = mealTimes.sunday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.sunday_dinner_600_630 = mealTimes.sunday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.sunday_dinner_630_700 = mealTimes.sunday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.sunday_dinner_700_730 = mealTimes.sunday?.dinner?.includes('7:00-7:30 pm') || false;
+      
+      // Tuesday slots (March 25)
       flattenedMealTimes.tuesday_lunch_1200_1230 = mealTimes.tuesday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.tuesday_lunch_1230_100 = mealTimes.tuesday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.tuesday_dinner_600_630 = mealTimes.tuesday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.tuesday_dinner_630_700 = mealTimes.tuesday?.dinner?.includes('6:30-7:00 pm') || false;
       flattenedMealTimes.tuesday_dinner_700_730 = mealTimes.tuesday?.dinner?.includes('7:00-7:30 pm') || false;
       
-      // Wednesday slots
+      // Wednesday slots (March 26)
       flattenedMealTimes.wednesday_lunch_1200_1230 = mealTimes.wednesday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.wednesday_lunch_1230_100 = mealTimes.wednesday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.wednesday_dinner_600_630 = mealTimes.wednesday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.wednesday_dinner_630_700 = mealTimes.wednesday?.dinner?.includes('6:30-7:00 pm') || false;
       flattenedMealTimes.wednesday_dinner_700_730 = mealTimes.wednesday?.dinner?.includes('7:00-7:30 pm') || false;
       
-      // Thursday slots
+      // Thursday slots (March 27)
       flattenedMealTimes.thursday_lunch_1200_1230 = mealTimes.thursday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.thursday_lunch_1230_100 = mealTimes.thursday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
@@ -1092,14 +1102,14 @@ export default forwardRef(function Home(props, ref) {
           isSignupEnabled && (
             <button 
               onClick={openModal}
-              style={{
+        style={{
                 ...btnStyle,
                 padding: '0.5rem 1.2rem',
                 fontSize: '0.85rem',
                 marginLeft: 0
-              }}
-            >
-              sign up
+            }}
+          >
+            sign up
             </button>
           )
         )}
@@ -1173,7 +1183,7 @@ export default forwardRef(function Home(props, ref) {
                   <div style={stepTitleStyle}>quick sign up</div>
                   <div style={stepDescriptionStyle}>
                     sign up with your brandeis email, tell us your availability and meal preferences
-          </div>
+        </div>
           </div>
               </div>
               
@@ -1891,6 +1901,116 @@ export default forwardRef(function Home(props, ref) {
                       gap: '1rem'
                     }}
                   >
+                    {/* Sunday */}
+                    <div
+                      style={{
+                        position: 'relative',
+                        margin: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '20px',
+                        backgroundColor: '#f0f0f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>sunday (mar 23)</div>
+                      
+                      {/* Lunch times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
+                          const timeKey = `sunday-lunch-${timeSlot}`;
+                          const isSelected = mealTimes.sunday?.lunch?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                        style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.sunday) {
+                                  updatedMealTimes.sunday = {};
+                                }
+                                if (!updatedMealTimes.sunday.lunch) {
+                                  updatedMealTimes.sunday.lunch = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.sunday.lunch.includes(timeSlot)) {
+                                  updatedMealTimes.sunday.lunch = updatedMealTimes.sunday.lunch.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.sunday.lunch.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                      </div>
+                          );
+                        })}
+                  </div>
+                      
+                      {/* Dinner times */}
+                      <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
+                      <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].map((timeSlot) => {
+                          const timeKey = `sunday-dinner-${timeSlot}`;
+                          const isSelected = mealTimes.sunday?.dinner?.includes(timeSlot) || false;
+                          
+                          return (
+                            <div
+                              key={timeKey}
+                      style={{
+                          ...bubbleStyle,
+                                backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                color: isSelected ? 'white' : '#333',
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 0.8rem',
+                              }}
+                              onClick={() => {
+                                // Create a deep copy of mealTimes
+                                const updatedMealTimes = { ...mealTimes };
+                                
+                                // Initialize day and meal if needed
+                                if (!updatedMealTimes.sunday) {
+                                  updatedMealTimes.sunday = {};
+                                }
+                                if (!updatedMealTimes.sunday.dinner) {
+                                  updatedMealTimes.sunday.dinner = [];
+                                }
+                                
+                                // Toggle time slot
+                                if (updatedMealTimes.sunday.dinner.includes(timeSlot)) {
+                                  updatedMealTimes.sunday.dinner = updatedMealTimes.sunday.dinner.filter(
+                                    time => time !== timeSlot
+                                  );
+                                } else {
+                                  updatedMealTimes.sunday.dinner.push(timeSlot);
+                                }
+                                
+                                setMealTimes(updatedMealTimes);
+                              }}
+                            >
+                              {timeSlot}
+                              </div>
+                          );
+                        })}
+                        </div>
+                    </div>
+                    
                     {/* Tuesday */}
                     <div
                       style={{
@@ -1904,7 +2024,7 @@ export default forwardRef(function Home(props, ref) {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday (mar 25)</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
@@ -2014,7 +2134,7 @@ export default forwardRef(function Home(props, ref) {
                             alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday (mar 26)</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
@@ -2124,7 +2244,7 @@ export default forwardRef(function Home(props, ref) {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>thursday</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>thursday (mar 27)</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
