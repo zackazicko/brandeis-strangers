@@ -199,7 +199,7 @@ const Admin = () => {
   }, [authorized]);
 
   // Fetch data from Supabase
-  const fetchData = async () => {
+      const fetchData = async () => {
     setLoading(true);
     try {
       // Get the current time for tracking new entries
@@ -663,14 +663,14 @@ GRANT ALL ON public.feedback TO service_role;`);
     const displayed = array.slice(0, limit);
     const extras = array.length > limit ? `+${array.length - limit} more` : '';
     
-    return (
+        return (
       <div className="array-data">
         {displayed.map((item, index) => (
           <span key={index} className="array-item">{item}</span>
         ))}
         {extras && <span className="array-extras">{extras}</span>}
-      </div>
-    );
+          </div>
+        );
   };
   
   // Format date for display
@@ -1377,10 +1377,10 @@ GRANT ALL ON public.feedback TO service_role;`);
                                         className="time-slot-content"
                                       >
                                         <table className="users-matching-table">
-                                          <thead>
-                                            <tr>
-                                              <th>Name</th>
-                                              <th>Email</th>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
                                               <th>Class</th>
                                               <th width="100">Group</th>
                                             </tr>
@@ -1564,7 +1564,7 @@ GRANT ALL ON public.feedback TO service_role;`);
                       >
                         {profile.housing_status || 'Not specified'}
                       </span>
-                    </td>
+                  </td>
                     <td>{formatArrayField(profile.majors)}</td>
                     <td>{formatArrayField(profile.interests)}</td>
                   <td>
@@ -1579,7 +1579,7 @@ GRANT ALL ON public.feedback TO service_role;`);
                         {expandedRow === profile.id ? 'Collapse' : 'Details'}
                       </button>
                   </td>
-                  </tr>
+                </tr>
                   
                   {/* Expanded row with details */}
                   {expandedRow === profile.id && (
