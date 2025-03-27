@@ -761,28 +761,28 @@ export default forwardRef(function Home(props, ref) {
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Sunday slots (March 23)
+      // Sunday slots (March 29)
       flattenedMealTimes.sunday_lunch_1200_1230 = mealTimes.sunday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.sunday_lunch_1230_100 = mealTimes.sunday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.sunday_dinner_600_630 = mealTimes.sunday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.sunday_dinner_630_700 = mealTimes.sunday?.dinner?.includes('6:30-7:00 pm') || false;
       flattenedMealTimes.sunday_dinner_700_730 = mealTimes.sunday?.dinner?.includes('7:00-7:30 pm') || false;
       
-      // Tuesday slots (March 25)
+      // Tuesday slots (March 31)
       flattenedMealTimes.tuesday_lunch_1200_1230 = mealTimes.tuesday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.tuesday_lunch_1230_100 = mealTimes.tuesday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.tuesday_dinner_600_630 = mealTimes.tuesday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.tuesday_dinner_630_700 = mealTimes.tuesday?.dinner?.includes('6:30-7:00 pm') || false;
       flattenedMealTimes.tuesday_dinner_700_730 = mealTimes.tuesday?.dinner?.includes('7:00-7:30 pm') || false;
       
-      // Wednesday slots (March 26)
+      // Wednesday slots (April 1)
       flattenedMealTimes.wednesday_lunch_1200_1230 = mealTimes.wednesday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.wednesday_lunch_1230_100 = mealTimes.wednesday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.wednesday_dinner_600_630 = mealTimes.wednesday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.wednesday_dinner_630_700 = mealTimes.wednesday?.dinner?.includes('6:30-7:00 pm') || false;
       flattenedMealTimes.wednesday_dinner_700_730 = mealTimes.wednesday?.dinner?.includes('7:00-7:30 pm') || false;
       
-      // Thursday slots (March 27)
+      // Thursday slots (April 2)
       flattenedMealTimes.thursday_lunch_1200_1230 = mealTimes.thursday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.thursday_lunch_1230_100 = mealTimes.thursday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
@@ -1145,7 +1145,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 3: meal match groups! connect with 3 new people at each meal
+            👥 pilot 4: continue to connect - thanks for over 100 users!
           </p>
           {isSignupEnabled ? (
         <button
@@ -1914,7 +1914,7 @@ export default forwardRef(function Home(props, ref) {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>sunday (mar 23)</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>sunday (mar 29)</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
@@ -2024,7 +2024,7 @@ export default forwardRef(function Home(props, ref) {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday (mar 25)</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>tuesday (mar 31)</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
@@ -2134,7 +2134,7 @@ export default forwardRef(function Home(props, ref) {
                             alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday (mar 26)</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>wednesday (apr 1)</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
@@ -2244,7 +2244,7 @@ export default forwardRef(function Home(props, ref) {
                         alignItems: 'center',
                       }}
                     >
-                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>thursday (mar 27)</div>
+                      <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>thursday (apr 2)</div>
                       
                       {/* Lunch times */}
                       <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
