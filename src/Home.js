@@ -1125,7 +1125,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 weekend meals: march 28-29 - thanks for over 100 users!
+            👥 weekend meals: march 29-30 - thanks for over 100 users!
           </p>
           {isSignupEnabled ? (
         <button
