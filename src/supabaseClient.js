@@ -13,7 +13,7 @@ window.runtimeConfig = window.runtimeConfig || {};
 const serviceRoleKey = process.env.NEXT_PUBLIC_SUPABASE_SERVICE_KEY;
 
 // Use the provided anon key 
-const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE1Mzk5MjMsImV4cCI6MjA1NzExNTkyM30.58_hiFuTYtikitJOthuBTLlNiQZuWyvqZWESl0o9Tzc';
+const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMzIyNjksImV4cCI6MjA1ODcwODI2OX0.msCVyE6tBzPIPAccyDbNsnAFxCtCLmM4Ab4fYnk3R-E';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || anonKey;
 
 // Store configuration status in runtime config for debugging
