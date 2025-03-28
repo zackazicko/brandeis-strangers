@@ -804,15 +804,15 @@ export default forwardRef(function Home(props, ref) {
       // Try first with a direct fetch - most robust method for user submissions
       try {
         console.log('Attempting direct fetch submission...');
-        const response = await fetch('https://qahwzhxwqgzlfymtcnde.supabase.co/rest/v1/main', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/main`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMzIyNjksImV4cCI6MjA1ODcwODI2OX0.msCVyE6tBzPIPAccyDbNsnAFxCtCLmM4Ab4fYnk3R-E',
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhaHd6aHh3cWd6bGZ5bXRjbmRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxMzIyNjksImV4cCI6MjA1ODcwODI2OX0.msCVyE6tBzPIPAccyDbNsnAFxCtCLmM4Ab4fYnk3R-E`,
+            'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
             'Prefer': 'return=minimal'
           },
-          body: JSON.stringify(userData) // Send as single object, not array
+          body: JSON.stringify(userData)
         });
         
         if (response.ok) {
@@ -1993,15 +1993,15 @@ export default forwardRef(function Home(props, ref) {
                     
                     {/* Sunday */}
                     <div
-                      style={{
+                          style={{
                         position: 'relative',
                         margin: '0.5rem',
                         padding: '0.5rem 1rem',
                         borderRadius: '20px',
                         backgroundColor: '#f0f0f0',
-                        display: 'flex',
+                            display: 'flex',
                         flexDirection: 'column',
-                        alignItems: 'center',
+                            alignItems: 'center',
                       }}
                     >
                       <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>sunday (mar 29)</div>
@@ -2016,7 +2016,7 @@ export default forwardRef(function Home(props, ref) {
                           return (
                             <div
                               key={timeKey}
-                        style={{
+                            style={{
                           ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
@@ -2060,17 +2060,17 @@ export default forwardRef(function Home(props, ref) {
                           const timeKey = `sunday-dinner-${timeSlot}`;
                           const isSelected = mealTimes.sunday?.dinner?.includes(timeSlot) || false;
                           
-                          return (
+                                return (
                             <div
                               key={timeKey}
-                      style={{
-                          ...bubbleStyle,
+                                style={{
+                                  ...bubbleStyle,
                                 backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                 color: isSelected ? 'white' : '#333',
                                 fontSize: '0.85rem',
                                 padding: '0.4rem 0.8rem',
-                              }}
-                              onClick={() => {
+                                }}
+                                onClick={() => {
                                 // Create a deep copy of mealTimes
                                 const updatedMealTimes = { ...mealTimes };
                                 
