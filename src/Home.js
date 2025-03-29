@@ -4,7 +4,7 @@ import supabase from './supabaseClient';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false  // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true  // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -2270,9 +2270,8 @@ export default forwardRef(function Home(props, ref) {
                 <h2 style={{ fontSize: '1.5rem' }}>you're all set!</h2>
                 <p style={{ marginTop: '1rem', lineHeight: '1.5' }}>
                   thank you for signing up. keep an eye on your brandeis email
-                  for your meal match details. we'll connect you with a group of 
-                  three other students and provide contact information so your 
-                  group can coordinate meeting up together!
+                  for your meal match details. we'll connect you and provide contact information so you
+                  can coordinate meeting up together!
                 </p>
                 
                 <p style={{ 
