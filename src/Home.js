@@ -5,8 +5,40 @@ import { useNavigate } from 'react-router-dom';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false  // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true,  // Base setting - can be overridden by time-based checks
+  AUTO_CLOSE: true,      // Whether to automatically close based on date/time
+  CLOSE_DAY: 5,          // Friday (0 = Sunday, 5 = Friday)
+  CLOSE_HOUR: 12,        // 12pm (noon)
+  CLOSE_MINUTE: 0        // 0 minutes
 };
+
+// Determine if signup should be enabled based on configuration and current time
+const isSignupEnabled = (() => {
+  // If signup is explicitly disabled, respect that setting
+  if (!CONFIG.SIGNUP_ENABLED) return false;
+  
+  // If auto-close is disabled, just use the base setting
+  if (!CONFIG.AUTO_CLOSE) return CONFIG.SIGNUP_ENABLED;
+  
+  // Check if we should auto-close based on current date/time
+  const now = new Date();
+  const currentDay = now.getDay(); // 0-6, 0 = Sunday, 5 = Friday
+  const currentHour = now.getHours(); // 0-23
+  const currentMinute = now.getMinutes(); // 0-59
+  
+  // If it's after the specified close day
+  if (currentDay > CONFIG.CLOSE_DAY) return false;
+  
+  // If it's on the close day and after/at the close time
+  if (currentDay === CONFIG.CLOSE_DAY && 
+     (currentHour > CONFIG.CLOSE_HOUR || 
+      (currentHour === CONFIG.CLOSE_HOUR && currentMinute >= CONFIG.CLOSE_MINUTE))) {
+    return false;
+  }
+  
+  // Otherwise, signup is enabled
+  return true;
+})();
 
 // Move these style creator functions to the top, outside component
 const createBtnStyle = (isMobile = false) => ({
@@ -507,7 +539,7 @@ export default forwardRef(function Home(props, ref) {
   // ---------------------------
   const [modalOpen, setModalOpen] = useState(false);
   // Use forceSignupEnabled from props if provided, otherwise use CONFIG
-  const [isSignupEnabled, setIsSignupEnabled] = useState(forceSignupEnabled || CONFIG.SIGNUP_ENABLED);
+  const [signupStatus, setSignupStatus] = useState(forceSignupEnabled || isSignupEnabled);
   
   // Expose methods via ref for parent components to call
   useImperativeHandle(ref, () => ({
@@ -519,13 +551,13 @@ export default forwardRef(function Home(props, ref) {
   }));
   
   function openModal() {
-    if (forceSignupEnabled || isSignupEnabled) {
-    setModalOpen(true);
-    document.body.style.overflow = 'hidden';
+    if (forceSignupEnabled || signupStatus) {
+      setModalOpen(true);
+      document.body.style.overflow = 'hidden';
     } else {
       // If signups are disabled, don't open the modal
       alert('Signups are currently closed. Please check back later!');
-  }
+    }
   }
   
   function closeModal() {
@@ -572,9 +604,9 @@ export default forwardRef(function Home(props, ref) {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
   const [mealTimes, setMealTimes] = useState({
-    monday: { lunch: [], dinner: [] },
-    tuesday: { lunch: [], dinner: [] },
-    wednesday: { lunch: [], dinner: [] }
+    thursday: { lunch: [], dinner: [] },
+    friday: { lunch: [], dinner: [] },
+    saturday: { lunch: [], dinner: [] }
   });
   // New state for time preferences text field
   const [timePreferences, setTimePreferences] = useState('');
@@ -794,12 +826,12 @@ export default forwardRef(function Home(props, ref) {
       
       // Check if user has selected any meal times
       const hasSelectedMealTimes = 
-        (mealTimes.monday?.lunch?.length > 0 ||
-         mealTimes.monday?.dinner?.length > 0 ||
-         mealTimes.tuesday?.lunch?.length > 0 ||
-         mealTimes.tuesday?.dinner?.length > 0 ||
-         mealTimes.wednesday?.lunch?.length > 0 ||
-         mealTimes.wednesday?.dinner?.length > 0);
+        (mealTimes.thursday?.lunch?.length > 0 ||
+         mealTimes.thursday?.dinner?.length > 0 ||
+         mealTimes.friday?.lunch?.length > 0 ||
+         mealTimes.friday?.dinner?.length > 0 ||
+         mealTimes.saturday?.lunch?.length > 0 ||
+         mealTimes.saturday?.dinner?.length > 0);
       
       if (!name || !emailInput || !phone || !hasSelectedMealTimes) {
         alert('Please fill in all required fields and select at least one time slot.');
@@ -811,40 +843,43 @@ export default forwardRef(function Home(props, ref) {
       const mealTimesWithDates = JSON.parse(JSON.stringify(mealTimes));
       
       // Update date assignments for April 2024
-      // April 1 is Monday, April 2 is Tuesday, April 3 is Wednesday
-      if (mealTimesWithDates.monday) {
-        mealTimesWithDates.monday.date = "April 1, 2024";
+      // April 4 is Thursday, April 5 is Friday, April 6 is Saturday
+      if (mealTimesWithDates.thursday) {
+        mealTimesWithDates.thursday.date = "April 4, 2024";
       }
-      if (mealTimesWithDates.tuesday) {
-        mealTimesWithDates.tuesday.date = "April 2, 2024";
+      if (mealTimesWithDates.friday) {
+        mealTimesWithDates.friday.date = "April 5, 2024";
       }
-      if (mealTimesWithDates.wednesday) {
-        mealTimesWithDates.wednesday.date = "April 3, 2024";
+      if (mealTimesWithDates.saturday) {
+        mealTimesWithDates.saturday.date = "April 6, 2024";
       }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Monday slots (April 1, 2024)
-      flattenedMealTimes.monday_lunch_1200_1230 = mealTimes.monday?.lunch?.includes('12:00-12:30 pm') || false;
-      flattenedMealTimes.monday_lunch_1230_100 = mealTimes.monday?.lunch?.includes('12:30-1:00 pm') || false;
-      flattenedMealTimes.monday_dinner_600_630 = mealTimes.monday?.dinner?.includes('6:00-6:30 pm') || false;
-      flattenedMealTimes.monday_dinner_630_700 = mealTimes.monday?.dinner?.includes('6:30-7:00 pm') || false;
-      flattenedMealTimes.monday_dinner_700_730 = mealTimes.monday?.dinner?.includes('7:00-7:30 pm') || false;
+      // Thursday slots (April 4, 2024)
+      flattenedMealTimes.thursday_lunch_1200_1230 = mealTimes.thursday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.thursday_lunch_1230_100 = mealTimes.thursday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.thursday_dinner_630_700 = mealTimes.thursday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.thursday_dinner_700_730 = mealTimes.thursday?.dinner?.includes('7:00-7:30 pm') || false;
+      flattenedMealTimes.thursday_dinner_730_800 = mealTimes.thursday?.dinner?.includes('7:30-8:00 pm') || false;
       
-      // Tuesday slots (April 2, 2024)
-      flattenedMealTimes.tuesday_lunch_1200_1230 = mealTimes.tuesday?.lunch?.includes('12:00-12:30 pm') || false;
-      flattenedMealTimes.tuesday_lunch_1230_100 = mealTimes.tuesday?.lunch?.includes('12:30-1:00 pm') || false;
-      flattenedMealTimes.tuesday_dinner_600_630 = mealTimes.tuesday?.dinner?.includes('6:00-6:30 pm') || false;
-      flattenedMealTimes.tuesday_dinner_630_700 = mealTimes.tuesday?.dinner?.includes('6:30-7:00 pm') || false;
-      flattenedMealTimes.tuesday_dinner_700_730 = mealTimes.tuesday?.dinner?.includes('7:00-7:30 pm') || false;
+      // Friday slots (April 5, 2024)
+      flattenedMealTimes.friday_lunch_1200_1230 = mealTimes.friday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.friday_lunch_1230_100 = mealTimes.friday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.friday_dinner_600_630 = mealTimes.friday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.friday_dinner_630_700 = mealTimes.friday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.friday_dinner_700_730 = mealTimes.friday?.dinner?.includes('7:00-7:30 pm') || false;
+      flattenedMealTimes.friday_dinner_730_800 = mealTimes.friday?.dinner?.includes('7:30-8:00 pm') || false;
       
-      // Wednesday slots (April 3, 2024)
-      flattenedMealTimes.wednesday_lunch_1200_1230 = mealTimes.wednesday?.lunch?.includes('12:00-12:30 pm') || false;
-      flattenedMealTimes.wednesday_lunch_1230_100 = mealTimes.wednesday?.lunch?.includes('12:30-1:00 pm') || false;
-      flattenedMealTimes.wednesday_dinner_600_630 = mealTimes.wednesday?.dinner?.includes('6:00-6:30 pm') || false;
-      flattenedMealTimes.wednesday_dinner_630_700 = mealTimes.wednesday?.dinner?.includes('6:30-7:00 pm') || false;
-      flattenedMealTimes.wednesday_dinner_700_730 = mealTimes.wednesday?.dinner?.includes('7:00-7:30 pm') || false;
+      // Saturday slots (April 6, 2024)
+      flattenedMealTimes.saturday_lunch_1200_1230 = mealTimes.saturday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.saturday_lunch_1230_100 = mealTimes.saturday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.saturday_dinner_600_630 = mealTimes.saturday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.saturday_dinner_630_700 = mealTimes.saturday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.saturday_dinner_700_730 = mealTimes.saturday?.dinner?.includes('7:00-7:30 pm') || false;
+      flattenedMealTimes.saturday_dinner_730_800 = mealTimes.saturday?.dinner?.includes('7:30-8:00 pm') || false;
       
       // Force Sherman as the only location for the pilot
       userData = {
@@ -1151,18 +1186,18 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Pilot 5 (April 1-3, 2024)
+  // Initialize available dates for Pilot 6 (April 4-6, 2024)
   useEffect(() => {
     // Get current system date to determine the appropriate year
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     
-    // Set available dates for April 1-3, 2024
-    // April 1 is Monday, April 2 is Tuesday, April 3 is Wednesday
+    // Set available dates for April 4-6, 2024
+    // April 4 is Thursday, April 5 is Friday, April 6 is Saturday
     setAvailableDates([
-      new Date(2024, 3, 1), // April 1, 2024 (Monday)
-      new Date(2024, 3, 2), // April 2, 2024 (Tuesday)
-      new Date(2024, 3, 3), // April 3, 2024 (Wednesday)
+      new Date(2024, 3, 4), // April 4, 2024 (Thursday)
+      new Date(2024, 3, 5), // April 5, 2024 (Friday)
+      new Date(2024, 3, 6), // April 6, 2024 (Saturday)
     ]);
     
     // Set current month to April of the appropriate year
@@ -1180,28 +1215,31 @@ export default forwardRef(function Home(props, ref) {
       setSelectedDate(date);
       
       // Map the selected date to the corresponding day key based on the date
-      // For April 2024, April 1 is Monday, 2 is Tuesday, 3 is Wednesday
+      // For April 2024, April 4 is Thursday, 5 is Friday, 6 is Saturday
       const day = date.getDate();
       let dayKey = '';
       
-      // Map April dates to the corresponding days for Pilot 5
+      // Map April dates to the corresponding days for Pilot 6
       if (date.getMonth() === 3 && date.getFullYear() === 2024) { // April is month 3 in JS
-        if (day === 1) {
-          dayKey = 'monday'; // April 1, 2024 is Monday
-        } else if (day === 2) {
-          dayKey = 'tuesday'; // April 2, 2024 is Tuesday
-        } else if (day === 3) {
-          dayKey = 'wednesday'; // April 3, 2024 is Wednesday
+        if (day === 4) {
+          dayKey = 'thursday'; // April 4, 2024 is Thursday
+        } else if (day === 5) {
+          dayKey = 'friday'; // April 5, 2024 is Friday
+        } else if (day === 6) {
+          dayKey = 'saturday'; // April 6, 2024 is Saturday
         }
       } else {
         // Fallback to day of week if not in April 2024
         const dayOfWeek = date.getDay();
         
         switch (dayOfWeek) {
+          case 0: dayKey = 'sunday'; break;
           case 1: dayKey = 'monday'; break;
           case 2: dayKey = 'tuesday'; break;
           case 3: dayKey = 'wednesday'; break;
-          case 0: dayKey = 'sunday'; break;
+          case 4: dayKey = 'thursday'; break;
+          case 5: dayKey = 'friday'; break;
+          case 6: dayKey = 'saturday'; break;
           default: dayKey = ''; break;
         }
       }
@@ -1219,6 +1257,15 @@ export default forwardRef(function Home(props, ref) {
   
   // Check if a date is available
   const isDateAvailable = (date) => {
+    // Don't allow dates in the past
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
+    
+    if (date < today) {
+      return false; // Date is in the past
+    }
+    
+    // Check if date is in our available dates list
     return availableDates.some(
       availableDate => formatDateToYYYYMMDD(availableDate) === formatDateToYYYYMMDD(date)
     );
@@ -1246,10 +1293,10 @@ export default forwardRef(function Home(props, ref) {
         {/* Only show full navigation on desktop */}
         {!isMobile ? (
           <nav style={{ display: 'flex', gap: '2rem' }}>
-            {isSignupEnabled && <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>}
+            {signupStatus && <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>}
           </nav>
         ) : (
-          isSignupEnabled && (
+          signupStatus && (
             <button 
               onClick={openModal}
         style={{
@@ -1280,7 +1327,7 @@ export default forwardRef(function Home(props, ref) {
           brandeis meal match
         </h2>
           <p style={heroTextStyle}>
-            {isSignupEnabled 
+            {signupStatus 
               ? "connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need." 
               : "our sign-ups are temporarily closed while we prepare for our next round."}
           </p>
@@ -1295,9 +1342,9 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 5: april 1-3 - thanks to our 100+ users! returning users welcome and encouraged to sign up again!
+            👥 pilot 5.5: weekends are back! april 4-6 - extended dinner hours (6:00-8:00 pm)! returning users welcome - and check out the new sign-up flow!
           </p>
-          {isSignupEnabled ? (
+          {signupStatus ? (
         <button
           onClick={openModal}
           style={{
@@ -2195,7 +2242,7 @@ export default forwardRef(function Home(props, ref) {
                         {/* Dinner times */}
                         <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
                         <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                          {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].map((timeSlot) => {
+                          {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm', '7:30-8:00 pm'].map((timeSlot) => {
                             const dayKey = selectedDay;
                             const timeKey = `${dayKey}-dinner-${timeSlot}`;
                             const isSelected = mealTimes[dayKey]?.dinner?.includes(timeSlot) || false;
@@ -2312,7 +2359,7 @@ export default forwardRef(function Home(props, ref) {
       )}
       
       {/* Add lock overlay when site is locked */}
-      {!isSignupEnabled && !modalOpen && (
+      {!signupStatus && !modalOpen && (
         <div 
           style={lockOverlayStyle} 
           onClick={() => document.body.style.overflow = 'auto'}

@@ -799,7 +799,7 @@ GRANT ALL ON public.feedback TO service_role;`);
     if (!profiles || profiles.length === 0) return null;
     
     // Compile all meal time selections
-    const days = ['sunday', 'monday', 'tuesday', 'wednesday'];
+    const days = ['sunday', 'thursday', 'friday', 'saturday'];
     const meals = ['lunch', 'dinner'];
     
     // Structure: days -> meals -> timeSlots -> users
@@ -1715,9 +1715,9 @@ const renderMealTimes = (mealTimes) => {
 
   // Add date information for each day
   const dayLabels = {
-    monday: "Monday (Apr 1)",
-    tuesday: "Tuesday (Apr 2)",
-    wednesday: "Wednesday (Apr 3)"
+    thursday: "Thursday (Apr 4)",
+    friday: "Friday (Apr 5)",
+    saturday: "Saturday (Apr 6)"
   };
 
   return Object.entries(mealTimes).map(([day, meals]) => {
