@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false  // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true  // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
