@@ -802,11 +802,14 @@ GRANT ALL ON public.feedback TO service_role;`);
     const days = ['sunday', 'thursday', 'friday', 'saturday'];
     const meals = ['lunch', 'dinner'];
     
-    // Add date information for each day
+    // Get current year
+    const currentYear = new Date().getFullYear();
+    
+    // Add date information for each day with current year
     const dayLabels = {
-      thursday: "Thursday (Apr 4)",
-      friday: "Friday (Apr 5)",
-      saturday: "Saturday (Apr 6)"
+      thursday: `Thursday (Apr 4, ${currentYear})`,
+      friday: `Friday (Apr 5, ${currentYear})`,
+      saturday: `Saturday (Apr 6, ${currentYear})`
     };
     
     // Structure: days -> meals -> timeSlots -> users
@@ -1720,11 +1723,14 @@ const renderMealTimes = (mealTimes) => {
     return <span className="no-data">No meal times specified</span>;
   }
 
+  // Get current year
+  const currentYear = new Date().getFullYear();
+
   // Add date information for each day
   const dayLabels = {
-    thursday: "Thursday (Apr 4)",
-    friday: "Friday (Apr 5)",
-    saturday: "Saturday (Apr 6)"
+    thursday: `Thursday (Apr 4, ${currentYear})`,
+    friday: `Friday (Apr 5, ${currentYear})`,
+    saturday: `Saturday (Apr 6, ${currentYear})`
   };
 
   return Object.entries(mealTimes).map(([day, meals]) => {

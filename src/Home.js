@@ -807,25 +807,28 @@ export default forwardRef(function Home(props, ref) {
       return;
     }
 
-      // Create a deep copy of mealTimes to include date information
+      // Deep copy the meal times
       const mealTimesWithDates = JSON.parse(JSON.stringify(mealTimes));
       
-      // Update date assignments for April 2024
+      // Get current year
+      const currentYear = new Date().getFullYear();
+      
+      // Update date assignments for April of current year
       // April 4 is Thursday, April 5 is Friday, April 6 is Saturday
       if (mealTimesWithDates.thursday) {
-        mealTimesWithDates.thursday.date = "April 4, 2024";
+        mealTimesWithDates.thursday.date = `April 4, ${currentYear}`;
       }
       if (mealTimesWithDates.friday) {
-        mealTimesWithDates.friday.date = "April 5, 2024";
+        mealTimesWithDates.friday.date = `April 5, ${currentYear}`;
       }
       if (mealTimesWithDates.saturday) {
-        mealTimesWithDates.saturday.date = "April 6, 2024";
+        mealTimesWithDates.saturday.date = `April 6, ${currentYear}`;
       }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Thursday slots (April 4, 2024)
+      // Thursday slots (April 4)
       flattenedMealTimes.thursday_lunch_1200_1230 = mealTimes.thursday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.thursday_lunch_1230_100 = mealTimes.thursday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
@@ -833,7 +836,7 @@ export default forwardRef(function Home(props, ref) {
       flattenedMealTimes.thursday_dinner_700_730 = mealTimes.thursday?.dinner?.includes('7:00-7:30 pm') || false;
       flattenedMealTimes.thursday_dinner_730_800 = mealTimes.thursday?.dinner?.includes('7:30-8:00 pm') || false;
       
-      // Friday slots (April 5, 2024)
+      // Friday slots (April 5)
       flattenedMealTimes.friday_lunch_1200_1230 = mealTimes.friday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.friday_lunch_1230_100 = mealTimes.friday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.friday_dinner_600_630 = mealTimes.friday?.dinner?.includes('6:00-6:30 pm') || false;
@@ -841,7 +844,7 @@ export default forwardRef(function Home(props, ref) {
       flattenedMealTimes.friday_dinner_700_730 = mealTimes.friday?.dinner?.includes('7:00-7:30 pm') || false;
       flattenedMealTimes.friday_dinner_730_800 = mealTimes.friday?.dinner?.includes('7:30-8:00 pm') || false;
       
-      // Saturday slots (April 6, 2024)
+      // Saturday slots (April 6)
       flattenedMealTimes.saturday_lunch_1200_1230 = mealTimes.saturday?.lunch?.includes('12:00-12:30 pm') || false;
       flattenedMealTimes.saturday_lunch_1230_100 = mealTimes.saturday?.lunch?.includes('12:30-1:00 pm') || false;
       flattenedMealTimes.saturday_dinner_600_630 = mealTimes.saturday?.dinner?.includes('6:00-6:30 pm') || false;
@@ -1154,22 +1157,22 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Pilot 5 (April 4-6, 2024)
+  // Initialize available dates for Pilot 6 (April 4-6, 2025)
   useEffect(() => {
-    // Get current system date to determine the appropriate year and current date
+    // Get current system date to determine the appropriate year
     const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
+    const currentYear = currentDate.getFullYear(); // Will be 2025
     
-    // Set available dates for April 4-6, 2024
+    // Set available dates for April 4-6 of the current year
     // April 4 is Thursday, April 5 is Friday, April 6 is Saturday
     setAvailableDates([
-      new Date(2024, 3, 4), // April 4, 2024 (Thursday)
-      new Date(2024, 3, 5), // April 5, 2024 (Friday)
-      new Date(2024, 3, 6), // April 6, 2024 (Saturday)
+      new Date(currentYear, 3, 4), // April 4, current year (Thursday)
+      new Date(currentYear, 3, 5), // April 5, current year (Friday)
+      new Date(currentYear, 3, 6), // April 6, current year (Saturday)
     ]);
     
-    // Set current month to April of the appropriate year
-    setCurrentMonth(new Date(2024, 3, 1));
+    // Set current month to April of the current year
+    setCurrentMonth(new Date(currentYear, 3, 1));
   }, []);
   
   // Date selection handler
@@ -1183,21 +1186,23 @@ export default forwardRef(function Home(props, ref) {
       setSelectedDate(date);
       
       // Map the selected date to the corresponding day key based on the date
-      // For April 2024, April 4 is Thursday, 5 is Friday, 6 is Saturday
+      // For current year April, April 4 is Thursday, 5 is Friday, 6 is Saturday
       const day = date.getDate();
+      const month = date.getMonth();
+      const year = date.getFullYear();
       let dayKey = '';
       
-      // Map April dates to the corresponding days for Pilot 5
-      if (date.getMonth() === 3 && date.getFullYear() === 2024) { // April is month 3 in JS
+      // Map April dates to the corresponding days for Pilot 6
+      if (month === 3) { // April is month 3 in JS
         if (day === 4) {
-          dayKey = 'thursday'; // April 4, 2024 is Thursday
+          dayKey = 'thursday'; // April 4 is Thursday
         } else if (day === 5) {
-          dayKey = 'friday'; // April 5, 2024 is Friday
+          dayKey = 'friday'; // April 5 is Friday
         } else if (day === 6) {
-          dayKey = 'saturday'; // April 6, 2024 is Saturday
+          dayKey = 'saturday'; // April 6 is Saturday
         }
       } else {
-        // Fallback to day of week if not in April 2024
+        // Fallback to day of week if not in April
         const dayOfWeek = date.getDay();
         
         switch (dayOfWeek) {
@@ -1229,15 +1234,12 @@ export default forwardRef(function Home(props, ref) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    // If date is in the past, it's not available
-    if (date < today) {
-      return false;
-    }
+    // Get the available dates in YYYYMMDD format for easier comparison
+    const availableDatesFormatted = availableDates.map(d => formatDateToYYYYMMDD(d));
     
-    // Check if date is in availableDates array
-    return availableDates.some(
-      availableDate => formatDateToYYYYMMDD(availableDate) === formatDateToYYYYMMDD(date)
-    );
+    // Check if the date is in the formatted available dates list
+    const dateFormatted = formatDateToYYYYMMDD(date);
+    return availableDatesFormatted.includes(dateFormatted);
   };
   
   // Check if a date is selected
@@ -1311,7 +1313,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 6: april 4-6 - thanks to our 100+ users! returning users welcome and encouraged to sign up again!
+            👥 pilot 6: april 4-6, {new Date().getFullYear()} - thanks to our 100+ users! returning users welcome and encouraged to sign up again!
           </p>
           {isSignupEnabled ? (
         <button
