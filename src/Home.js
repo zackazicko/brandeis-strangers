@@ -1,6 +1,7 @@
 // eslint-disable-next-line
 import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import supabase from './supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
@@ -315,124 +316,56 @@ const lockOverlayStyle = {
   backdropFilter: 'blur(5px)'
 };
 
-// Add date utilities at the top of the file
-const PILOT_DATES = {
-  start: new Date(2024, 3, 1), // April 1, 2024
-  end: new Date(2024, 3, 3),   // April 3, 2024
+// Calendar styles
+const calendarContainerStyle = {
+  width: '100%',
+  marginBottom: '1.5rem',
+  fontFamily: '"Courier New", Courier, monospace',
 };
 
-// Helper function to format dates consistently
-function formatDateKey(date) {
-  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-  return days[date.getDay()];
-}
+const calendarHeaderStyle = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: '0.8rem',
+};
 
-// Helper to check if a date is within pilot range
-function isDateInPilot(date) {
-  return date >= PILOT_DATES.start && date <= PILOT_DATES.end;
-}
+const calendarGridStyle = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(7, 1fr)',
+  gap: '0.5rem',
+};
 
-// Helper to format display date
-function formatDisplayDate(date) {
-  const month = date.toLocaleString('default', { month: 'short' }).toLowerCase();
-  return `${formatDateKey(date)} (${month} ${date.getDate()})`;
-}
+const calendarDayStyle = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '2.5rem',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  fontWeight: 'normal',
+  transition: 'all 0.3s ease',
+};
 
-// Calendar day component
-const CalendarDay = React.memo(({ date, isSelected, onClick, isAvailable }) => {
-  const dayStyle = {
-    width: '40px',
-    height: '40px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: isAvailable ? 'pointer' : 'default',
-    borderRadius: '50%',
-    backgroundColor: isSelected ? '#003865' : isAvailable ? '#e6f2ff' : 'transparent',
-    color: isSelected ? 'white' : isAvailable ? '#003865' : '#999',
-    border: isAvailable ? '2px solid #003865' : 'none',
-    margin: '2px',
-    fontSize: '0.9rem',
-    transition: 'all 0.2s ease'
-  };
+const calendarDayNameStyle = {
+  textAlign: 'center',
+  fontSize: '0.8rem',
+  marginBottom: '0.5rem',
+  color: '#666',
+  textTransform: 'lowercase',
+};
 
-  return (
-    <div style={dayStyle} onClick={isAvailable ? onClick : undefined}>
-      {date.getDate()}
-    </div>
-  );
+const createDayButtonStyle = (isAvailable, isSelected) => ({
+  ...calendarDayStyle,
+  backgroundColor: isSelected ? '#003865' : isAvailable ? '#e6f7ff' : '#f0f0f0',
+  color: isSelected ? 'white' : isAvailable ? '#003865' : '#999',
+  border: isAvailable ? '1px solid #003865' : '1px solid transparent',
+  cursor: isAvailable ? 'pointer' : 'default',
 });
 
-// Time slot selection component
-const TimeSlotSelector = React.memo(({ selectedDate, mealTimes, onTimeSelect }) => {
-  const dateKey = formatDateKey(selectedDate);
-  const displayDate = formatDisplayDate(selectedDate);
-
-  const timeSlotStyle = {
-    padding: '0.5rem 1rem',
-    margin: '0.25rem',
-    borderRadius: '20px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease'
-  };
-
-  return (
-    <div style={{
-      backgroundColor: '#f0f0f0',
-      borderRadius: '20px',
-      padding: '1rem',
-      marginTop: '1rem'
-    }}>
-      <div style={{ fontWeight: 'bold', marginBottom: '1rem' }}>{displayDate}</div>
-      
-      <div>
-        <div style={{ fontWeight: 'bold', color: '#666', marginBottom: '0.5rem' }}>lunch</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-          {['12:00-12:30 pm', '12:30-1:00 pm'].map(time => {
-            const isSelected = mealTimes[dateKey]?.lunch?.includes(time);
-            return (
-              <div
-                key={`${dateKey}-lunch-${time}`}
-                style={{
-                  ...timeSlotStyle,
-                  backgroundColor: isSelected ? '#003865' : '#fff',
-                  color: isSelected ? '#fff' : '#003865',
-                  border: `2px solid ${isSelected ? '#003865' : '#ccc'}`
-                }}
-                onClick={() => onTimeSelect(dateKey, 'lunch', time)}
-              >
-                {time}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div style={{ marginTop: '1rem' }}>
-        <div style={{ fontWeight: 'bold', color: '#666', marginBottom: '0.5rem' }}>dinner</div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
-          {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].map(time => {
-            const isSelected = mealTimes[dateKey]?.dinner?.includes(time);
-            return (
-              <div
-                key={`${dateKey}-dinner-${time}`}
-                style={{
-                  ...timeSlotStyle,
-                  backgroundColor: isSelected ? '#003865' : '#fff',
-                  color: isSelected ? '#fff' : '#003865',
-                  border: `2px solid ${isSelected ? '#003865' : '#ccc'}`
-                }}
-                onClick={() => onTimeSelect(dateKey, 'meal', time)}
-              >
-                {time}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-});
+const timeSelectionContainerStyle = {
+  marginTop: '1.5rem',
+};
 
 // Export the Home component with forwardRef to allow ref access from parent components
 export default forwardRef(function Home(props, ref) {
@@ -638,7 +571,11 @@ export default forwardRef(function Home(props, ref) {
   const [guestSwipe, setGuestSwipe] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
-  const [mealTimes, setMealTimes] = useState({});
+  const [mealTimes, setMealTimes] = useState({
+    monday: { lunch: [], dinner: [] },
+    tuesday: { lunch: [], dinner: [] },
+    wednesday: { lunch: [], dinner: [] }
+  });
   // New state for time preferences text field
   const [timePreferences, setTimePreferences] = useState('');
 
@@ -851,39 +788,63 @@ export default forwardRef(function Home(props, ref) {
       
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
-      setLoading(false);
-      return;
-    }
+        setLoading(false);
+        return;
+      }
       
-      // Basic validation - check if at least one meal time is selected across all days
-      const hasSelectedMealTime = Object.values(mealTimes).some(dayTimes => 
-        (dayTimes.lunch?.length > 0 || dayTimes.dinner?.length > 0)
-      );
+      // Check if user has selected any meal times
+      const hasSelectedMealTimes = 
+        (mealTimes.monday?.lunch?.length > 0 ||
+         mealTimes.monday?.dinner?.length > 0 ||
+         mealTimes.tuesday?.lunch?.length > 0 ||
+         mealTimes.tuesday?.dinner?.length > 0 ||
+         mealTimes.wednesday?.lunch?.length > 0 ||
+         mealTimes.wednesday?.dinner?.length > 0);
       
-      if (!name || !emailInput || !phone || !hasSelectedMealTime) {
+      if (!name || !emailInput || !phone || !hasSelectedMealTimes) {
         alert('Please fill in all required fields and select at least one time slot.');
         setLoading(false);
         return;
       }
       
+      // Create a deep copy of mealTimes to include date information
+      const mealTimesWithDates = JSON.parse(JSON.stringify(mealTimes));
+      
+      // Update date assignments for April 2024
+      // April 1 is Monday, April 2 is Tuesday, April 3 is Wednesday
+      if (mealTimesWithDates.monday) {
+        mealTimesWithDates.monday.date = "April 1, 2024";
+      }
+      if (mealTimesWithDates.tuesday) {
+        mealTimesWithDates.tuesday.date = "April 2, 2024";
+      }
+      if (mealTimesWithDates.wednesday) {
+        mealTimesWithDates.wednesday.date = "April 3, 2024";
+      }
+      
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
-      Object.entries(mealTimes).forEach(([dateKey, times]) => {
-        ['lunch', 'dinner'].forEach(meal => {
-          ['12:00-12:30 pm', '12:30-1:00 pm'].forEach(time => {
-            if (meal === 'lunch') {
-              flattenedMealTimes[`${dateKey}_lunch_${time.replace(/[:\s]/g, '')}`] = 
-                times.lunch?.includes(time) || false;
-            }
-          });
-          ['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].forEach(time => {
-            if (meal === 'dinner') {
-              flattenedMealTimes[`${dateKey}_dinner_${time.replace(/[:\s]/g, '')}`] = 
-                times.dinner?.includes(time) || false;
-            }
-          });
-        });
-      });
+      
+      // Monday slots (April 1, 2024)
+      flattenedMealTimes.monday_lunch_1200_1230 = mealTimes.monday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.monday_lunch_1230_100 = mealTimes.monday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.monday_dinner_600_630 = mealTimes.monday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.monday_dinner_630_700 = mealTimes.monday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.monday_dinner_700_730 = mealTimes.monday?.dinner?.includes('7:00-7:30 pm') || false;
+      
+      // Tuesday slots (April 2, 2024)
+      flattenedMealTimes.tuesday_lunch_1200_1230 = mealTimes.tuesday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.tuesday_lunch_1230_100 = mealTimes.tuesday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.tuesday_dinner_600_630 = mealTimes.tuesday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.tuesday_dinner_630_700 = mealTimes.tuesday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.tuesday_dinner_700_730 = mealTimes.tuesday?.dinner?.includes('7:00-7:30 pm') || false;
+      
+      // Wednesday slots (April 3, 2024)
+      flattenedMealTimes.wednesday_lunch_1200_1230 = mealTimes.wednesday?.lunch?.includes('12:00-12:30 pm') || false;
+      flattenedMealTimes.wednesday_lunch_1230_100 = mealTimes.wednesday?.lunch?.includes('12:30-1:00 pm') || false;
+      flattenedMealTimes.wednesday_dinner_600_630 = mealTimes.wednesday?.dinner?.includes('6:00-6:30 pm') || false;
+      flattenedMealTimes.wednesday_dinner_630_700 = mealTimes.wednesday?.dinner?.includes('6:30-7:00 pm') || false;
+      flattenedMealTimes.wednesday_dinner_700_730 = mealTimes.wednesday?.dinner?.includes('7:00-7:30 pm') || false;
       
       // Force Sherman as the only location for the pilot
       userData = {
@@ -896,7 +857,7 @@ export default forwardRef(function Home(props, ref) {
         meal_plan: mealPlan,
         guest_swipe: guestSwipe,
         dining_locations: ['sherman'], // Force Sherman as the only location
-        meal_times_json: JSON.stringify(mealTimes),
+        meal_times_json: JSON.stringify(mealTimesWithDates),
         meal_times_flattened: JSON.stringify(flattenedMealTimes),
         personality_type: personalityType,
         humor_type: humorType,
@@ -1175,6 +1136,99 @@ export default forwardRef(function Home(props, ref) {
       setIsSubmitting(false);
     }
   }
+
+  // Calendar state
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [availableDates, setAvailableDates] = useState([]);
+  
+  // Format date helper function
+  const formatDateToYYYYMMDD = (date) => {
+    if (!date) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  // Initialize available dates for Pilot 5 (April 1-3, 2024)
+  useEffect(() => {
+    // Get current system date to determine the appropriate year
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    
+    // Set available dates for April 1-3, 2024
+    // April 1 is Monday, April 2 is Tuesday, April 3 is Wednesday
+    setAvailableDates([
+      new Date(2024, 3, 1), // April 1, 2024 (Monday)
+      new Date(2024, 3, 2), // April 2, 2024 (Tuesday)
+      new Date(2024, 3, 3), // April 3, 2024 (Wednesday)
+    ]);
+    
+    // Set current month to April of the appropriate year
+    setCurrentMonth(new Date(2024, 3, 1));
+  }, []);
+  
+  // Date selection handler
+  const handleDateSelect = (date) => {
+    // Check if the date is available
+    const isAvailable = availableDates.some(
+      availableDate => formatDateToYYYYMMDD(availableDate) === formatDateToYYYYMMDD(date)
+    );
+    
+    if (isAvailable) {
+      setSelectedDate(date);
+      
+      // Map the selected date to the corresponding day key based on the date
+      // For April 2024, April 1 is Monday, 2 is Tuesday, 3 is Wednesday
+      const day = date.getDate();
+      let dayKey = '';
+      
+      // Map April dates to the corresponding days for Pilot 5
+      if (date.getMonth() === 3 && date.getFullYear() === 2024) { // April is month 3 in JS
+        if (day === 1) {
+          dayKey = 'monday'; // April 1, 2024 is Monday
+        } else if (day === 2) {
+          dayKey = 'tuesday'; // April 2, 2024 is Tuesday
+        } else if (day === 3) {
+          dayKey = 'wednesday'; // April 3, 2024 is Wednesday
+        }
+      } else {
+        // Fallback to day of week if not in April 2024
+        const dayOfWeek = date.getDay();
+        
+        switch (dayOfWeek) {
+          case 1: dayKey = 'monday'; break;
+          case 2: dayKey = 'tuesday'; break;
+          case 3: dayKey = 'wednesday'; break;
+          case 0: dayKey = 'sunday'; break;
+          default: dayKey = ''; break;
+        }
+      }
+      
+      setSelectedDay(dayKey);
+    }
+  };
+  
+  // Format date for display
+  const formatDate = (date) => {
+    if (!date) return '';
+    const options = { weekday: 'long', month: 'short', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options).toLowerCase();
+  };
+  
+  // Check if a date is available
+  const isDateAvailable = (date) => {
+    return availableDates.some(
+      availableDate => formatDateToYYYYMMDD(availableDate) === formatDateToYYYYMMDD(date)
+    );
+  };
+  
+  // Check if a date is selected
+  const isDateSelected = (date) => {
+    if (!selectedDate || !date) return false;
+    return formatDateToYYYYMMDD(selectedDate) === formatDateToYYYYMMDD(date);
+  };
 
   // ---------------------------
   // RENDER
@@ -1989,17 +2043,206 @@ export default forwardRef(function Home(props, ref) {
                     select any time slots you are available
                   </p>
                   
-                  <Calendar
-                    selectedDate={selectedDay}
-                    onDateSelect={setSelectedDay}
-                  />
+                  {/* Calendar for date selection */}
+                  <div style={calendarContainerStyle}>
+                    <div style={calendarHeaderStyle}>
+                      <button 
+                        onClick={() => {
+                          const newMonth = new Date(currentMonth);
+                          newMonth.setMonth(newMonth.getMonth() - 1);
+                          setCurrentMonth(newMonth);
+                        }}
+                        style={{
+                          ...backBtnStyle,
+                          padding: '0.3rem 0.8rem',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        Previous
+                      </button>
+                      <h3 style={{ margin: 0, fontSize: '1rem' }}>
+                        {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }).toLowerCase()}
+                      </h3>
+                      <button 
+                        onClick={() => {
+                          const newMonth = new Date(currentMonth);
+                          newMonth.setMonth(newMonth.getMonth() + 1);
+                          setCurrentMonth(newMonth);
+                        }}
+                        style={{
+                          ...nextBtnStyle,
+                          padding: '0.3rem 0.8rem',
+                          fontSize: '0.8rem'
+                        }}
+                      >
+                        Next
+                      </button>
+                    </div>
+                    
+                    <div style={calendarGridStyle}>
+                      {/* Day names */}
+                      {['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].map(day => (
+                        <div key={day} style={calendarDayNameStyle}>
+                          {day}
+                        </div>
+                      ))}
+                      
+                      {/* Calendar days */}
+                      {(() => {
+                        // Get the first day of the month and the number of days
+                        const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+                        const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+                        
+                        // Create an array for all days in the grid
+                        const days = [];
+                        
+                        // Add empty cells for days before the first day of the month
+                        for (let i = 0; i < firstDay.getDay(); i++) {
+                          days.push(<div key={`empty-${i}`} style={calendarDayStyle}></div>);
+                        }
+                        
+                        // Add days of the month
+                        for (let day = 1; day <= lastDay.getDate(); day++) {
+                          const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+                          const available = isDateAvailable(date);
+                          const selected = isDateSelected(date);
+                          
+                          days.push(
+                            <div 
+                              key={`day-${day}`} 
+                              style={createDayButtonStyle(available, selected)}
+                              onClick={() => available && handleDateSelect(date)}
+                            >
+                              {day}
+                            </div>
+                          );
+                        }
+                        
+                        return days;
+                      })()}
+                    </div>
+                  </div>
                   
-                  {selectedDay && isDateInPilot(selectedDay) && (
-                    <TimeSlotSelector
-                      selectedDate={selectedDay}
-                      mealTimes={mealTimes}
-                      onTimeSelect={handleTimeSelect}
-                    />
+                  {/* Time slots selection for the selected date */}
+                  {selectedDate && (
+                    <div style={timeSelectionContainerStyle}>
+                      <h4 style={{ margin: '0 0 1rem 0', fontSize: '1rem', textAlign: 'center' }}>
+                        {formatDate(selectedDate)}
+                      </h4>
+                      
+                      <div
+                        style={{
+                          position: 'relative',
+                          margin: '0.5rem',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '20px',
+                          backgroundColor: '#f0f0f0',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                        }}
+                      >
+                        {/* Lunch times */}
+                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
+                        <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                          {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
+                            const dayKey = selectedDay;
+                            const timeKey = `${dayKey}-lunch-${timeSlot}`;
+                            const isSelected = mealTimes[dayKey]?.lunch?.includes(timeSlot) || false;
+                            
+                            return (
+                              <div
+                                key={timeKey}
+                                style={{
+                                  ...bubbleStyle,
+                                  backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                  color: isSelected ? 'white' : '#333',
+                                  fontSize: '0.85rem',
+                                  padding: '0.4rem 0.8rem',
+                                }}
+                                onClick={() => {
+                                  if (!dayKey) return;
+                                  
+                                  // Create a deep copy of mealTimes
+                                  const updatedMealTimes = { ...mealTimes };
+                                  
+                                  // Initialize day and meal if needed
+                                  if (!updatedMealTimes[dayKey]) {
+                                    updatedMealTimes[dayKey] = {};
+                                  }
+                                  if (!updatedMealTimes[dayKey].lunch) {
+                                    updatedMealTimes[dayKey].lunch = [];
+                                  }
+                                  
+                                  // Toggle time slot
+                                  if (updatedMealTimes[dayKey].lunch.includes(timeSlot)) {
+                                    updatedMealTimes[dayKey].lunch = updatedMealTimes[dayKey].lunch.filter(
+                                      time => time !== timeSlot
+                                    );
+                                  } else {
+                                    updatedMealTimes[dayKey].lunch.push(timeSlot);
+                                  }
+                                  
+                                  setMealTimes(updatedMealTimes);
+                                }}
+                              >
+                                {timeSlot}
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Dinner times */}
+                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
+                        <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                          {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm'].map((timeSlot) => {
+                            const dayKey = selectedDay;
+                            const timeKey = `${dayKey}-dinner-${timeSlot}`;
+                            const isSelected = mealTimes[dayKey]?.dinner?.includes(timeSlot) || false;
+                            
+                            return (
+                              <div
+                                key={timeKey}
+                                style={{
+                                  ...bubbleStyle,
+                                  backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                  color: isSelected ? 'white' : '#333',
+                                  fontSize: '0.85rem',
+                                  padding: '0.4rem 0.8rem',
+                                }}
+                                onClick={() => {
+                                  if (!dayKey) return;
+                                  
+                                  // Create a deep copy of mealTimes
+                                  const updatedMealTimes = { ...mealTimes };
+                                  
+                                  // Initialize day and meal if needed
+                                  if (!updatedMealTimes[dayKey]) {
+                                    updatedMealTimes[dayKey] = {};
+                                  }
+                                  if (!updatedMealTimes[dayKey].dinner) {
+                                    updatedMealTimes[dayKey].dinner = [];
+                                  }
+                                  
+                                  // Toggle time slot
+                                  if (updatedMealTimes[dayKey].dinner.includes(timeSlot)) {
+                                    updatedMealTimes[dayKey].dinner = updatedMealTimes[dayKey].dinner.filter(
+                                      time => time !== timeSlot
+                                    );
+                                  } else {
+                                    updatedMealTimes[dayKey].dinner.push(timeSlot);
+                                  }
+                                  
+                                  setMealTimes(updatedMealTimes);
+                                }}
+                              >
+                                {timeSlot}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
                 
@@ -2224,102 +2467,3 @@ export default forwardRef(function Home(props, ref) {
     </div>
   );
 });
-
-// Calendar component
-const Calendar = React.memo(({ selectedDate, onDateSelect }) => {
-  const [currentMonth, setCurrentMonth] = useState(new Date(PILOT_DATES.start));
-  
-  const daysInMonth = new Date(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth() + 1,
-    0
-  ).getDate();
-
-  const firstDayOfMonth = new Date(
-    currentMonth.getFullYear(),
-    currentMonth.getMonth(),
-    1
-  ).getDay();
-
-  const days = [];
-  for (let i = 0; i < firstDayOfMonth; i++) {
-    days.push(null);
-  }
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push(new Date(currentMonth.getFullYear(), currentMonth.getMonth(), i));
-  }
-
-  return (
-    <div style={{
-      width: '100%',
-      maxWidth: '300px',
-      margin: '0 auto'
-    }}>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '4px',
-        textAlign: 'center',
-        marginBottom: '8px'
-      }}>
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-          <div key={day} style={{ fontSize: '0.8rem', color: '#666' }}>{day}</div>
-        ))}
-      </div>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(7, 1fr)',
-        gap: '4px',
-        justifyItems: 'center'
-      }}>
-        {days.map((date, index) => {
-          if (!date) {
-            return <div key={`empty-${index}`} />;
-          }
-          
-          const isAvailable = isDateInPilot(date);
-          const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
-          
-          return (
-            <CalendarDay
-              key={date.toISOString()}
-              date={date}
-              isSelected={isSelected}
-              isAvailable={isAvailable}
-              onClick={() => onDateSelect(date)}
-            />
-          );
-        })}
-      </div>
-    </div>
-  );
-});
-
-// Function to handle date selection
-const handleDateSelect = (date) => {
-  setSelectedDay(date);
-};
-
-// Function to handle time slot selection
-const handleTimeSelect = (dateKey, mealType, timeSlot) => {
-  setMealTimes(prev => {
-    const newMealTimes = { ...prev };
-    if (!newMealTimes[dateKey]) {
-      newMealTimes[dateKey] = { lunch: [], dinner: [] };
-    }
-    if (!newMealTimes[dateKey][mealType]) {
-      newMealTimes[dateKey][mealType] = [];
-    }
-
-    const timeSlots = newMealTimes[dateKey][mealType];
-    const timeSlotIndex = timeSlots.indexOf(timeSlot);
-
-    if (timeSlotIndex === -1) {
-      timeSlots.push(timeSlot);
-    } else {
-      timeSlots.splice(timeSlotIndex, 1);
-    }
-
-    return newMealTimes;
-  });
-};
