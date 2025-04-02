@@ -5,40 +5,8 @@ import { useNavigate } from 'react-router-dom';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: true,  // Base setting - can be overridden by time-based checks
-  AUTO_CLOSE: true,      // Whether to automatically close based on date/time
-  CLOSE_DAY: 5,          // Friday (0 = Sunday, 5 = Friday)
-  CLOSE_HOUR: 12,        // 12pm (noon)
-  CLOSE_MINUTE: 0        // 0 minutes
+  SIGNUP_ENABLED: false  // Set to true to enable signups, false to lock the site
 };
-
-// Determine if signup should be enabled based on configuration and current time
-const isSignupEnabled = (() => {
-  // If signup is explicitly disabled, respect that setting
-  if (!CONFIG.SIGNUP_ENABLED) return false;
-  
-  // If auto-close is disabled, just use the base setting
-  if (!CONFIG.AUTO_CLOSE) return CONFIG.SIGNUP_ENABLED;
-  
-  // Check if we should auto-close based on current date/time
-  const now = new Date();
-  const currentDay = now.getDay(); // 0-6, 0 = Sunday, 5 = Friday
-  const currentHour = now.getHours(); // 0-23
-  const currentMinute = now.getMinutes(); // 0-59
-  
-  // If it's after the specified close day
-  if (currentDay > CONFIG.CLOSE_DAY) return false;
-  
-  // If it's on the close day and after/at the close time
-  if (currentDay === CONFIG.CLOSE_DAY && 
-     (currentHour > CONFIG.CLOSE_HOUR || 
-      (currentHour === CONFIG.CLOSE_HOUR && currentMinute >= CONFIG.CLOSE_MINUTE))) {
-    return false;
-  }
-  
-  // Otherwise, signup is enabled
-  return true;
-})();
 
 // Move these style creator functions to the top, outside component
 const createBtnStyle = (isMobile = false) => ({
@@ -539,7 +507,7 @@ export default forwardRef(function Home(props, ref) {
   // ---------------------------
   const [modalOpen, setModalOpen] = useState(false);
   // Use forceSignupEnabled from props if provided, otherwise use CONFIG
-  const [signupStatus, setSignupStatus] = useState(forceSignupEnabled || isSignupEnabled);
+  const [isSignupEnabled, setIsSignupEnabled] = useState(forceSignupEnabled || CONFIG.SIGNUP_ENABLED);
   
   // Expose methods via ref for parent components to call
   useImperativeHandle(ref, () => ({
@@ -551,13 +519,13 @@ export default forwardRef(function Home(props, ref) {
   }));
   
   function openModal() {
-    if (forceSignupEnabled || signupStatus) {
-      setModalOpen(true);
-      document.body.style.overflow = 'hidden';
+    if (forceSignupEnabled || isSignupEnabled) {
+    setModalOpen(true);
+    document.body.style.overflow = 'hidden';
     } else {
       // If signups are disabled, don't open the modal
       alert('Signups are currently closed. Please check back later!');
-    }
+  }
   }
   
   function closeModal() {
@@ -821,8 +789,8 @@ export default forwardRef(function Home(props, ref) {
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
         setLoading(false);
-        return;
-      }
+      return;
+    }
       
       // Check if user has selected any meal times
       const hasSelectedMealTimes = 
@@ -836,9 +804,9 @@ export default forwardRef(function Home(props, ref) {
       if (!name || !emailInput || !phone || !hasSelectedMealTimes) {
         alert('Please fill in all required fields and select at least one time slot.');
         setLoading(false);
-        return;
-      }
-      
+      return;
+    }
+
       // Create a deep copy of mealTimes to include date information
       const mealTimesWithDates = JSON.parse(JSON.stringify(mealTimes));
       
@@ -1186,9 +1154,9 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Pilot 6 (April 4-6, 2024)
+  // Initialize available dates for Pilot 5 (April 4-6, 2024)
   useEffect(() => {
-    // Get current system date to determine the appropriate year
+    // Get current system date to determine the appropriate year and current date
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     
@@ -1219,7 +1187,7 @@ export default forwardRef(function Home(props, ref) {
       const day = date.getDate();
       let dayKey = '';
       
-      // Map April dates to the corresponding days for Pilot 6
+      // Map April dates to the corresponding days for Pilot 5
       if (date.getMonth() === 3 && date.getFullYear() === 2024) { // April is month 3 in JS
         if (day === 4) {
           dayKey = 'thursday'; // April 4, 2024 is Thursday
@@ -1233,13 +1201,13 @@ export default forwardRef(function Home(props, ref) {
         const dayOfWeek = date.getDay();
         
         switch (dayOfWeek) {
-          case 0: dayKey = 'sunday'; break;
           case 1: dayKey = 'monday'; break;
           case 2: dayKey = 'tuesday'; break;
           case 3: dayKey = 'wednesday'; break;
           case 4: dayKey = 'thursday'; break;
           case 5: dayKey = 'friday'; break;
           case 6: dayKey = 'saturday'; break;
+          case 0: dayKey = 'sunday'; break;
           default: dayKey = ''; break;
         }
       }
@@ -1257,15 +1225,16 @@ export default forwardRef(function Home(props, ref) {
   
   // Check if a date is available
   const isDateAvailable = (date) => {
-    // Don't allow dates in the past
+    // Get the current date, reset time to start of day
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset to start of day for accurate comparison
+    today.setHours(0, 0, 0, 0);
     
+    // If date is in the past, it's not available
     if (date < today) {
-      return false; // Date is in the past
+      return false;
     }
     
-    // Check if date is in our available dates list
+    // Check if date is in availableDates array
     return availableDates.some(
       availableDate => formatDateToYYYYMMDD(availableDate) === formatDateToYYYYMMDD(date)
     );
@@ -1293,10 +1262,10 @@ export default forwardRef(function Home(props, ref) {
         {/* Only show full navigation on desktop */}
         {!isMobile ? (
           <nav style={{ display: 'flex', gap: '2rem' }}>
-            {signupStatus && <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>}
+            {isSignupEnabled && <a href="#signup" onClick={openModal} style={navLinkStyle}>sign up</a>}
           </nav>
         ) : (
-          signupStatus && (
+          isSignupEnabled && (
             <button 
               onClick={openModal}
         style={{
@@ -1327,7 +1296,7 @@ export default forwardRef(function Home(props, ref) {
           brandeis meal match
         </h2>
           <p style={heroTextStyle}>
-            {signupStatus 
+            {isSignupEnabled 
               ? "connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need." 
               : "our sign-ups are temporarily closed while we prepare for our next round."}
           </p>
@@ -1342,9 +1311,9 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 5.5: weekends are back! april 4-6 - extended dinner hours (6:00-8:00 pm)! returning users welcome - and check out the new sign-up flow!
+            👥 pilot 6: april 4-6 - thanks to our 100+ users! returning users welcome and encouraged to sign up again!
           </p>
-          {signupStatus ? (
+          {isSignupEnabled ? (
         <button
           onClick={openModal}
           style={{
@@ -2099,7 +2068,7 @@ export default forwardRef(function Home(props, ref) {
                           newMonth.setMonth(newMonth.getMonth() - 1);
                           setCurrentMonth(newMonth);
                         }}
-                        style={{
+                    style={{
                           ...backBtnStyle,
                           padding: '0.3rem 0.8rem',
                           fontSize: '0.8rem'
@@ -2130,9 +2099,9 @@ export default forwardRef(function Home(props, ref) {
                       {/* Day names */}
                       {['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'].map(day => (
                         <div key={day} style={calendarDayNameStyle}>
-                          {day}
-                        </div>
-                      ))}
+                        {day}
+                      </div>
+                    ))}
                       
                       {/* Calendar days */}
                       {(() => {
@@ -2161,7 +2130,7 @@ export default forwardRef(function Home(props, ref) {
                               onClick={() => available && handleDateSelect(date)}
                             >
                               {day}
-                            </div>
+                  </div>
                           );
                         }
                         
@@ -2177,15 +2146,15 @@ export default forwardRef(function Home(props, ref) {
                         {formatDate(selectedDate)}
                       </h4>
                       
-                      <div
-                        style={{
+                    <div
+                      style={{
                           position: 'relative',
                           margin: '0.5rem',
                           padding: '0.5rem 1rem',
                           borderRadius: '20px',
                           backgroundColor: '#f0f0f0',
-                          display: 'flex',
-                          flexDirection: 'column',
+                        display: 'flex',
+                        flexDirection: 'column',
                           alignItems: 'center',
                         }}
                       >
@@ -2200,7 +2169,7 @@ export default forwardRef(function Home(props, ref) {
                             return (
                               <div
                                 key={timeKey}
-                                style={{
+                          style={{
                                   ...bubbleStyle,
                                   backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                   color: isSelected ? 'white' : '#333',
@@ -2247,7 +2216,7 @@ export default forwardRef(function Home(props, ref) {
                             const timeKey = `${dayKey}-dinner-${timeSlot}`;
                             const isSelected = mealTimes[dayKey]?.dinner?.includes(timeSlot) || false;
                             
-                            return (
+                                return (
                               <div
                                 key={timeKey}
                                 style={{
@@ -2359,7 +2328,7 @@ export default forwardRef(function Home(props, ref) {
       )}
       
       {/* Add lock overlay when site is locked */}
-      {!signupStatus && !modalOpen && (
+      {!isSignupEnabled && !modalOpen && (
         <div 
           style={lockOverlayStyle} 
           onClick={() => document.body.style.overflow = 'auto'}

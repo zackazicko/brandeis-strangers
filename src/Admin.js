@@ -802,6 +802,13 @@ GRANT ALL ON public.feedback TO service_role;`);
     const days = ['sunday', 'thursday', 'friday', 'saturday'];
     const meals = ['lunch', 'dinner'];
     
+    // Add date information for each day
+    const dayLabels = {
+      thursday: "Thursday (Apr 4)",
+      friday: "Friday (Apr 5)",
+      saturday: "Saturday (Apr 6)"
+    };
+    
     // Structure: days -> meals -> timeSlots -> users
     const mealTimesTree = {};
     
