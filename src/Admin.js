@@ -799,17 +799,15 @@ GRANT ALL ON public.feedback TO service_role;`);
     if (!profiles || profiles.length === 0) return null;
     
     // Compile all meal time selections
-    const days = ['sunday', 'thursday', 'friday', 'saturday'];
-    const meals = ['lunch', 'dinner'];
+    const days = ['sunday', 'thursday'];
+    const meals = ['dinner'];
     
     // Get current year
     const currentYear = new Date().getFullYear();
     
     // Add date information for each day with current year
     const dayLabels = {
-      thursday: `Thursday (Apr 4, ${currentYear})`,
-      friday: `Friday (Apr 5, ${currentYear})`,
-      saturday: `Saturday (Apr 6, ${currentYear})`
+      thursday: `Thursday (Apr 10, ${currentYear})`
     };
     
     // Structure: days -> meals -> timeSlots -> users
@@ -1728,9 +1726,7 @@ const renderMealTimes = (mealTimes) => {
 
   // Add date information for each day
   const dayLabels = {
-    thursday: `Thursday (Apr 4, ${currentYear})`,
-    friday: `Friday (Apr 5, ${currentYear})`,
-    saturday: `Saturday (Apr 6, ${currentYear})`
+    thursday: `Thursday (Apr 10, ${currentYear})`
   };
 
   return Object.entries(mealTimes).map(([day, meals]) => {

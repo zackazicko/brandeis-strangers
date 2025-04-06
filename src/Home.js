@@ -572,9 +572,7 @@ export default forwardRef(function Home(props, ref) {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
   const [mealTimes, setMealTimes] = useState({
-    thursday: { lunch: [], dinner: [] },
-    friday: { lunch: [], dinner: [] },
-    saturday: { lunch: [], dinner: [] }
+    thursday: { dinner: [] } // Only dinner slots available
   });
   // New state for time preferences text field
   const [timePreferences, setTimePreferences] = useState('');
@@ -794,12 +792,7 @@ export default forwardRef(function Home(props, ref) {
       
       // Check if user has selected any meal times
       const hasSelectedMealTimes = 
-        (mealTimes.thursday?.lunch?.length > 0 ||
-         mealTimes.thursday?.dinner?.length > 0 ||
-         mealTimes.friday?.lunch?.length > 0 ||
-         mealTimes.friday?.dinner?.length > 0 ||
-         mealTimes.saturday?.lunch?.length > 0 ||
-         mealTimes.saturday?.dinner?.length > 0);
+        (mealTimes.thursday?.dinner?.length > 0);
       
       if (!name || !emailInput || !phone || !hasSelectedMealTimes) {
         alert('Please fill in all required fields and select at least one time slot.');
@@ -813,44 +806,17 @@ export default forwardRef(function Home(props, ref) {
       // Get current year
       const currentYear = new Date().getFullYear();
       
-      // Update date assignments for April of current year
-      // April 4 is Thursday, April 5 is Friday, April 6 is Saturday
+      // Update date assignment for April 10th
       if (mealTimesWithDates.thursday) {
-        mealTimesWithDates.thursday.date = `April 4, ${currentYear}`;
-      }
-      if (mealTimesWithDates.friday) {
-        mealTimesWithDates.friday.date = `April 5, ${currentYear}`;
-      }
-      if (mealTimesWithDates.saturday) {
-        mealTimesWithDates.saturday.date = `April 6, ${currentYear}`;
+        mealTimesWithDates.thursday.date = `April 10, ${currentYear}`;
       }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Thursday slots (April 4)
-      flattenedMealTimes.thursday_lunch_1200_1230 = mealTimes.thursday?.lunch?.includes('12:00-12:30 pm') || false;
-      flattenedMealTimes.thursday_lunch_1230_100 = mealTimes.thursday?.lunch?.includes('12:30-1:00 pm') || false;
+      // Thursday slots (April 10)
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
-      flattenedMealTimes.thursday_dinner_630_700 = mealTimes.thursday?.dinner?.includes('6:30-7:00 pm') || false;
       flattenedMealTimes.thursday_dinner_700_730 = mealTimes.thursday?.dinner?.includes('7:00-7:30 pm') || false;
-      flattenedMealTimes.thursday_dinner_730_800 = mealTimes.thursday?.dinner?.includes('7:30-8:00 pm') || false;
-      
-      // Friday slots (April 5)
-      flattenedMealTimes.friday_lunch_1200_1230 = mealTimes.friday?.lunch?.includes('12:00-12:30 pm') || false;
-      flattenedMealTimes.friday_lunch_1230_100 = mealTimes.friday?.lunch?.includes('12:30-1:00 pm') || false;
-      flattenedMealTimes.friday_dinner_600_630 = mealTimes.friday?.dinner?.includes('6:00-6:30 pm') || false;
-      flattenedMealTimes.friday_dinner_630_700 = mealTimes.friday?.dinner?.includes('6:30-7:00 pm') || false;
-      flattenedMealTimes.friday_dinner_700_730 = mealTimes.friday?.dinner?.includes('7:00-7:30 pm') || false;
-      flattenedMealTimes.friday_dinner_730_800 = mealTimes.friday?.dinner?.includes('7:30-8:00 pm') || false;
-      
-      // Saturday slots (April 6)
-      flattenedMealTimes.saturday_lunch_1200_1230 = mealTimes.saturday?.lunch?.includes('12:00-12:30 pm') || false;
-      flattenedMealTimes.saturday_lunch_1230_100 = mealTimes.saturday?.lunch?.includes('12:30-1:00 pm') || false;
-      flattenedMealTimes.saturday_dinner_600_630 = mealTimes.saturday?.dinner?.includes('6:00-6:30 pm') || false;
-      flattenedMealTimes.saturday_dinner_630_700 = mealTimes.saturday?.dinner?.includes('6:30-7:00 pm') || false;
-      flattenedMealTimes.saturday_dinner_700_730 = mealTimes.saturday?.dinner?.includes('7:00-7:30 pm') || false;
-      flattenedMealTimes.saturday_dinner_730_800 = mealTimes.saturday?.dinner?.includes('7:30-8:00 pm') || false;
       
       // Force Sherman as the only location for the pilot
       userData = {
@@ -1157,18 +1123,15 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Pilot 6 (April 4-6, 2025)
+  // Initialize available dates for Pilot 7 (April 10, 2025 - Strangers Thursdays)
   useEffect(() => {
     // Get current system date to determine the appropriate year
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear(); // Will be 2025
     
-    // Set available dates for April 4-6 of the current year
-    // April 4 is Thursday, April 5 is Friday, April 6 is Saturday
+    // Set available date for April 10 (Thursday)
     setAvailableDates([
-      new Date(currentYear, 3, 4), // April 4, current year (Thursday)
-      new Date(currentYear, 3, 5), // April 5, current year (Friday)
-      new Date(currentYear, 3, 6), // April 6, current year (Saturday)
+      new Date(currentYear, 3, 10), // April 10, current year (Thursday)
     ]);
     
     // Set current month to April of the current year
@@ -1185,34 +1148,20 @@ export default forwardRef(function Home(props, ref) {
     if (isAvailable) {
       setSelectedDate(date);
       
-      // Map the selected date to the corresponding day key based on the date
-      // For current year April, April 4 is Thursday, 5 is Friday, 6 is Saturday
+      // Map the selected date to the corresponding day key
+      // For current year April, April 10 is Thursday
       const day = date.getDate();
       const month = date.getMonth();
-      const year = date.getFullYear();
       let dayKey = '';
       
-      // Map April dates to the corresponding days for Pilot 6
-      if (month === 3) { // April is month 3 in JS
-        if (day === 4) {
-          dayKey = 'thursday'; // April 4 is Thursday
-        } else if (day === 5) {
-          dayKey = 'friday'; // April 5 is Friday
-        } else if (day === 6) {
-          dayKey = 'saturday'; // April 6 is Saturday
-        }
+      // Map April date to Thursday
+      if (month === 3 && day === 10) { // April is month 3 in JS
+        dayKey = 'thursday';
       } else {
-        // Fallback to day of week if not in April
+        // Fallback to day of week if not April 10
         const dayOfWeek = date.getDay();
-        
         switch (dayOfWeek) {
-          case 1: dayKey = 'monday'; break;
-          case 2: dayKey = 'tuesday'; break;
-          case 3: dayKey = 'wednesday'; break;
           case 4: dayKey = 'thursday'; break;
-          case 5: dayKey = 'friday'; break;
-          case 6: dayKey = 'saturday'; break;
-          case 0: dayKey = 'sunday'; break;
           default: dayKey = ''; break;
         }
       }
@@ -1313,7 +1262,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 6: april 4-6, {new Date().getFullYear()} - thanks to our 100+ users! returning users welcome and encouraged to sign up again!
+            👥 pilot 7: strangers thursdays! april 10th, {new Date().getFullYear()} - join us for dinner at sherman dining hall!
           </p>
           {isSignupEnabled ? (
         <button
@@ -2213,7 +2162,7 @@ export default forwardRef(function Home(props, ref) {
                         {/* Dinner times */}
                         <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
                         <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                          {['6:00-6:30 pm', '6:30-7:00 pm', '7:00-7:30 pm', '7:30-8:00 pm'].map((timeSlot) => {
+                          {['6:00-6:30 pm', '7:00-7:30 pm'].map((timeSlot) => {
                             const dayKey = selectedDay;
                             const timeKey = `${dayKey}-dinner-${timeSlot}`;
                             const isSelected = mealTimes[dayKey]?.dinner?.includes(timeSlot) || false;
