@@ -786,19 +786,18 @@ export default forwardRef(function Home(props, ref) {
       
       if (!isValidBrandeisEmail(email)) {
         alert('please use your brandeis.edu email address.');
-        setLoading(false);
+      setLoading(false);
       return;
     }
       
-      // Check if user has selected any meal times
-      const hasSelectedMealTimes = 
-        (mealTimes.thursday?.dinner?.length > 0);
+      // Check if user has selected any dinner times
+      const hasSelectedMealTimes = mealTimes.thursday?.dinner?.length > 0;
       
       if (!name || !emailInput || !phone || !hasSelectedMealTimes) {
-        alert('Please fill in all required fields and select at least one time slot.');
+        alert('Please fill in all required fields and select at least one dinner time slot.');
         setLoading(false);
-      return;
-    }
+        return;
+      }
 
       // Deep copy the meal times
       const mealTimesWithDates = JSON.parse(JSON.stringify(mealTimes));
@@ -1262,7 +1261,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 7: strangers thursdays! april 10th, {new Date().getFullYear()} - join us for dinner at sherman dining hall!
+            👥 pilot 7: strangers thursdays! groups of 4. every thursday.
           </p>
           {isSignupEnabled ? (
         <button
@@ -1447,7 +1446,7 @@ export default forwardRef(function Home(props, ref) {
                       border: '1px solid #ccc',
                       borderRadius: '8px',
                       marginBottom: '1rem',
-                      fontFamily: '"Courier New", Courier, monospace'
+                      fontFamily: '"Courier New", Courier, monospace"
                     }}
                     placeholder="(123) 456-7890"
                     required
@@ -2104,59 +2103,58 @@ export default forwardRef(function Home(props, ref) {
                           padding: '0.5rem 1rem',
                           borderRadius: '20px',
                           backgroundColor: '#f0f0f0',
-                        display: 'flex',
-                        flexDirection: 'column',
+                          display: 'flex',
+                          flexDirection: 'column',
                           alignItems: 'center',
                         }}
                       >
-                        {/* Lunch times */}
-                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
-                        <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-                          {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
-                            const dayKey = selectedDay;
-                            const timeKey = `${dayKey}-lunch-${timeSlot}`;
-                            const isSelected = mealTimes[dayKey]?.lunch?.includes(timeSlot) || false;
-                            
-                            return (
-                              <div
-                                key={timeKey}
-                          style={{
-                                  ...bubbleStyle,
-                                  backgroundColor: isSelected ? '#003865' : '#f0f0f0',
-                                  color: isSelected ? 'white' : '#333',
-                                  fontSize: '0.85rem',
-                                  padding: '0.4rem 0.8rem',
-                                }}
-                                onClick={() => {
-                                  if (!dayKey) return;
-                                  
-                                  // Create a deep copy of mealTimes
-                                  const updatedMealTimes = { ...mealTimes };
-                                  
-                                  // Initialize day and meal if needed
-                                  if (!updatedMealTimes[dayKey]) {
-                                    updatedMealTimes[dayKey] = {};
-                                  }
-                                  if (!updatedMealTimes[dayKey].lunch) {
-                                    updatedMealTimes[dayKey].lunch = [];
-                                  }
-                                  
-                                  // Toggle time slot
-                                  if (updatedMealTimes[dayKey].lunch.includes(timeSlot)) {
-                                    updatedMealTimes[dayKey].lunch = updatedMealTimes[dayKey].lunch.filter(
-                                      time => time !== timeSlot
-                                    );
-                                  } else {
-                                    updatedMealTimes[dayKey].lunch.push(timeSlot);
-                                  }
-                                  
-                                  setMealTimes(updatedMealTimes);
-                                }}
-                              >
-                                {timeSlot}
-                              </div>
-                            );
-                          })}
+                        {/* Lunch times - hidden for now */}
+                        <div style={{ display: 'none' }}>
+                          <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>lunch</div>
+                          <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', marginBottom: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {['12:00-12:30 pm', '12:30-1:00 pm'].map((timeSlot) => {
+                              const dayKey = selectedDay;
+                              const timeKey = `${dayKey}-lunch-${timeSlot}`;
+                              const isSelected = mealTimes[dayKey]?.lunch?.includes(timeSlot) || false;
+                              
+                              return (
+                                <div
+                                  key={timeKey}
+                                  style={{
+                                    ...bubbleStyle,
+                                    backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                    color: isSelected ? 'white' : '#333',
+                                    fontSize: '0.85rem',
+                                    padding: '0.4rem 0.8rem',
+                                  }}
+                                  onClick={() => {
+                                    if (!dayKey) return;
+                                    
+                                    const updatedMealTimes = { ...mealTimes };
+                                    
+                                    if (!updatedMealTimes[dayKey]) {
+                                      updatedMealTimes[dayKey] = {};
+                                    }
+                                    if (!updatedMealTimes[dayKey].lunch) {
+                                      updatedMealTimes[dayKey].lunch = [];
+                                    }
+                                    
+                                    if (updatedMealTimes[dayKey].lunch.includes(timeSlot)) {
+                                      updatedMealTimes[dayKey].lunch = updatedMealTimes[dayKey].lunch.filter(
+                                        time => time !== timeSlot
+                                      );
+                                    } else {
+                                      updatedMealTimes[dayKey].lunch.push(timeSlot);
+                                    }
+                                    
+                                    setMealTimes(updatedMealTimes);
+                                  }}
+                                >
+                                  {timeSlot}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                         
                         {/* Dinner times */}
