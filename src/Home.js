@@ -1264,9 +1264,9 @@ export default forwardRef(function Home(props, ref) {
             👥 pilot 7: strangers thursdays! groups of 4. every thursday.
           </p>
           {isSignupEnabled ? (
-        <button
-          onClick={openModal}
-          style={{
+            <button
+              onClick={openModal}
+              style={{
                 ...btnStyle,
                 padding: '0.8rem 2.5rem',
                 fontSize: isMobile ? '1rem' : '1.1rem',
@@ -1274,15 +1274,152 @@ export default forwardRef(function Home(props, ref) {
                 position: 'relative',
                 zIndex: 2,
                 boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
-          }}
-        >
-          sign up
-        </button>
+              }}
+            >
+              sign up
+            </button>
           ) : (
             <div style={{...btnStyle, cursor: 'default'}}>
               back soon!
             </div>
           )}
+          
+          {/* Reviews Carousel Section - Moved up */}
+          <section style={{
+            width: '100%',
+            padding: '4rem 0',
+            background: 'none',
+            position: 'relative',
+            zIndex: 1,
+            marginTop: '3rem'
+          }}>
+            <div style={{
+              maxWidth: '1200px',
+              margin: '0 auto',
+              padding: '0 1rem'
+            }}>
+              <h2 style={{
+                textAlign: 'center',
+                fontSize: isMobile ? '1.5rem' : '2rem',
+                color: '#003865',
+                marginBottom: '2rem',
+                fontFamily: '"Courier New", Courier, monospace'
+              }}>
+                what students are saying
+              </h2>
+              
+              <div className="reviews-carousel" style={{
+                position: 'relative',
+                overflow: 'hidden',
+                padding: '1rem 0'
+              }}>
+                <div className="reviews-track" style={{
+                  display: 'flex',
+                  gap: '1.5rem',
+                  transition: 'transform 0.5s ease',
+                  padding: '0.5rem',
+                  animation: 'slideTrack 35s linear infinite',
+                  width: 'fit-content'
+                }}>
+                  {[
+                    { text: "met my new best friend here. **loved it!** definitely coming back next week.", stars: "★★★★★" },
+                    { text: "such a cool way to meet people. **amazing experience!** the matching system works great.", stars: "★★★★★" },
+                    { text: "**fantastic idea!** broke out of my comfort zone and had the best dinner conversation.", stars: "★★★★★" },
+                    { text: "**will do it again!** met someone from my major i never would have met otherwise.", stars: "★★★★★" },
+                    { text: "**so much fun!** great way to meet new people without the pressure.", stars: "★★★★★" },
+                    { text: "**perfect for busy students!** made a friend while having dinner anyway.", stars: "★★★★★" },
+                    { text: "**brilliant concept!** finally found people who share my interests.", stars: "★★★★★" },
+                    { text: "dinner flew by! **can't wait** to do it again next thursday.", stars: "★★★★★" },
+                    { text: "**exactly what brandeis needed!** making friends as a transfer just got easier.", stars: "★★★★★" },
+                    { text: "**best decision ever!** stepped out of my bubble and met amazing people.", stars: "★★★★★" }
+                  ].map((review, index) => (
+                    <div key={index} className="review-card" style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '15px',
+                      padding: '1.5rem',
+                      minWidth: '300px',
+                      boxShadow: '0 4px 15px rgba(0, 56, 101, 0.05)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1rem',
+                      fontFamily: '"Courier New", Courier, monospace',
+                      transition: 'all 0.3s ease',
+                      cursor: 'default',
+                      backdropFilter: 'blur(5px)'
+                    }}>
+                      <div style={{
+                        color: '#003865',
+                        fontSize: '0.9rem',
+                        lineHeight: '1.5'
+                      }}>
+                        {review.text.split('**').map((part, i) => 
+                          i % 2 === 0 ? part : <strong key={i} style={{ color: '#003865' }}>{part}</strong>
+                        )}
+                      </div>
+                      <div style={{
+                        color: '#FFD700',
+                        fontSize: '1.2rem',
+                        letterSpacing: '2px',
+                        textShadow: '0 0 1px rgba(0,0,0,0.1)'
+                      }}>
+                        {review.stars}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <style>
+              {`
+                @keyframes slideTrack {
+                  0% {
+                    transform: translateX(0);
+                  }
+                  100% {
+                    transform: translateX(calc(-300px * 5 - 1.5rem * 5));
+                  }
+                }
+                
+                .reviews-track {
+                  will-change: transform;
+                  mask-image: linear-gradient(
+                    to right,
+                    transparent,
+                    black 10%,
+                    black 90%,
+                    transparent
+                  );
+                  -webkit-mask-image: linear-gradient(
+                    to right,
+                    transparent,
+                    black 10%,
+                    black 90%,
+                    transparent
+                  );
+                }
+                
+                .reviews-track:hover {
+                  animation-play-state: paused;
+                }
+                
+                .review-card:hover {
+                  transform: translateY(-5px);
+                  box-shadow: 0 8px 20px rgba(0, 56, 101, 0.1);
+                }
+                
+                @media (max-width: 768px) {
+                  .reviews-track {
+                    animation-duration: 25s;
+                  }
+                  
+                  .review-card {
+                    min-width: 250px;
+                  }
+                }
+              `}
+            </style>
+          </section>
           
           {/* How It Works section integrated into hero */}
           <div style={howItWorksContainerStyle}>
@@ -2429,143 +2566,6 @@ export default forwardRef(function Home(props, ref) {
         
         attemptToResubmitFailedEntries();
       }, [])}
-      
-      {/* Reviews Carousel Section */}
-      <section style={{
-        width: '100%',
-        padding: '4rem 0',
-        backgroundColor: 'rgba(230, 242, 255, 0.3)',
-        backdropFilter: 'blur(10px)',
-        marginTop: 'auto'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '0 1rem'
-        }}>
-          <h2 style={{
-            textAlign: 'center',
-            fontSize: isMobile ? '1.5rem' : '2rem',
-            color: '#003865',
-            marginBottom: '2rem',
-            fontFamily: '"Courier New", Courier, monospace'
-          }}>
-            what students are saying
-          </h2>
-          
-          <div className="reviews-carousel" style={{
-            position: 'relative',
-            overflow: 'hidden',
-            padding: '1rem 0'
-          }}>
-            <div className="reviews-track" style={{
-              display: 'flex',
-              gap: '1.5rem',
-              transition: 'transform 0.5s ease',
-              padding: '0.5rem',
-              animation: 'slideTrack 35s linear infinite',
-              width: 'fit-content'
-            }}>
-              {[
-                { text: "met my new best friend here. **loved it!** definitely coming back next week.", stars: "★★★★★" },
-                { text: "such a cool way to meet people. **amazing experience!** the matching system works great.", stars: "★★★★★" },
-                { text: "**fantastic idea!** broke out of my comfort zone and had the best dinner conversation.", stars: "★★★★★" },
-                { text: "**will do it again!** met someone from my major i never would have met otherwise.", stars: "★★★★★" },
-                { text: "**so much fun!** great way to meet new people without the pressure.", stars: "★★★★★" },
-                { text: "**perfect for busy students!** made a friend while having dinner anyway.", stars: "★★★★★" },
-                { text: "**brilliant concept!** finally found people who share my interests.", stars: "★★★★★" },
-                { text: "dinner flew by! **can't wait** to do it again next thursday.", stars: "★★★★★" },
-                { text: "**exactly what brandeis needed!** making friends as a transfer just got easier.", stars: "★★★★★" },
-                { text: "**best decision ever!** stepped out of my bubble and met amazing people.", stars: "★★★★★" }
-              ].map((review, index) => (
-                <div key={index} className="review-card" style={{
-                  backgroundColor: 'white',
-                  borderRadius: '15px',
-                  padding: '1.5rem',
-                  minWidth: '300px',
-                  boxShadow: '0 4px 15px rgba(0, 56, 101, 0.05)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1rem',
-                  fontFamily: '"Courier New", Courier, monospace',
-                  transition: 'all 0.3s ease',
-                  cursor: 'default'
-                }}>
-                  <div style={{
-                    color: '#003865',
-                    fontSize: '0.9rem',
-                    lineHeight: '1.5'
-                  }}>
-                    {review.text.split('**').map((part, i) => 
-                      i % 2 === 0 ? part : <strong key={i} style={{ color: '#003865' }}>{part}</strong>
-                    )}
-                  </div>
-                  <div style={{
-                    color: '#FFD700',
-                    fontSize: '1.2rem',
-                    letterSpacing: '2px',
-                    textShadow: '0 0 1px rgba(0,0,0,0.1)'
-                  }}>
-                    {review.stars}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        <style>
-          {`
-            @keyframes slideTrack {
-              0% {
-                transform: translateX(0);
-              }
-              100% {
-                transform: translateX(calc(-300px * 5 - 1.5rem * 5));
-              }
-            }
-            
-            .reviews-track {
-              will-change: transform;
-              mask-image: linear-gradient(
-                to right,
-                transparent,
-                black 10%,
-                black 90%,
-                transparent
-              );
-              -webkit-mask-image: linear-gradient(
-                to right,
-                transparent,
-                black 10%,
-                black 90%,
-                transparent
-              );
-            }
-            
-            .reviews-track:hover {
-              animation-play-state: paused;
-            }
-            
-            .review-card:hover {
-              transform: translateY(-5px);
-              box-shadow: 0 8px 20px rgba(0, 56, 101, 0.1);
-            }
-            
-            @media (max-width: 768px) {
-              .reviews-track {
-                animation-duration: 25s;
-              }
-              
-              .review-card {
-                min-width: 250px;
-              }
-            }
-          `}
-        </style>
-      </section>
-      
-      {/* Add lock overlay when site is locked */}
     </div>
   );
 });
