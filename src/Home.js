@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false  // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true  // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -1263,7 +1263,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 8: dinner on thursday 4/24 + optional free ramen at waku waku on friday 4/25!
+            👥 pilot 8: dinner on thursday 4/24 + discounted ramen at waku waku on friday 4/25!
           </p>
           
           {/* Waku Waku Special Banner */}
@@ -1325,7 +1325,7 @@ export default forwardRef(function Home(props, ref) {
               textAlign: 'center',
               margin: '0.5rem 0'
             }}>
-              Join us at <span style={{fontWeight: 'bold'}}>Waku Waku Ramen in Waltham</span> for a FREE multi-course dinner on Friday 4/25 at 7pm!
+              Join us at <span style={{fontWeight: 'bold'}}>Waku Waku Ramen in Waltham</span> for a discounted two-course meal ($17) on Friday 4/25 at 6:30pm!
             </p>
             <p style={{
               fontSize: '0.9rem',
@@ -2153,7 +2153,7 @@ export default forwardRef(function Home(props, ref) {
                   border: '1px solid rgba(0, 56, 101, 0.2)'
                 }}>
                   <label style={{ ...labelStyle, fontWeight: 'bold' }}>
-                    FREE Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 7pm)
+                    Discounted Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 6:30pm)
                   </label>
                   <div style={bubbleContainerStyle}>
                     <div
@@ -2182,7 +2182,7 @@ export default forwardRef(function Home(props, ref) {
                     </div>
                   </div>
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666', fontWeight: 'bold' }}>
-                    Multi-course FREE authentic Japanese ramen meal - transportation provided if needed
+                    Two-course authentic Japanese ramen meal - only $17 per person
                   </p>
                 </div>
                 
