@@ -1265,582 +1265,214 @@ export default forwardRef(function Home(props, ref) {
           }}>
             👥 pilot 8: dinner on thursday 4/24 + optional free ramen at waku waku on friday 4/25!
           </p>
-          {isSignupEnabled ? (
-        <button
-          onClick={openModal}
-          style={{
-                ...btnStyle,
-                padding: '0.8rem 2.5rem',
-                fontSize: isMobile ? '1rem' : '1.1rem',
-                marginLeft: 0,
-                position: 'relative',
-                zIndex: 2,
-                boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
-          }}
-        >
-          sign up
-        </button>
-          ) : (
-            <div style={{...btnStyle, cursor: 'default'}}>
-              back soon!
-            </div>
-          )}
           
-          {/* Reviews Carousel Section - Moved up */}
-          <section style={{
-            width: '100%',
-            padding: '4rem 0',
-            background: 'none',
-            position: 'relative',
-            zIndex: 1,
-            marginTop: '3rem'
-          }}>
-            <div style={{
-              maxWidth: '1200px',
-            margin: '0 auto',
-              padding: '0 1rem'
-            }}>
-              <h2 style={{
-                textAlign: 'center',
-                fontSize: isMobile ? '1.5rem' : '2rem',
-                color: '#003865',
-                marginBottom: '2rem',
-                fontFamily: '"Courier New", Courier, monospace'
+          {/* Waku Waku Special Promotional Banner */}
+          <div 
+            className="waku-waku-promo"
+            style={{
+              background: 'linear-gradient(135deg, #00b894 0%, #00d68f 100%)',
+              color: 'white',
+              borderRadius: '12px',
+              padding: '1.2rem',
+              marginBottom: '2rem',
+              boxShadow: '0 6px 20px rgba(0, 184, 148, 0.3)',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+              maxWidth: '550px',
+              width: '100%',
+              transform: 'scale(1.05)',
+              border: '2px solid rgba(255,255,255,0.4)'
+            }}
+          >
+            <div 
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'100\' height=\'100\' viewBox=\'0 0 100 100\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z\' fill=\'rgba(255,255,255,0.08)\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")',
+                opacity: 0.4,
+                zIndex: 0
+              }}
+            ></div>
+            
+            <div className="waku-waku-content" style={{ position: 'relative', zIndex: 1 }}>
+              <h3 style={{ 
+                fontSize: isMobile ? '1.4rem' : '1.6rem', 
+                margin: '0 0 0.6rem 0',
+                fontWeight: 'bold',
+                textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                letterSpacing: '0.5px'
               }}>
-                what students are saying
-          </h2>
+                ✨ SPECIAL OFFER ✨
+              </h3>
               
-              <div className="reviews-carousel" style={{
-                position: 'relative',
-                overflow: 'hidden',
-                padding: '1rem 0'
+              <p style={{ 
+                fontSize: isMobile ? '1.1rem' : '1.25rem',
+                marginBottom: '0.8rem',
+                fontWeight: 'bold'
               }}>
-                <div className="reviews-track" style={{
-                  display: 'flex',
-                  gap: '1.5rem',
-                  transition: 'transform 0.5s ease',
-                  padding: '0.5rem',
-                  animation: 'slideTrack 35s linear infinite',
-                  width: 'fit-content'
-                }}>
+                Get Off Campus for FREE RAMEN!
+              </p>
+              
+              <p style={{ 
+                fontSize: isMobile ? '0.95rem' : '1.05rem',
+                margin: '0 0 1rem 0',
+                lineHeight: '1.5'
+              }}>
+                Join us for a delicious multi-course meal at<br />
+                <span style={{ fontWeight: 'bold', fontSize: '1.15em' }}>Waku Waku Ramen in Waltham</span><br />
+                Friday, April 25th at 7PM
+              </p>
+              
+              <div style={{
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                borderRadius: '8px',
+                padding: '0.7rem 1rem',
+                marginBottom: '0.7rem',
+                border: '1px dashed rgba(255,255,255,0.6)',
+                display: 'inline-block'
+              }}>
+                <span style={{ fontWeight: 'bold' }}>100% FREE</span> • Transportation Provided
+              </div>
+            </div>
+          </div>
+
+          <style dangerouslySetInnerHTML={{ __html: `
+            .waku-waku-promo {
+              animation: float 5s ease-in-out infinite;
+              transition: transform 0.3s ease;
+            }
+            
+            .waku-waku-promo:hover {
+              transform: scale(1.08) translateY(-3px);
+            }
+            
+            @keyframes float {
+              0% {
+                transform: translateY(0) scale(1.05);
+              }
+              50% {
+                transform: translateY(-10px) scale(1.05);
+              }
+              100% {
+                transform: translateY(0) scale(1.05);
+              }
+            }
+          `}} />
+          
+          {isSignupEnabled ? (
+            <div style={{ animation: 'fadeIn 0.8s forwards' }}>
+              <h3 style={{ 
+                marginBottom: '1.2rem', 
+                fontSize: '1.1rem',
+                textAlign: 'center'
+              }}>
+                interests
+              </h3>
+              
+              <div style={{ marginBottom: '1.2rem' }}>
+                <label style={labelStyle}>select your interests - as many as you want! </label>
+                
+                {/* Entertainment & Media */}
+                <p style={categoryHeaderStyle}>
+                  Entertainment & Media
+                </p>
+                <div style={bubbleContainerStyle}>
                   {[
-                    { text: "met my new best friend here. **loved it!** definitely coming back next week.", stars: "★★★★★" },
-                    { text: "such a cool way to meet people. **amazing experience!** the matching system works great.", stars: "★★★★★" },
-                    { text: "**fantastic idea!** broke out of my comfort zone and had the best dinner conversation.", stars: "★★★★★" },
-                    { text: "**will do it again!** met someone from my major i never would have met otherwise.", stars: "★★★★★" },
-                    { text: "**so much fun!** great way to meet new people without the pressure.", stars: "★★★★★" },
-                    { text: "**perfect for busy students!** made a friend while having dinner anyway.", stars: "★★★★★" },
-                    { text: "**brilliant concept!** finally found people who share my interests.", stars: "★★★★★" },
-                    { text: "dinner flew by! **can't wait** to do it again next thursday.", stars: "★★★★★" },
-                    { text: "**exactly what brandeis needed!** making friends as a transfer just got easier.", stars: "★★★★★" },
-                    { text: "**best decision ever!** stepped out of my bubble and met amazing people.", stars: "★★★★★" }
-                  ].map((review, index) => (
-                    <div key={index} className="review-card" style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                      borderRadius: '15px',
-                      padding: '1.5rem',
-                      minWidth: '300px',
-                      boxShadow: '0 4px 15px rgba(0, 56, 101, 0.05)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '1rem',
-                      fontFamily: '"Courier New", Courier, monospace',
-                      transition: 'all 0.3s ease',
-                      cursor: 'default',
-                      backdropFilter: 'blur(5px)'
-                    }}>
-                      <div style={{
-                        color: '#003865',
-                        fontSize: '0.9rem',
-                        lineHeight: '1.5'
-                      }}>
-                        {review.text.split('**').map((part, i) => 
-                          i % 2 === 0 ? part : <strong key={i} style={{ color: '#003865' }}>{part}</strong>
-                        )}
-        </div>
-                      <div style={{
-                        color: '#FFD700',
-                        fontSize: '1.2rem',
-                        letterSpacing: '2px',
-                        textShadow: '0 0 1px rgba(0,0,0,0.1)'
-                      }}>
-                        {review.stars}
-                      </div>
+                    'anime & manga',
+                    'k-pop & k-dramas',
+                    'taylor swift',
+                    'marvel & dc',
+                    'reality tv',
+                    'tiktok'
+                  ].map((interest) => (
+                    <div
+                      key={interest}
+                      style={{
+                        ...bubbleStyle,
+                        ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                      }}
+                      onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                    >
+                      {interest}
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-
-            <style>
-              {`
-                @keyframes slideTrack {
-                  0% {
-                    transform: translateX(0);
-                  }
-                  100% {
-                    transform: translateX(calc(-300px * 5 - 1.5rem * 5));
-                  }
-                }
                 
-                .reviews-track {
-                  will-change: transform;
-                  mask-image: linear-gradient(
-                    to right,
-                    transparent,
-                    black 10%,
-                    black 90%,
-                    transparent
-                  );
-                  -webkit-mask-image: linear-gradient(
-                    to right,
-                    transparent,
-                    black 10%,
-                    black 90%,
-                    transparent
-                  );
-                }
-                
-                .reviews-track:hover {
-                  animation-play-state: paused;
-                }
-                
-                .review-card:hover {
-                  transform: translateY(-5px);
-                  box-shadow: 0 8px 20px rgba(0, 56, 101, 0.1);
-                }
-                
-                @media (max-width: 768px) {
-                  .reviews-track {
-                    animation-duration: 25s;
-                  }
-                  
-                  .review-card {
-                    min-width: 250px;
-                  }
-                }
-              `}
-            </style>
-      </section>
-
-          {/* How It Works section integrated into hero */}
-          <div style={howItWorksContainerStyle}>
-            <h2 style={howItWorksTitleStyle}>how it works</h2>
-            
-            <p style={problemStatementStyle}>
-              being on campus can be lonely. schedules rarely align, and it's tough finding new friends beyond your classes or clubs.
-            </p>
-            
-            <div style={stepsContainerStyle}>
-              <div style={stepStyle}>
-                <div style={stepNumberStyle}>1</div>
-                <div style={stepContentStyle}>
-                  <div style={stepTitleStyle}>quick sign up</div>
-                  <div style={stepDescriptionStyle}>
-                    sign up with your brandeis email, tell us your availability and meal preferences
-          </div>
-          </div>
-              </div>
-              
-              <div style={stepStyle}>
-                <div style={stepNumberStyle}>2</div>
-                <div style={stepContentStyle}>
-                  <div style={stepTitleStyle}>get matched</div>
-                  <div style={stepDescriptionStyle}>
-                    we match you with someone new based on your compatible meal times and preferences
-          </div>
-          </div>
-              </div>
-              
-              <div style={stepStyle}>
-                <div style={stepNumberStyle}>3</div>
-                <div style={stepContentStyle}>
-                  <div style={stepTitleStyle}>meet for a meal</div>
-                  <div style={stepDescriptionStyle}>
-                    show the matching color on your phone to find each other and enjoy your meal together
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Modal */}
-      {modalOpen && (
-        <div onClick={closeModal} style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
-        }}>
-          <div 
-            ref={modalContentRef}
-            onClick={(e) => e.stopPropagation()} 
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: '1rem',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-              width: isMobile ? '90%' : '500px',
-              maxWidth: '95vw',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              padding: '2rem',
-              position: 'relative',
-              textTransform: 'lowercase',
-              animation: 'fadeIn 0.5s'
-            }}
-            className="modal-content"
-          >
-            <button
-              className="close-button"
-              onClick={closeModal}
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                background: 'none',
-                border: 'none',
-                fontSize: '1.5rem',
-                color: '#003865',
-                cursor: 'pointer',
-              }}
-            >
-              &times;
-            </button>
-            <div
-              style={{
-                textAlign: 'center',
-                marginBottom: '2rem',
-                fontSize: '1.5rem',
-              }}
-            >
-              sign up
-            </div>
-
-            {/* STEP 1 */}
-            {currentStep === 1 && (
-              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <h3 style={{ 
-                  marginBottom: '1.2rem', 
-                  fontSize: '1.1rem',
-                  textAlign: 'center'
-                }}>
-                  basic info
-                </h3>
-                
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>first name:</label>
-                  <input
-                    type="text"
-                    style={inputStyle}
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                </div>
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>last name:</label>
-                  <input
-                    type="text"
-                    style={inputStyle}
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </div>
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>brandeis email:</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem',
-                      fontSize: '1rem',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      marginBottom: '1rem',
-                      fontFamily: '"Courier New", Courier, monospace'
-                    }}
-                    required
-                  />
-                </div>
-                {/* Add phone number field */}
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>phone number: (to find your match)</label>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem',
-                      fontSize: '1rem',
-                      border: '1px solid #ccc',
-                      borderRadius: '8px',
-                      marginBottom: '1rem',
-                      fontFamily: '"Courier New", Courier, monospace'
-                    }}
-                    placeholder="(123) 456-7890"
-                    required
-                  />
-                </div>
-                <div style={buttonsRowStyle}>
-                  <div style={{ flex: isMobile ? 1 : 'none', visibility: 'hidden' }}></div>
-                  <button onClick={goToStep2} style={nextBtnStyle}>
-                    next
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 2 */}
-            {currentStep === 2 && (
-              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <h3 style={{ 
-                  marginBottom: '1.2rem', 
-                  fontSize: '1.1rem',
-                  textAlign: 'center'
-                }}>
-                  academic info
-                </h3>
-                
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>choose your major(s):</label>
-                  <div className="major-search-container" style={{ position: 'relative' }}>
-                  <input
-                      type="text"
+                {/* Activities */}
+                <p style={categoryHeaderStyle}>
+                  Activities
+                </p>
+                <div style={bubbleContainerStyle}>
+                  {[
+                    'thrifting',
+                    'foodie adventures',
+                    'gym & fitness',
+                    'coffee shop hopping',
+                    'boston exploring'
+                  ].map((interest) => (
+                    <div
+                      key={interest}
                       style={{
-                        ...inputStyle,
-                        marginBottom: '0.5rem'
+                        ...bubbleStyle,
+                        ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
                       }}
-                      value={majorSearch}
-                      onChange={(e) => {
-                        setMajorSearch(e.target.value);
-                        setShowMajorDropdown(true);
-                      }}
-                      onFocus={() => setShowMajorDropdown(true)}
-                      placeholder="Search for majors..."
-                    />
-                    
-                    {showMajorDropdown && (
-                      <div 
-                        style={{
-                          position: 'absolute',
-                          top: '100%',
-                          left: 0,
-                          right: 0,
-                          maxHeight: '200px',
-                          overflowY: 'auto',
-                          border: '1px solid #ccc',
-                          borderRadius: '4px',
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.1)',
-                          zIndex: 10,
-                          background: 'white'
-                        }}
-                      >
-                        {filteredMajors.length === 0 ? (
-                          <div style={{ padding: '0.5rem', color: '#999', textAlign: 'center' }}>
-                            No matching majors found
+                      onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                    >
+                      {interest}
+                    </div>
+                  ))}
                 </div>
-                        ) : (
-                          filteredMajors.map(major => (
-                <div
-                              key={major}
-                  style={{
-                                padding: '0.5rem',
-                                cursor: 'pointer',
-                                background: selectedMajors.includes(major) ? '#e6f7ff' : 'white',
-                                borderBottom: '1px solid #eee'
-                              }}
-                              onClick={() => {
-                                toggleSelection(selectedMajors, setSelectedMajors, major);
-                                setMajorSearch('');
-                                setShowMajorDropdown(false);
-                              }}
-                            >
-                              {major}
-                </div>
-                          ))
-                        )}
-              </div>
-            )}
-                  </div>
-                  
-                  {/* Display selected majors as bubbles */}
-                  <div style={bubbleContainerStyle}>
-                    {selectedMajors.map((major) => (
-                      <div
-                        key={major}
-                        style={{
-                          ...bubbleStyle,
-                          ...bubbleSelectedStyle,
-                          display: 'flex',
-                          alignItems: 'center'
-                        }}
-                      >
-                        {major}
-                        <span 
-                          style={{ marginLeft: '5px', cursor: 'pointer' }}
-                          onClick={() => setSelectedMajors(selectedMajors.filter(m => m !== major))}
-                        >
-                          ×
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>class level:</label>
-                  <div style={bubbleContainerStyle}>
-                    {[
-                      'freshman',
-                      'sophomore',
-                      'junior',
-                      'senior',
-                      'graduate',
-                    ].map((level) => (
-                      <div
-                        key={level}
-                        style={{
-                          ...bubbleStyle,
-                          ...(classLevel === level ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => setClassLevel(level)}
-                      >
-                        {level}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={buttonsRowStyle}>
-                  <button onClick={goBackToStep1} style={backBtnStyle}>
-                    back
-                  </button>
-                  <button onClick={goToStep3} style={nextBtnStyle}>
-                    next
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3 */}
-            {currentStep === 3 && (
-              <div style={{ animation: 'fadeIn 0.8s forwards' }}>
-                <h3 style={{ 
-                  marginBottom: '1.2rem', 
-                  fontSize: '1.1rem',
-                  textAlign: 'center'
-                }}>
-                  interests
-                </h3>
                 
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>select your interests - as many as you want! </label>
-                  
-                  {/* Entertainment & Media */}
-                  <p style={categoryHeaderStyle}>
-                    Entertainment & Media
-                  </p>
-                  <div style={bubbleContainerStyle}>
-                    {[
-                      'anime & manga',
-                      'k-pop & k-dramas',
-                      'taylor swift',
-                      'marvel & dc',
-                      'reality tv',
-                      'tiktok'
-                    ].map((interest) => (
-                      <div
-                        key={interest}
-                        style={{
-                          ...bubbleStyle,
-                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                      >
-                        {interest}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Activities */}
-                  <p style={categoryHeaderStyle}>
-                    Activities
-                  </p>
-                  <div style={bubbleContainerStyle}>
-                    {[
-                      'thrifting',
-                      'foodie adventures',
-                      'gym & fitness',
-                      'coffee shop hopping',
-                      'boston exploring'
-                    ].map((interest) => (
-                      <div
-                        key={interest}
-                        style={{
-                          ...bubbleStyle,
-                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                      >
-                        {interest}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Arts & Culture */}
-                  <p style={categoryHeaderStyle}>
-                    Arts & Culture
-                  </p>
-                  <div style={bubbleContainerStyle}>
-                    {[
-                      'photography',
-                      'music production',
-                      'fashion',
-                      'creative writing',
-                      'theater & improv'
-                    ].map((interest) => (
-                      <div
-                        key={interest}
-                        style={{
-                          ...bubbleStyle,
-                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                      >
-                        {interest}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Academic & Intellectual */}
-                  <p style={categoryHeaderStyle}>
-                    Academic & Intellectual
-                  </p>
-                  <div style={bubbleContainerStyle}>
-                    {[
-                      'social justice',
-                      'entrepreneurship',
-                      'climate activism',
-                      'research',
-                      'debate & politics'
-                    ].map((interest) => (
-                      <div
-                        key={interest}
-                        style={{
-                          ...bubbleStyle,
-                          ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
-                        }}
-                        onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
-                      >
-                        {interest}
+                {/* Arts & Culture */}
+                <p style={categoryHeaderStyle}>
+                  Arts & Culture
+                </p>
+                <div style={bubbleContainerStyle}>
+                  {[
+                    'photography',
+                    'music production',
+                    'fashion',
+                    'creative writing',
+                    'theater & improv'
+                  ].map((interest) => (
+                    <div
+                      key={interest}
+                      style={{
+                        ...bubbleStyle,
+                        ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                      }}
+                      onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                    >
+                      {interest}
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Academic & Intellectual */}
+                <p style={categoryHeaderStyle}>
+                  Academic & Intellectual
+                </p>
+                <div style={bubbleContainerStyle}>
+                  {[
+                    'social justice',
+                    'entrepreneurship',
+                    'climate activism',
+                    'research',
+                    'debate & politics'
+                  ].map((interest) => (
+                    <div
+                      key={interest}
+                      style={{
+                        ...bubbleStyle,
+                        ...(selectedInterests.includes(interest) ? bubbleSelectedStyle : {}),
+                      }}
+                      onClick={() => toggleSelection(selectedInterests, setSelectedInterests, interest)}
+                    >
+                      {interest}
                 </div>
                     ))}
                   </div>
@@ -2434,9 +2066,9 @@ export default forwardRef(function Home(props, ref) {
                   thank you for signing up. keep an eye on your brandeis email
                   for your meal match details. we'll connect you and provide contact information so you
                   can coordinate meeting up together!
-                </p>
-                
-                <p style={{ 
+              </p>
+              
+              <p style={{ 
                   marginTop: '1.5rem', 
                   fontSize: '0.9rem', 
                   color: '#666',
@@ -2467,7 +2099,7 @@ export default forwardRef(function Home(props, ref) {
             width: '100%',
             maxWidth: '600px'
           }}>
-            <div style={{
+              <div style={{
               fontSize: '3rem',
               marginBottom: '2rem',
   fontWeight: 'bold',
@@ -2540,7 +2172,7 @@ export default forwardRef(function Home(props, ref) {
           
           @keyframes fadeSlideUp {
             from { 
-              opacity: 0;
+                opacity: 0;
               transform: translateY(20px);
             }
             to { 
