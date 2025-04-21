@@ -2167,7 +2167,7 @@ export default forwardRef(function Home(props, ref) {
                       }}
                       onClick={() => setWakuWaku(true)}
                     >
-                      yes, I'll attend
+                      yes, put me on the list
                     </div>
                     <div
                       style={{
@@ -2182,7 +2182,7 @@ export default forwardRef(function Home(props, ref) {
                     </div>
                   </div>
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666', fontWeight: 'bold' }}>
-                    Two-course authentic Japanese ramen meal - only $17 per person
+                    Two-course authentic Japanese ramen meal - only $17 per person. Spots are limited! We will reach out to confirm your spot later in the week. 
                   </p>
                 </div>
                 
