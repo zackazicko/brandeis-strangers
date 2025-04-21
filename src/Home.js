@@ -2442,11 +2442,10 @@ export default forwardRef(function Home(props, ref) {
                 </div>
                 
                 <div style={{ 
-                  marginBottom: '1.2rem',
-                  backgroundColor: 'rgba(3, 83, 151, 0.1)',
-                  padding: '15px',
-                  borderRadius: '10px',
-                  border: '1px solid rgba(3, 83, 151, 0.2)'
+                  marginBottom: '1.2rem', 
+                  backgroundColor: 'rgba(0, 56, 101, 0.1)', 
+                  padding: '1rem', 
+                  borderRadius: '12px'
                 }}>
                   <label style={{ ...labelStyle, fontWeight: 'bold' }}>
                     FREE Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 7pm)
