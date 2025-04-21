@@ -2153,7 +2153,7 @@ export default forwardRef(function Home(props, ref) {
                   border: '1px solid rgba(0, 56, 101, 0.2)'
                 }}>
                   <label style={{ ...labelStyle, fontWeight: 'bold' }}>
-                    Discounted Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 6:30pm)
+                    sign up for a chance to join our first off campus meal - Discounted friday Dinner at Waku Waku Ramen in Waltham (April 25th, 6:30pm)
                   </label>
                   <div style={bubbleContainerStyle}>
                     <div
@@ -2167,7 +2167,7 @@ export default forwardRef(function Home(props, ref) {
                       }}
                       onClick={() => setWakuWaku(true)}
                     >
-                      yes, put me on the list
+                      sign me up!
                     </div>
                     <div
                       style={{
