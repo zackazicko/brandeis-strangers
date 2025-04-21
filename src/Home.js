@@ -2144,6 +2144,48 @@ export default forwardRef(function Home(props, ref) {
                   meal preferences
                 </h3>
                 
+                {/* Waku Waku section moved to the top with blue highlight */}
+                <div style={{ 
+                  marginBottom: '1.2rem', 
+                  backgroundColor: 'rgba(0, 56, 101, 0.1)', 
+                  padding: '1rem', 
+                  borderRadius: '12px',
+                  border: '1px solid rgba(0, 56, 101, 0.2)'
+                }}>
+                  <label style={{ ...labelStyle, fontWeight: 'bold' }}>
+                    FREE Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 7pm)
+                  </label>
+                  <div style={bubbleContainerStyle}>
+                    <div
+                      style={{
+                        ...bubbleStyle,
+                        ...(wakuWaku ? bubbleSelectedStyle : {}),
+                        backgroundColor: wakuWaku ? '#e74c3c' : '#f0f0f0',
+                        color: wakuWaku ? 'white' : '#333',
+                        borderColor: '#e74c3c',
+                        borderWidth: '2px'
+                      }}
+                      onClick={() => setWakuWaku(true)}
+                    >
+                      yes, I'll attend
+                    </div>
+                    <div
+                      style={{
+                        ...bubbleStyle,
+                        ...(!wakuWaku ? bubbleSelectedStyle : {}),
+                        borderColor: '#e74c3c',
+                        borderWidth: '2px'
+                      }}
+                      onClick={() => setWakuWaku(false)}
+                    >
+                      no, can't make it
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666', fontWeight: 'bold' }}>
+                    Multi-course FREE authentic Japanese ramen meal - transportation provided if needed
+                  </p>
+                </div>
+                
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>do you have a meal plan?</label>
                   <div style={bubbleContainerStyle}>
@@ -2439,64 +2481,6 @@ export default forwardRef(function Home(props, ref) {
                   <div style={{ fontSize: '0.8rem', color: '#666', textAlign: 'right' }}>
                     {timePreferences.length}/100
                   </div>
-                </div>
-                
-                <div style={{ 
-                  marginBottom: '1.2rem', 
-                  backgroundColor: 'rgba(0, 56, 101, 0.1)', 
-                  padding: '1rem', 
-                  borderRadius: '12px'
-                }}>
-                  <label style={{ ...labelStyle, fontWeight: 'bold' }}>
-                    FREE Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 7pm)
-                  </label>
-                  <div style={bubbleContainerStyle}>
-                    <div
-                      style={{
-                        ...bubbleStyle,
-                        ...(wakuWaku ? bubbleSelectedStyle : {}),
-                        backgroundColor: wakuWaku ? '#e74c3c' : '#f0f0f0',
-                        color: wakuWaku ? 'white' : '#333',
-                        borderColor: '#e74c3c',
-                        borderWidth: '2px'
-                      }}
-                      onClick={() => setWakuWaku(true)}
-                    >
-                      yes, I'll attend
-                    </div>
-                    <div
-                      style={{
-                        ...bubbleStyle,
-                        ...(!wakuWaku ? bubbleSelectedStyle : {}),
-                        borderColor: '#e74c3c',
-                        borderWidth: '2px'
-                      }}
-                      onClick={() => setWakuWaku(false)}
-                    >
-                      no, can't make it
-                    </div>
-                  </div>
-                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666', fontWeight: 'bold' }}>
-                    Multi-course FREE authentic Japanese ramen meal - transportation provided if needed
-                  </p>
-                </div>
-                
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={labelStyle}>dining location:</label>
-                  <div style={bubbleContainerStyle}>
-                    <div
-                        style={{
-                          ...bubbleStyle,
-                        ...bubbleSelectedStyle,
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      sherman
-                      </div>
-                  </div>
-                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666' }}>
-                    for our pilot, we're starting with sherman dining hall only.
-                  </p>
                 </div>
                 
                 <div style={buttonsRowStyle}>
