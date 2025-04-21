@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false  // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true  // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -569,6 +569,7 @@ export default forwardRef(function Home(props, ref) {
   // Step 3: meal plan, guest swipe, locations, meal times
   const [mealPlan, setMealPlan] = useState(false);
   const [guestSwipe, setGuestSwipe] = useState(false);
+  const [wakuWaku, setWakuWaku] = useState(false);
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
   const [mealTimes, setMealTimes] = useState({
@@ -795,9 +796,9 @@ export default forwardRef(function Home(props, ref) {
       
       if (!name || !emailInput || !phone || !hasSelectedMealTimes) {
         alert('Please fill in all required fields and select at least one dinner time slot.');
-        setLoading(false);
-        return;
-      }
+      setLoading(false);
+      return;
+    }
 
       // Deep copy the meal times
       const mealTimesWithDates = JSON.parse(JSON.stringify(mealTimes));
@@ -805,15 +806,15 @@ export default forwardRef(function Home(props, ref) {
       // Get current year
       const currentYear = new Date().getFullYear();
       
-      // Update date assignment for April 10th
+      // Update date assignment for April 24th
       if (mealTimesWithDates.thursday) {
-        mealTimesWithDates.thursday.date = `April 10, ${currentYear}`;
+        mealTimesWithDates.thursday.date = `April 24, ${currentYear}`;
       }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Thursday slots (April 10)
+      // Thursday slots (April 24)
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.thursday_dinner_700_730 = mealTimes.thursday?.dinner?.includes('7:00-7:30 pm') || false;
       
@@ -827,6 +828,7 @@ export default forwardRef(function Home(props, ref) {
         interests: selectedInterests,
         meal_plan: mealPlan,
         guest_swipe: guestSwipe,
+        waku_waku: wakuWaku, // Add Waku Waku field
         dining_locations: ['sherman'], // Force Sherman as the only location
         meal_times_json: JSON.stringify(mealTimesWithDates),
         meal_times_flattened: JSON.stringify(flattenedMealTimes),
@@ -1122,15 +1124,15 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Pilot 7 (April 10, 2025 - Strangers Thursdays)
+  // Initialize available dates for Pilot 8 (April 24, 2025 - Strangers Thursdays)
   useEffect(() => {
     // Get current system date to determine the appropriate year
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear(); // Will be 2025
     
-    // Set available date for April 10 (Thursday)
+    // Set available date for April 24 (Thursday)
     setAvailableDates([
-      new Date(currentYear, 3, 10), // April 10, current year (Thursday)
+      new Date(currentYear, 3, 24), // April 24, current year (Thursday)
     ]);
     
     // Set current month to April of the current year
@@ -1148,16 +1150,16 @@ export default forwardRef(function Home(props, ref) {
       setSelectedDate(date);
       
       // Map the selected date to the corresponding day key
-      // For current year April, April 10 is Thursday
+      // For current year April, April 24 is Thursday
       const day = date.getDate();
       const month = date.getMonth();
       let dayKey = '';
       
       // Map April date to Thursday
-      if (month === 3 && day === 10) { // April is month 3 in JS
+      if (month === 3 && day === 24) { // April is month 3 in JS
         dayKey = 'thursday';
       } else {
-        // Fallback to day of week if not April 10
+        // Fallback to day of week if not April 24
         const dayOfWeek = date.getDay();
         switch (dayOfWeek) {
           case 4: dayKey = 'thursday'; break;
@@ -1261,12 +1263,12 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 7: strangers thursdays! groups of 4. every thursday.
+            👥 pilot 8: dinner on thursday 4/24 + optional free ramen at waku waku on friday 4/25!
           </p>
           {isSignupEnabled ? (
-            <button
-              onClick={openModal}
-              style={{
+        <button
+          onClick={openModal}
+          style={{
                 ...btnStyle,
                 padding: '0.8rem 2.5rem',
                 fontSize: isMobile ? '1rem' : '1.1rem',
@@ -1274,10 +1276,10 @@ export default forwardRef(function Home(props, ref) {
                 position: 'relative',
                 zIndex: 2,
                 boxShadow: '0 4px 15px rgba(0,56,101,0.2)'
-              }}
-            >
-              sign up
-            </button>
+          }}
+        >
+          sign up
+        </button>
           ) : (
             <div style={{...btnStyle, cursor: 'default'}}>
               back soon!
@@ -1295,7 +1297,7 @@ export default forwardRef(function Home(props, ref) {
           }}>
             <div style={{
               maxWidth: '1200px',
-              margin: '0 auto',
+            margin: '0 auto',
               padding: '0 1rem'
             }}>
               <h2 style={{
@@ -1306,7 +1308,7 @@ export default forwardRef(function Home(props, ref) {
                 fontFamily: '"Courier New", Courier, monospace'
               }}>
                 what students are saying
-              </h2>
+          </h2>
               
               <div className="reviews-carousel" style={{
                 position: 'relative',
@@ -1355,7 +1357,7 @@ export default forwardRef(function Home(props, ref) {
                         {review.text.split('**').map((part, i) => 
                           i % 2 === 0 ? part : <strong key={i} style={{ color: '#003865' }}>{part}</strong>
                         )}
-                      </div>
+        </div>
                       <div style={{
                         color: '#FFD700',
                         fontSize: '1.2rem',
@@ -1419,8 +1421,8 @@ export default forwardRef(function Home(props, ref) {
                 }
               `}
             </style>
-          </section>
-          
+      </section>
+
           {/* How It Works section integrated into hero */}
           <div style={howItWorksContainerStyle}>
             <h2 style={howItWorksTitleStyle}>how it works</h2>
@@ -1436,7 +1438,7 @@ export default forwardRef(function Home(props, ref) {
                   <div style={stepTitleStyle}>quick sign up</div>
                   <div style={stepDescriptionStyle}>
                     sign up with your brandeis email, tell us your availability and meal preferences
-        </div>
+          </div>
           </div>
               </div>
               
@@ -2240,8 +2242,8 @@ export default forwardRef(function Home(props, ref) {
                           padding: '0.5rem 1rem',
                           borderRadius: '20px',
                           backgroundColor: '#f0f0f0',
-                          display: 'flex',
-                          flexDirection: 'column',
+                        display: 'flex',
+                        flexDirection: 'column',
                           alignItems: 'center',
                         }}
                       >
@@ -2257,7 +2259,7 @@ export default forwardRef(function Home(props, ref) {
                               return (
                                 <div
                                   key={timeKey}
-                                  style={{
+                          style={{
                                     ...bubbleStyle,
                                     backgroundColor: isSelected ? '#003865' : '#f0f0f0',
                                     color: isSelected ? 'white' : '#333',
@@ -2365,6 +2367,41 @@ export default forwardRef(function Home(props, ref) {
                   <div style={{ fontSize: '0.8rem', color: '#666', textAlign: 'right' }}>
                     {timePreferences.length}/100
                   </div>
+                </div>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ ...labelStyle, fontWeight: 'bold' }}>
+                    FREE Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 7pm)
+                  </label>
+                  <div style={bubbleContainerStyle}>
+                    <div
+                      style={{
+                        ...bubbleStyle,
+                        ...(wakuWaku ? bubbleSelectedStyle : {}),
+                        backgroundColor: wakuWaku ? '#e74c3c' : '#f0f0f0',
+                        color: wakuWaku ? 'white' : '#333',
+                        borderColor: '#e74c3c',
+                        borderWidth: '2px'
+                      }}
+                      onClick={() => setWakuWaku(true)}
+                    >
+                      yes, I'll attend
+                    </div>
+                    <div
+                      style={{
+                        ...bubbleStyle,
+                        ...(!wakuWaku ? bubbleSelectedStyle : {}),
+                        borderColor: '#e74c3c',
+                        borderWidth: '2px'
+                      }}
+                      onClick={() => setWakuWaku(false)}
+                    >
+                      no, can't make it
+                    </div>
+                  </div>
+                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666', fontWeight: 'bold' }}>
+                    Multi-course FREE authentic Japanese ramen meal - transportation provided if needed
+                  </p>
                 </div>
                 
                 <div style={buttonsRowStyle}>

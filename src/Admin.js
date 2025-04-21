@@ -339,6 +339,7 @@ CREATE TABLE public.main (
     interests TEXT[] DEFAULT '{}'::TEXT[],
     meal_plan BOOLEAN DEFAULT false,
     guest_swipe BOOLEAN DEFAULT false,
+    waku_waku BOOLEAN DEFAULT false, /* For Waku Waku Ramen attendance */
     dining_locations TEXT[] DEFAULT '{}'::TEXT[],
     meal_times_json JSONB,
     meal_times_flattened JSONB,
@@ -776,6 +777,9 @@ GRANT ALL ON public.feedback TO service_role;`);
     // Has guest swipe
     const hasGuestSwipe = profiles.filter(p => p.guest_swipe).length;
     
+    // Attending Waku Waku
+    const wakuWakuAttendees = profiles.filter(p => p.waku_waku).length;
+    
     // Signups by day/date created
     const signupsByDate = profiles.reduce((acc, profile) => {
       if (!profile.created_at) return acc;
@@ -790,6 +794,7 @@ GRANT ALL ON public.feedback TO service_role;`);
       signupsByClass,
       hasMealPlan,
       hasGuestSwipe,
+      wakuWakuAttendees,
       signupsByDate
     };
   };
@@ -1255,6 +1260,13 @@ GRANT ALL ON public.feedback TO service_role;`);
                         </div>
                         <div className="stat-label">Have Guest Swipes</div>
                       </div>
+                      
+                      <div className="stat-card">
+                        <div className="stat-value">
+                          {getOverviewStats()?.wakuWakuAttendees || 0}
+                        </div>
+                        <div className="stat-label">Waku Waku Attendees</div>
+                      </div>
                     </div>
                     
                     {/* Class level breakdown */}
@@ -1662,6 +1674,10 @@ GRANT ALL ON public.feedback TO service_role;`);
                               <div className="detail-item">
                                 <label>Guest Swipe:</label>
                                 <span>{profile.guest_swipe ? 'Yes' : 'No'}</span>
+                              </div>
+                              <div className="detail-item">
+                                <label>Waku Waku Ramen:</label>
+                                <span>{profile.waku_waku ? 'Yes' : 'No'}</span>
                               </div>
                               <div className="detail-item">
                                 <label>Match Preference:</label>
