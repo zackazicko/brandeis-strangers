@@ -2441,7 +2441,13 @@ export default forwardRef(function Home(props, ref) {
                   </div>
                 </div>
                 
-                <div style={{ marginBottom: '1.2rem' }}>
+                <div style={{ 
+                  marginBottom: '1.2rem',
+                  backgroundColor: 'rgba(3, 83, 151, 0.1)',
+                  padding: '15px',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(3, 83, 151, 0.2)'
+                }}>
                   <label style={{ ...labelStyle, fontWeight: 'bold' }}>
                     FREE Friday Dinner at Waku Waku Ramen in Waltham (April 25th, 7pm)
                   </label>
@@ -2473,6 +2479,24 @@ export default forwardRef(function Home(props, ref) {
                   </div>
                   <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666', fontWeight: 'bold' }}>
                     Multi-course FREE authentic Japanese ramen meal - transportation provided if needed
+                  </p>
+                </div>
+                
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={labelStyle}>dining location:</label>
+                  <div style={bubbleContainerStyle}>
+                    <div
+                        style={{
+                          ...bubbleStyle,
+                        ...bubbleSelectedStyle,
+                        pointerEvents: 'none'
+                      }}
+                    >
+                      sherman
+                      </div>
+                  </div>
+                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666' }}>
+                    for our pilot, we're starting with sherman dining hall only.
                   </p>
                 </div>
                 
