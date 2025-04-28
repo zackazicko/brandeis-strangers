@@ -569,7 +569,7 @@ export default forwardRef(function Home(props, ref) {
   // Step 3: meal plan, guest swipe, locations, meal times
   const [mealPlan, setMealPlan] = useState(false);
   const [guestSwipe, setGuestSwipe] = useState(false);
-  const [wakuWaku, setWakuWaku] = useState(false);
+  const [wakuWaku, setWakuWaku] = useState(false); // Set Waku Waku to false by default since we removed the question
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null); // track which day bubble is open
   const [mealTimes, setMealTimes] = useState({
@@ -806,9 +806,9 @@ export default forwardRef(function Home(props, ref) {
       // Get current year
       const currentYear = new Date().getFullYear();
       
-      // Update date assignment for April 24th
+      // Update date assignment for May 1st
       if (mealTimesWithDates.thursday) {
-        mealTimesWithDates.thursday.date = `April 24, ${currentYear}`;
+        mealTimesWithDates.thursday.date = `May 1, ${currentYear}`;
       }
       
       // Build flattened meal times object for easier querying
@@ -828,7 +828,7 @@ export default forwardRef(function Home(props, ref) {
         interests: selectedInterests,
         meal_plan: mealPlan,
         guest_swipe: guestSwipe,
-        waku_waku: wakuWaku, // Add Waku Waku field
+        waku_waku: false, // Set Waku Waku to false by default since we removed the question
         dining_locations: ['sherman'], // Force Sherman as the only location
         meal_times_json: JSON.stringify(mealTimesWithDates),
         meal_times_flattened: JSON.stringify(flattenedMealTimes),
@@ -1124,19 +1124,19 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Pilot 8 (April 24, 2025 - Strangers Thursdays)
+  // Initialize available dates for Pilot 9 (May 1, 2025 - Strangers Thursdays)
   useEffect(() => {
     // Get current system date to determine the appropriate year
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear(); // Will be 2025
     
-    // Set available date for April 24 (Thursday)
+    // Set available date for May 1 (Thursday)
     setAvailableDates([
-      new Date(currentYear, 3, 24), // April 24, current year (Thursday)
+      new Date(currentYear, 4, 1), // May 1, current year (Thursday)
     ]);
     
-    // Set current month to April of the current year
-    setCurrentMonth(new Date(currentYear, 3, 1));
+    // Set current month to May of the current year
+    setCurrentMonth(new Date(currentYear, 4, 1));
   }, []);
   
   // Date selection handler
@@ -1150,16 +1150,16 @@ export default forwardRef(function Home(props, ref) {
       setSelectedDate(date);
       
       // Map the selected date to the corresponding day key
-      // For current year April, April 24 is Thursday
+      // For current year May, May 1 is Thursday
       const day = date.getDate();
       const month = date.getMonth();
       let dayKey = '';
       
-      // Map April date to Thursday
-      if (month === 3 && day === 24) { // April is month 3 in JS
+      // Map May date to Thursday
+      if (month === 4 && day === 1) { // May is month 4 in JS
         dayKey = 'thursday';
       } else {
-        // Fallback to day of week if not April 24
+        // Fallback to day of week if not May 1
         const dayOfWeek = date.getDay();
         switch (dayOfWeek) {
           case 4: dayKey = 'thursday'; break;
@@ -1263,7 +1263,7 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 8: dinner on thursday 4/24 + discounted ramen at waku waku on friday 4/25!
+            👥 pilot 9: senior week special! dinner on thursday 5/1 - final meal of the semester
           </p>
           
           {/* Waku Waku Special Banner */}
@@ -1311,21 +1311,21 @@ export default forwardRef(function Home(props, ref) {
               textTransform: 'uppercase',
               letterSpacing: '1px',
               textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
-            }}>✨ SPECIAL EVENT ✨</h3>
+            }}>✨ FINAL MEAL OF THE SEMESTER ✨</h3>
             <p style={{
               fontSize: isMobile ? '1rem' : '1.1rem',
               textAlign: 'center',
               margin: '0.5rem 0',
               fontWeight: 'bold'
             }}>
-              Escape campus for an authentic Japanese ramen experience!
+              Seniors, come meet a stranger for the last time!
             </p>
             <p style={{
               fontSize: isMobile ? '0.9rem' : '1rem',
               textAlign: 'center',
               margin: '0.5rem 0'
             }}>
-              Join us at <span style={{fontWeight: 'bold'}}>Waku Waku Ramen in Waltham</span> for a discounted two-course meal ($17) on Friday 4/25 at 6:30pm!
+              Share your wisdom and pass down knowledge to underclassmen before graduation
             </p>
             <p style={{
               fontSize: '0.9rem',
@@ -1333,7 +1333,7 @@ export default forwardRef(function Home(props, ref) {
               fontStyle: 'italic',
               marginTop: '0.5rem'
             }}>
-              Select "Yes, I'll attend" during signup to reserve your spot!
+              Don't miss this final opportunity to make new connections!
             </p>
           </div>
           
@@ -2143,48 +2143,6 @@ export default forwardRef(function Home(props, ref) {
                 }}>
                   meal preferences
                 </h3>
-                
-                {/* Waku Waku section moved to the top with blue highlight */}
-                <div style={{ 
-                  marginBottom: '1.2rem', 
-                  backgroundColor: 'rgba(0, 56, 101, 0.1)', 
-                  padding: '1rem', 
-                  borderRadius: '12px',
-                  border: '1px solid rgba(0, 56, 101, 0.2)'
-                }}>
-                  <label style={{ ...labelStyle, fontWeight: 'bold' }}>
-                    sign up for a chance to join our first off campus meal - Discounted friday Dinner at Waku Waku Ramen in Waltham (April 25th, 6:30pm)
-                  </label>
-                  <div style={bubbleContainerStyle}>
-                    <div
-                      style={{
-                        ...bubbleStyle,
-                        ...(wakuWaku ? bubbleSelectedStyle : {}),
-                        backgroundColor: wakuWaku ? '#e74c3c' : '#f0f0f0',
-                        color: wakuWaku ? 'white' : '#333',
-                        borderColor: '#e74c3c',
-                        borderWidth: '2px'
-                      }}
-                      onClick={() => setWakuWaku(true)}
-                    >
-                      sign me up!
-                    </div>
-                    <div
-                      style={{
-                        ...bubbleStyle,
-                        ...(!wakuWaku ? bubbleSelectedStyle : {}),
-                        borderColor: '#e74c3c',
-                        borderWidth: '2px'
-                      }}
-                      onClick={() => setWakuWaku(false)}
-                    >
-                      no, can't make it
-                    </div>
-                  </div>
-                  <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#666', fontWeight: 'bold' }}>
-                    Two-course authentic Japanese ramen meal - only $17 per person. Spots are limited! We will reach out to confirm your spot later in the week. 
-                  </p>
-                </div>
                 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={labelStyle}>do you have a meal plan?</label>
