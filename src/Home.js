@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 // SITE CONFIGURATION - CHANGE ONLY THIS LINE TO TOGGLE SIGNUP STATUS
 const CONFIG = {
-  SIGNUP_ENABLED: false  // Set to true to enable signups, false to lock the site
+  SIGNUP_ENABLED: true  // Set to true to enable signups, false to lock the site
 };
 
 // Move these style creator functions to the top, outside component
@@ -814,7 +814,7 @@ export default forwardRef(function Home(props, ref) {
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Thursday slots (April 24)
+      // Thursday slots (May 1st)
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.thursday_dinner_700_730 = mealTimes.thursday?.dinner?.includes('7:00-7:30 pm') || false;
       
@@ -1124,7 +1124,7 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Pilot 9 (May 1, 2025 - Strangers Thursdays)
+  // Initialize available dates for Pilot 9 (May 1, Finals Week Edition)
   useEffect(() => {
     // Get current system date to determine the appropriate year
     const currentDate = new Date();
@@ -1263,10 +1263,10 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👥 pilot 9: senior week special! dinner on thursday 5/1 - final meal of the semester
+            👥 pilot 9: finals week edition! dinner on thursday 5/1 - take a break & meet someone new
           </p>
           
-          {/* Waku Waku Special Banner */}
+          {/* Finals Week Special Banner */}
           <div style={{
             backgroundColor: '#2ecc71',
             color: 'white',
@@ -1311,21 +1311,21 @@ export default forwardRef(function Home(props, ref) {
               textTransform: 'uppercase',
               letterSpacing: '1px',
               textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
-            }}>✨ FINAL MEAL OF THE SEMESTER ✨</h3>
+            }}>✨ FINALS WEEK STRESS RELIEF ✨</h3>
             <p style={{
               fontSize: isMobile ? '1rem' : '1.1rem',
               textAlign: 'center',
               margin: '0.5rem 0',
               fontWeight: 'bold'
             }}>
-              Seniors, come meet a stranger for the last time!
+              Take a much-needed break from studying!
             </p>
             <p style={{
               fontSize: isMobile ? '0.9rem' : '1rem',
               textAlign: 'center',
               margin: '0.5rem 0'
             }}>
-              Share your wisdom and pass down knowledge to underclassmen before graduation
+              Clear your mind, enjoy a meal, and make a new connection before the semester ends
             </p>
             <p style={{
               fontSize: '0.9rem',
@@ -1333,7 +1333,7 @@ export default forwardRef(function Home(props, ref) {
               fontStyle: 'italic',
               marginTop: '0.5rem'
             }}>
-              Don't miss this final opportunity to make new connections!
+              Your brain needs breaks to perform better - science says so!
             </p>
           </div>
           
