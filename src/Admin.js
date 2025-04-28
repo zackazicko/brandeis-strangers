@@ -810,18 +810,6 @@ GRANT ALL ON public.feedback TO service_role;`);
     // Get current year
     const currentYear = new Date().getFullYear();
     
-    // Add date information for each day
-    const dayLabels = {};
-    
-    // Use the date from the data if available, otherwise default to day name
-    Object.entries(mealTimes).forEach(([day, dayData]) => {
-      if (dayData && dayData.date) {
-        dayLabels[day] = `${day.charAt(0).toUpperCase() + day.slice(1)} (${dayData.date})`;
-      } else {
-        dayLabels[day] = day.charAt(0).toUpperCase() + day.slice(1);
-      }
-    });
-    
     // Structure: days -> meals -> timeSlots -> users
     const mealTimesTree = {};
     
