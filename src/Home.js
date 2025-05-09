@@ -367,47 +367,6 @@ const timeSelectionContainerStyle = {
   marginTop: '1.5rem',
 };
 
-// Checkbox styles
-const checkboxStyle = {
-  marginRight: '0.5rem',
-  cursor: 'pointer'
-};
-
-const checkboxLabelStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  fontSize: '0.9rem',
-  cursor: 'pointer',
-  padding: '0.3rem',
-  borderRadius: '4px',
-  transition: 'background-color 0.2s',
-  ':hover': {
-    backgroundColor: '#f0f0f0'
-  }
-};
-
-// Add the handleMealTimeChange function
-const handleMealTimeChange = (day, meal, timeSlot, checked) => {
-  const updatedMealTimes = { ...mealTimes };
-  
-  // Initialize the day and meal arrays if they don't exist
-  if (!updatedMealTimes[day]) {
-    updatedMealTimes[day] = {};
-  }
-  if (!updatedMealTimes[day][meal]) {
-    updatedMealTimes[day][meal] = [];
-  }
-  
-  // Add or remove the time slot based on checkbox state
-  if (checked && !updatedMealTimes[day][meal].includes(timeSlot)) {
-    updatedMealTimes[day][meal].push(timeSlot);
-  } else if (!checked) {
-    updatedMealTimes[day][meal] = updatedMealTimes[day][meal].filter(time => time !== timeSlot);
-  }
-  
-  setMealTimes(updatedMealTimes);
-};
-
 // Export the Home component with forwardRef to allow ref access from parent components
 export default forwardRef(function Home(props, ref) {
   // Extract props with defaults
@@ -847,15 +806,15 @@ export default forwardRef(function Home(props, ref) {
       // Get current year
       const currentYear = new Date().getFullYear();
       
-      // Update date assignment for May 15th
+      // Update date assignment for May 1st
       if (mealTimesWithDates.thursday) {
-        mealTimesWithDates.thursday.date = `May 15, ${currentYear}`;
+        mealTimesWithDates.thursday.date = `May 1, ${currentYear}`;
       }
       
       // Build flattened meal times object for easier querying
       const flattenedMealTimes = {};
       
-      // Thursday slots (May 15th)
+      // Thursday slots (May 1st)
       flattenedMealTimes.thursday_dinner_600_630 = mealTimes.thursday?.dinner?.includes('6:00-6:30 pm') || false;
       flattenedMealTimes.thursday_dinner_700_730 = mealTimes.thursday?.dinner?.includes('7:00-7:30 pm') || false;
       
@@ -1165,7 +1124,7 @@ export default forwardRef(function Home(props, ref) {
     return `${year}-${month}-${day}`;
   };
   
-  // Initialize available dates for Senior Week Edition (May 15)
+  // Initialize available dates for Pilot 10 (May 15, Senior Week Special)
   useEffect(() => {
     // Get current system date to determine the appropriate year
     const currentDate = new Date();
@@ -1290,7 +1249,7 @@ export default forwardRef(function Home(props, ref) {
         </h2>
           <p style={heroTextStyle}>
             {isSignupEnabled 
-              ? "connecting seniors with underclassmen for one last meal before graduation - share your wisdom, make memories, and say goodbye in style." 
+              ? "connecting random brandeis students for meals, because sometimes meeting strangers is exactly what you need." 
               : "our sign-ups are temporarily closed while we prepare for our next round."}
           </p>
           <p style={{
@@ -1304,35 +1263,69 @@ export default forwardRef(function Home(props, ref) {
             textAlign: 'center',
             fontWeight: 'bold'
           }}>
-            👋 senior strangers: the last week - dinner on thursday 5/15 - one final meal before graduation
+            👥 pilot 10: senior week special! dinner on thursday 5/15 - grab one last meal before graduation
           </p>
           
-          {/* Senior Week Special Banner */}
+          {/* Finals Week Special Banner */}
           <div style={{
-            backgroundColor: '#4CAF50',
+            backgroundColor: '#2ecc71',
             color: 'white',
             padding: '1rem',
-            borderRadius: '8px',
+            borderRadius: '15px',
+            boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
             marginBottom: '2rem',
-            maxWidth: '100%',
-            textAlign: 'center',
-            animation: 'fadeIn 1s ease-out'
+            transform: 'rotate(-1deg)',
+            maxWidth: '90%',
+            animation: 'pulse 2s infinite',
+            border: '2px dashed #fff',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            <style>{`
+              @keyframes pulse {
+                0% { transform: scale(1) rotate(-1deg); }
+                50% { transform: scale(1.03) rotate(-1deg); }
+                100% { transform: scale(1) rotate(-1deg); }
+              }
+              @keyframes shine {
+                0% { left: -100px; }
+                20% { left: 100%; }
+                100% { left: 100%; }
+              }
+            `}</style>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '-100px',
+              width: '50px',
+              height: '100%',
+              background: 'rgba(255,255,255,0.3)',
+              transform: 'skewX(-20deg)',
+              animation: 'shine 3s infinite 1s'
+            }}></div>
             <h3 style={{
-              margin: '0 0 0.5rem 0',
-              fontSize: '1.2rem',
+              fontSize: isMobile ? '1.1rem' : '1.3rem',
+              fontWeight: 'bold',
+              margin: 0,
+              textAlign: 'center',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              textShadow: '1px 1px 2px rgba(0,0,0,0.2)'
+            }}>✨ SENIOR WEEK SPECIAL ✨</h3>
+            <p style={{
+              fontSize: isMobile ? '1rem' : '1.1rem',
+              textAlign: 'center',
+              margin: '0.5rem 0',
               fontWeight: 'bold'
             }}>
-              🎓 THE FINAL MEAL OF YOUR COLLEGE JOURNEY
-            </h3>
-            
+              One last chance to meet someone new at Brandeis!
+            </p>
             <p style={{
               fontSize: isMobile ? '0.9rem' : '1rem',
               textAlign: 'center',
               margin: '0.5rem 0'
             }}>
-              seniors, share your brandeis journey with underclassmen over dinner.
-              leave your legacy of wisdom, stories, and connections.
+              Share your wisdom, make a new connection, and pass down your knowledge before graduation
             </p>
             <p style={{
               fontSize: '0.9rem',
@@ -1340,7 +1333,7 @@ export default forwardRef(function Home(props, ref) {
               fontStyle: 'italic',
               marginTop: '0.5rem'
             }}>
-              make your last meal at brandeis count - connect with someone new!
+              Leave your mark on Brandeis by connecting with underclassmen!
             </p>
           </div>
           
@@ -2376,28 +2369,53 @@ export default forwardRef(function Home(props, ref) {
                         </div>
                         
                         {/* Dinner times */}
-                        <div style={{ marginTop: '1rem' }}>
-                          <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem' }}>dinner</h4>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <label style={checkboxLabelStyle}>
-                              <input
-                                type="checkbox"
-                                checked={mealTimes.thursday?.dinner?.includes('6:00-6:30 pm')}
-                                onChange={(e) => handleMealTimeChange('thursday', 'dinner', '6:00-6:30 pm', e.target.checked)}
-                                style={checkboxStyle}
-                              />
-                              6:00-6:30 pm
-                            </label>
-                            <label style={checkboxLabelStyle}>
-                              <input
-                                type="checkbox"
-                                checked={mealTimes.thursday?.dinner?.includes('7:00-7:30 pm')}
-                                onChange={(e) => handleMealTimeChange('thursday', 'dinner', '7:00-7:30 pm', e.target.checked)}
-                                style={checkboxStyle}
-                              />
-                              7:00-7:30 pm
-                            </label>
-                          </div>
+                        <div style={{ fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '0.3rem', color: '#666' }}>dinner</div>
+                        <div style={{ display: 'flex', flexDirection: 'row', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                          {['6:00-6:30 pm', '7:00-7:30 pm'].map((timeSlot) => {
+                            const dayKey = selectedDay;
+                            const timeKey = `${dayKey}-dinner-${timeSlot}`;
+                            const isSelected = mealTimes[dayKey]?.dinner?.includes(timeSlot) || false;
+                            
+                                return (
+                              <div
+                                key={timeKey}
+                                style={{
+                                  ...bubbleStyle,
+                                  backgroundColor: isSelected ? '#003865' : '#f0f0f0',
+                                  color: isSelected ? 'white' : '#333',
+                                  fontSize: '0.85rem',
+                                  padding: '0.4rem 0.8rem',
+                                }}
+                                onClick={() => {
+                                  if (!dayKey) return;
+                                  
+                                  // Create a deep copy of mealTimes
+                                  const updatedMealTimes = { ...mealTimes };
+                                  
+                                  // Initialize day and meal if needed
+                                  if (!updatedMealTimes[dayKey]) {
+                                    updatedMealTimes[dayKey] = {};
+                                  }
+                                  if (!updatedMealTimes[dayKey].dinner) {
+                                    updatedMealTimes[dayKey].dinner = [];
+                                  }
+                                  
+                                  // Toggle time slot
+                                  if (updatedMealTimes[dayKey].dinner.includes(timeSlot)) {
+                                    updatedMealTimes[dayKey].dinner = updatedMealTimes[dayKey].dinner.filter(
+                                      time => time !== timeSlot
+                                    );
+                                  } else {
+                                    updatedMealTimes[dayKey].dinner.push(timeSlot);
+                                  }
+                                  
+                                  setMealTimes(updatedMealTimes);
+                                }}
+                              >
+                                {timeSlot}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
